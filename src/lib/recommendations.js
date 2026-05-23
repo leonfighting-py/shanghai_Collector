@@ -1,0 +1,94 @@
+import { CATEGORIES, toShanghaiDate } from "./events.js";
+
+const KEYWORD_WEIGHTS = [
+  ["音乐节", 18],
+  ["开幕", 16],
+  ["限定", 14],
+  ["论坛", 12],
+  ["公开", 10],
+  ["首演", 10],
+  ["市集", 8],
+  ["咖啡", 8],
+  ["爵士", 8],
+  ["设计", 6],
+];
+
+export function scoreEvent(event, now = new Date()) {
+  let score = 0;
+  const sourceCount = event.sources?.length || 1;
+  const hour = new Date(event.start_time).getHours();
+  const day = new Date(event.start_time).getDay();
+  const title = event.title || "";
+
+  score += Math.min(sourceCount, 4) * 8;
+  score += categoryBoost(event.category);
+  score += event.venue && event.venue !== "上海" ? 12 : 0;
+  score += event.signup_url ? 6 : 0;
+  score += day === 0 || day === 6 ? 10 : 0;
+  score += hour >= 18 ? 8 : 0;
+  score += proximityScore(event.start_time, now);
+
+  for (const [keyword, weight] of KEYWORD_WEIGHTS) {
+    if (title.includes(keyword)) score += weight;
+  }
+
+  return score;
+}
+
+function categoryBoost(category) {
+  if (category === "演出音乐") return 14;
+  if (category === "展览") return 10;
+  if (category === "线下活动") return 6;
+  return 0;
+}
+
+export function getTopPicks(events, limit = 12, now = new Date()) {
+  return [...events]
+    .map((event) => ({ ...event, recommendation_score: scoreEvent(event, now) }))
+    .sort((left, right) => right.recommendation_score - left.recommendation_score)
+    .slice(0, limit);
+}
+
+export function getHeroEvent(events, now = new Date()) {
+  return getTopPicks(events, 1, now)[0] || null;
+}
+
+export function getCategoryFeatures(events, now = new Date()) {
+  const picks = {};
+  for (const category of CATEGORIES) {
+    picks[category] = getTopPicks(
+      events.filter((event) => event.category === category),
+      1,
+      now,
+    )[0] || null;
+  }
+  return picks;
+}
+
+export function getTonightEvents(events, now = new Date()) {
+  const today = toShanghaiDate(now);
+  return getTopPicks(
+    events.filter((event) => {
+      const hour = new Date(event.start_time).getHours();
+      return toShanghaiDate(event.start_time) === today && hour >= 18;
+    }),
+    4,
+    now,
+  );
+}
+
+export function getWeekendEvents(events, now = new Date()) {
+  return getTopPicks(
+    events.filter((event) => {
+      const day = new Date(event.start_time).getDay();
+      return day === 0 || day === 6;
+    }),
+    6,
+    now,
+  );
+}
+
+function proximityScore(startTime, now) {
+  const diffDays = Math.max(0, (new Date(startTime).getTime() - new Date(now).getTime()) / (24 * 60 * 60 * 1000));
+  return Math.max(0, 14 - diffDays * 2);
+}

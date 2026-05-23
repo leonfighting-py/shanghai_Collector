@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: shanghai-weekly-events
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 26
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shanghai-weekly-events-db
+          property: connectionString
+      - key: COLLECT_SECRET
+        generateValue: true
+
+  - type: cron
+    name: shanghai-weekly-events-collector
+    runtime: node
+    plan: starter
+    schedule: "0 1 * * 1"
+    buildCommand: npm install
+    startCommand: npm run collect:render
+    envVars:
+      - key: NODE_VERSION
+        value: 26
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shanghai-weekly-events-db
+          property: connectionString
+      - key: COLLECT_SECRET
+        sync: false
+      - key: WEB_BASE_URL
+        sync: false
+
+  - type: cron
+    name: shanghai-weekly-events-cleanup
+    runtime: node
+    plan: starter
+    schedule: "0 2 1 */2 *"
+    buildCommand: npm install
+    startCommand: npm run cleanup:render
+    envVars:
+      - key: NODE_VERSION
+        value: 26
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shanghai-weekly-events-db
+          property: connectionString
+      - key: COLLECT_SECRET
+        sync: false
+      - key: WEB_BASE_URL
+        sync: false
+
+databases:
+  - name: shanghai-weekly-events-db
+    plan: starter
