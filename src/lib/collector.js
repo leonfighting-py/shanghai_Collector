@@ -97,6 +97,24 @@ export const SOURCE_SEEDS = [
     category: "高校讲座",
     parser: parseReadableDateBlocks,
   },
+  {
+    name: "AI Tinkerers Shanghai",
+    url: "https://shanghai.aitinkerers.org/",
+    category: "AI聚会",
+    parser: parseReadableDateBlocks,
+  },
+  {
+    name: "ShanghAI AI Meetup",
+    url: "https://www.meetup.com/shanghai-ai/",
+    category: "AI聚会",
+    parser: parseReadableDateBlocks,
+  },
+  {
+    name: "OpenClaw Shanghai",
+    url: "https://lu.ma/openclaw-shanghai",
+    category: "AI聚会",
+    parser: parseReadableDateBlocks,
+  },
 ];
 
 export async function collectEventsFromSources({

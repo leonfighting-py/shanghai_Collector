@@ -9,8 +9,8 @@ import {
   toShanghaiWeekRange,
 } from "../src/lib/events.js";
 
-test("keeps the four MVP categories stable", () => {
-  assert.deepEqual(CATEGORIES, ["演出音乐", "展览", "线下活动", "高校讲座"]);
+test("keeps the homepage categories stable", () => {
+  assert.deepEqual(CATEGORIES, ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"]);
 });
 
 test("filters records missing required publishing fields", () => {

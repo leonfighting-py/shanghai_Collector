@@ -1,4 +1,4 @@
-export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座"];
+export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
 
 const SHANGHAI_OFFSET = 8 * 60 * 60 * 1000;
 
@@ -127,4 +127,3 @@ export function getWeekDays(startDate) {
     return date.toISOString().slice(0, 10);
   });
 }
-

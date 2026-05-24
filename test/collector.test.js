@@ -14,6 +14,7 @@ test("source seeds cover each required category with enough recall depth", () =>
   assert.ok(counts["展览"] >= 4);
   assert.ok(counts["线下活动"] >= 4);
   assert.ok(counts["高校讲座"] >= 4);
+  assert.ok(counts["AI聚会"] >= 3);
 });
 
 test("local sample data is rich enough for the current-week page", () => {
@@ -27,6 +28,7 @@ test("local sample data is rich enough for the current-week page", () => {
   assert.ok(counts["展览"] >= 4);
   assert.ok(counts["线下活动"] >= 4);
   assert.ok(counts["高校讲座"] >= 4);
+  assert.ok(counts["AI聚会"] >= 3);
 });
 
 test("collector keeps last published data when every source fails", async () => {
