@@ -7,7 +7,7 @@ services:
     startCommand: npm run start
     envVars:
       - key: NODE_VERSION
-        value: 26
+        value: "24"
       - key: DATABASE_URL
         fromDatabase:
           name: shanghai-weekly-events-db
@@ -24,13 +24,16 @@ services:
     startCommand: npm run collect:render
     envVars:
       - key: NODE_VERSION
-        value: 26
+        value: "24"
       - key: DATABASE_URL
         fromDatabase:
           name: shanghai-weekly-events-db
           property: connectionString
       - key: COLLECT_SECRET
-        sync: false
+        fromService:
+          name: shanghai-weekly-events
+          type: web
+          envVarKey: COLLECT_SECRET
       - key: WEB_BASE_URL
         sync: false
 
@@ -43,13 +46,16 @@ services:
     startCommand: npm run cleanup:render
     envVars:
       - key: NODE_VERSION
-        value: 26
+        value: "24"
       - key: DATABASE_URL
         fromDatabase:
           name: shanghai-weekly-events-db
           property: connectionString
       - key: COLLECT_SECRET
-        sync: false
+        fromService:
+          name: shanghai-weekly-events
+          type: web
+          envVarKey: COLLECT_SECRET
       - key: WEB_BASE_URL
         sync: false
 
