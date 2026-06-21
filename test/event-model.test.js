@@ -5,12 +5,22 @@ import {
   CATEGORIES,
   buildDedupeKey,
   filterPublishableEvents,
+  isEventLikeTitle,
+  isInDateRange,
   mergeDuplicateEvents,
+  toShanghaiDayWindow,
   toShanghaiWeekRange,
 } from "../src/lib/events.js";
 
 test("keeps the homepage categories stable", () => {
   assert.deepEqual(CATEGORIES, ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"]);
+});
+
+test("rejects government news and malformed parser titles", () => {
+  assert.equal(isEventLikeTitle("周五爵士现场"), true);
+  assert.equal(isEventLikeTitle("上海市发展和改革委员会关于车用汽、柴油价格的通知（2026年6月4日）"), false);
+  assert.equal(isEventLikeTitle('","availabilityEnds":null,"validFrom":"'), false);
+  assert.equal(isEventLikeTitle('T11:30:00.000Z","endDate":"'), false);
 });
 
 test("filters records missing required publishing fields", () => {
@@ -88,4 +98,27 @@ test("computes a Monday to Sunday Shanghai week range", () => {
 
   assert.equal(range.startDate, "2026-05-18");
   assert.equal(range.endDate, "2026-05-24");
+});
+
+test("computes a rolling fourteen-day Shanghai publish window by default", () => {
+  const range = toShanghaiDayWindow("2026-06-12");
+
+  assert.equal(range.startDate, "2026-06-12");
+  assert.equal(range.endDate, "2026-06-25");
+  assert.equal(range.days, 14);
+});
+
+test("keeps recent ongoing exhibitions visible after their opening date", () => {
+  assert.equal(
+    isInDateRange(
+      {
+        title: "常设展",
+        category: "展览",
+        start_time: "2026-06-02T10:00:00+08:00",
+      },
+      "2026-06-19",
+      "2026-07-02",
+    ),
+    true,
+  );
 });

@@ -41,7 +41,7 @@ export function FeaturedCarousel({ events }) {
   }
 
   return (
-    <section className="featured-carousel" aria-label="本周强推活动">
+    <section className="featured-carousel" aria-label="近两日强推活动">
       <a className="featured-slide" href={activeEvent.signup_url}>
         <span className="cover-kicker">{activeEvent.category}</span>
         <h2>{activeEvent.title}</h2>

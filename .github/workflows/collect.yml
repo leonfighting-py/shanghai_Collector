@@ -1,0 +1,27 @@
+name: Collect Events
+
+on:
+  schedule:
+    - cron: "0 1 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run collector
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          LLM_DEDUPE_ENABLED: ${{ vars.LLM_DEDUPE_ENABLED || 'false' }}
+          DEDUPER_MODEL: ${{ vars.DEDUPER_MODEL || 'gpt-5-nano' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npm run collect

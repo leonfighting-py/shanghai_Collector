@@ -1,4 +1,7 @@
 import { CATEGORIES, toShanghaiDate } from "./events.js";
+import { hasCjkText } from "./locale.js";
+
+const CHINESE_TITLE_BOOST = 28;
 
 const KEYWORD_WEIGHTS = [
   ["音乐节", 18],
@@ -32,6 +35,8 @@ export function scoreEvent(event, now = new Date()) {
     if (title.includes(keyword)) score += weight;
   }
 
+  if (hasCjkText(title)) score += CHINESE_TITLE_BOOST;
+
   return score;
 }
 
@@ -43,10 +48,20 @@ function categoryBoost(category) {
 }
 
 export function getTopPicks(events, limit = 12, now = new Date()) {
+  return rankEvents(events, now).slice(0, limit);
+}
+
+export function getDisplayTopPicks(events, limit = 12, now = new Date()) {
+  const ranked = rankEvents(events, now);
+  const chinese = ranked.filter((event) => hasCjkText(event.title));
+  const other = ranked.filter((event) => !hasCjkText(event.title));
+  return [...chinese, ...other].slice(0, limit);
+}
+
+function rankEvents(events, now) {
   return [...events]
     .map((event) => ({ ...event, recommendation_score: scoreEvent(event, now) }))
-    .sort((left, right) => right.recommendation_score - left.recommendation_score)
-    .slice(0, limit);
+    .sort((left, right) => right.recommendation_score - left.recommendation_score);
 }
 
 export function getHeroEvent(events, now = new Date()) {

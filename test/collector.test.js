@@ -10,11 +10,19 @@ test("source seeds cover each required category with enough recall depth", () =>
     return memo;
   }, {});
 
-  assert.ok(counts["演出音乐"] >= 4);
-  assert.ok(counts["展览"] >= 4);
-  assert.ok(counts["线下活动"] >= 4);
+  assert.ok(counts["演出音乐"] >= 7);
+  assert.ok(counts["展览"] >= 8);
+  assert.ok(counts["线下活动"] >= 6);
   assert.ok(counts["高校讲座"] >= 4);
-  assert.ok(counts["AI聚会"] >= 3);
+  assert.ok(counts["AI聚会"] >= 5);
+});
+
+test("source seeds include a strong Chinese primary layer", () => {
+  const chineseSources = SOURCE_SEEDS.filter((source) => source.locale === "zh");
+
+  assert.ok(chineseSources.length >= 14);
+  assert.ok(chineseSources.some((source) => source.name.includes("中华艺术宫")));
+  assert.ok(chineseSources.some((source) => source.name.includes("互动吧")));
 });
 
 test("local sample data is rich enough for the current-week page", () => {

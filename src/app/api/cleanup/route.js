@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { cleanupOldData } from "../../../lib/repository.js";
+import { runCleanupJob } from "../../../lib/cleanup-job.js";
 
 export async function POST(request) {
   const expected = process.env.COLLECT_SECRET;
@@ -10,14 +10,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const result = await cleanupOldData({ eventRetentionDays: 60, runRetentionDays: 90 });
+  const result = await runCleanupJob();
 
-  return NextResponse.json({
-    ok: true,
-    retention: {
-      events_days: 60,
-      runs_days: 90,
-    },
-    ...result,
-  });
+  return NextResponse.json(result);
 }

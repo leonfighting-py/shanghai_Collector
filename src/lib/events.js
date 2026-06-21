@@ -1,4 +1,5 @@
 export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
+export const COLLECTION_WINDOW_DAYS = 14;
 
 const SHANGHAI_OFFSET = 8 * 60 * 60 * 1000;
 
@@ -33,6 +34,20 @@ export function toShanghaiWeekRange(input = new Date()) {
   };
 }
 
+/** Rolling publish window: anchor day plus the next `days - 1` days in Shanghai. */
+export function toShanghaiDayWindow(input = new Date(), days = COLLECTION_WINDOW_DAYS) {
+  const startDate = toShanghaiDate(input);
+  const start = new Date(`${startDate}T04:00:00.000Z`);
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + Math.max(days, 1) - 1);
+
+  return {
+    startDate,
+    endDate: end.toISOString().slice(0, 10),
+    days,
+  };
+}
+
 export function buildDedupeKey(event) {
   const title = normalizeText(event.title);
   const date = toShanghaiDate(event.start_time);
@@ -40,9 +55,49 @@ export function buildDedupeKey(event) {
   return [title, date, venue].join("|");
 }
 
+const NEWS_TITLE_PATTERNS = [
+  /通知$/,
+  /公告$/,
+  /公示$/,
+  /关于印发/,
+  /关于.*的通知/,
+  /价格的通知/,
+  /政策解读/,
+  /新闻发布会/,
+  /人民政府/,
+  /委员会关于/,
+  /发改委/,
+  /条例$/,
+  /办法$/,
+  /规定$/,
+  /批复$/,
+  /schema\.org/i,
+  /availabilityends/i,
+  /validfrom/i,
+  /eventstatus/i,
+  /^t\d{2}:\d{2}:\d{2}/i,
+  /^[\s",{\[\]\\/]+/,
+  /thank you for your feedback/i,
+  /跳转到主要内容/,
+];
+
+export function isEventLikeTitle(title = "") {
+  const text = String(title).trim();
+  if (text.length < 6 || text.length > 120) return false;
+  if (NEWS_TITLE_PATTERNS.some((pattern) => pattern.test(text))) return false;
+  if (/&#\d+;/.test(text)) return false;
+  if (!/[a-zA-Z\u4e00-\u9fff]{2,}/.test(text)) return false;
+
+  const specialChars = (text.match(/[\\"{}\[\]:,]/g) || []).length;
+  if (specialChars >= 3) return false;
+
+  return true;
+}
+
 export function isPublishableEvent(event) {
   return Boolean(
     event?.title?.trim() &&
+      isEventLikeTitle(event.title) &&
       event?.start_time &&
       event?.venue?.trim() &&
       event?.category &&
@@ -116,7 +171,16 @@ function mergeSources(left, right) {
 
 export function isInDateRange(event, startDate, endDate) {
   const eventDate = toShanghaiDate(event.start_time);
-  return eventDate >= startDate && eventDate <= endDate;
+  if (eventDate >= startDate && eventDate <= endDate) return true;
+
+  if (event.category === "展览" && eventDate && eventDate < startDate) {
+    const start = new Date(`${startDate}T00:00:00.000Z`);
+    const opened = new Date(`${eventDate}T00:00:00.000Z`);
+    const daysSinceOpening = Math.floor((start.getTime() - opened.getTime()) / 86_400_000);
+    return daysSinceOpening <= 60;
+  }
+
+  return false;
 }
 
 export function getWeekDays(startDate) {

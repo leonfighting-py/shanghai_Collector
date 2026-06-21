@@ -12,11 +12,12 @@ const events = [
   event("上海 AI 创业者线下交流", "2026-05-23T19:30:00+08:00", "AI聚会", "张江 AI 社区空间"),
 ];
 
-test("home view model uses a dynamic Shanghai daily update date", () => {
+test("home view model uses a dynamic Shanghai two-week update label", () => {
   const model = buildHomeViewModel(events, { now: "2026-05-24T09:30:00+08:00" });
 
   assert.equal(model.updatedDate, "05/24");
-  assert.equal(model.updatedLabel, "Daily Update");
+  assert.equal(model.updatedLabel, "14-Day Update");
+  assert.equal(model.windowLabel, "2026-05-24 至 2026-06-06");
 });
 
 test("home view model selects multiple featured events for the rolling banner", () => {
@@ -26,16 +27,16 @@ test("home view model selects multiple featured events for the rolling banner", 
   assert.ok(model.featuredEvents.every((item) => item.category && item.title && item.signup_url));
 });
 
-test("home view model groups events into category sections", () => {
-  const model = buildHomeViewModel(events, { now: "2026-05-24T09:30:00+08:00" });
-
-  assert.deepEqual(
-    model.categorySections.map((section) => section.title),
-    ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"],
+test("home view model groups events into category sections with browse links", () => {
+  const manyMusicEvents = Array.from({ length: 10 }, (_, index) =>
+    event(`演出活动 ${index + 1}`, `2026-05-2${index % 4}T20:00:00+08:00`, "演出音乐", "育音堂"),
   );
-  assert.equal(model.categorySections[0].events.length, 2);
-  assert.equal(model.categorySections[1].events[0].title, "当代摄影开放展");
-  assert.equal(model.categorySections[4].eyebrow, "AI Meetups");
+  const model = buildHomeViewModel([...manyMusicEvents, ...events.slice(2)], { now: "2026-05-24T09:30:00+08:00" });
+
+  const musicSection = model.categorySections.find((section) => section.title === "演出音乐");
+  assert.equal(musicSection.totalCount, 10);
+  assert.equal(musicSection.events.length, 4);
+  assert.match(musicSection.browseHref, /\/category\//);
 });
 
 function event(title, start_time, category, venue) {

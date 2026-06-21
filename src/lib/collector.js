@@ -1,121 +1,211 @@
-import { filterPublishableEvents, isInDateRange, mergeDuplicateEvents, toShanghaiWeekRange } from "./events.js";
+import {
+  filterPublishableEvents,
+  isInDateRange,
+  mergeDuplicateEvents,
+  toShanghaiDayWindow,
+} from "./events.js";
+import { defaultFetchHtml } from "./fetch-html.js";
+import { PARSERS } from "./parsers/index.js";
+
+export { defaultFetchHtml } from "./fetch-html.js";
+export { parseJsonLdEvents } from "./parsers/json-ld.js";
 
 export const SOURCE_SEEDS = [
+  { name: "猫眼演出", url: "https://show.maoyan.com/", category: "演出音乐", locale: "zh", parser: PARSERS.maoyan },
   {
-    name: "猫眼演出",
-    url: "https://show.maoyan.com/",
+    name: "秀动上海",
+    url: "https://www.showstart.com/event/list?cityCode=310000",
     category: "演出音乐",
-    parser: parseJsonLdEvents,
+    locale: "zh",
+    parser: PARSERS.showstart,
   },
   {
     name: "豆瓣同城上海",
-    url: "https://shanghai.douban.com/",
+    url: "https://www.douban.com/location/shanghai/events",
     category: "演出音乐",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.douban,
   },
   {
     name: "SmartShanghai Events",
     url: "https://www.smartshanghai.com/events/",
     category: "演出音乐",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.smartshanghai,
   },
   {
-    name: "AllEvents Shanghai",
-    url: "https://allevents.in/shanghai",
+    name: "SmartShanghai Live Music",
+    url: "https://www.smartshanghai.com/events/?category=live-music",
     category: "演出音乐",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.smartshanghai,
   },
+  { name: "AllEvents Shanghai", url: "https://allevents.in/shanghai", category: "演出音乐", locale: "en", parser: PARSERS.allevents },
   {
-    name: "Fotografiska Shanghai",
-    url: "https://shanghai.fotografiska.com/en/whats-on",
-    category: "展览",
-    parser: parseReadableDateBlocks,
+    name: "Eventbrite Shanghai Music",
+    url: "https://www.eventbrite.com/d/china--shanghai/music--events/",
+    category: "演出音乐",
+    locale: "en",
+    parser: PARSERS.tentimes,
   },
   {
     name: "复星艺术中心",
-    url: "https://www.fosunfoundation.com/",
+    url: "https://www.fosunfoundation.com/zh/current-exhibitions",
     category: "展览",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.fosun,
   },
   {
     name: "上海外滩美术馆",
-    url: "https://www.rockbundartmuseum.org/",
+    url: "https://www.rockbundartmuseum.org/exhibitions/",
     category: "展览",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.rockbund,
   },
   {
     name: "teamLab 无界上海",
     url: "https://art.team-lab.cn/e/borderless-shanghai/",
     category: "展览",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.teamlab,
   },
   {
-    name: "上海文旅局",
-    url: "https://whlyj.sh.gov.cn/",
+    name: "上海当代艺术博物馆",
+    url: "https://www.powerstationofart.com/exhibitions.html",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.psa,
+  },
+  {
+    name: "中华艺术宫",
+    url: "https://www.artmuseumonline.org/art/art/zlgz/zl/dqzl/index.html",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.chinaArtMuseum,
+  },
+  {
+    name: "浦东美术馆",
+    url: "https://www.museumofartpd.org.cn/exhibition",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.map,
+  },
+  {
+    name: "UCCA Edge 上海",
+    url: "https://ucca.org.cn/exhibitions/",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.ucca,
+  },
+  {
+    name: "Fotografiska 上海",
+    url: "https://shanghai.fotografiska.com/en/whats-on",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.fotografiska,
+  },
+  {
+    name: "活动行上海",
+    url: "https://www.huodongxing.com/events?orderby=hot&city=%E4%B8%8A%E6%B5%B7",
     category: "线下活动",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.huodong,
   },
   {
-    name: "上海发布活动",
-    url: "https://www.shanghai.gov.cn/",
+    name: "互动吧上海",
+    url: "https://www.huodong.com/event?cityCode=310000",
     category: "线下活动",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.huodongBa,
   },
   {
-    name: "活动网上海",
-    url: "https://huodong.com/shanghai",
+    name: "Eventbrite Shanghai",
+    url: "https://www.eventbrite.com/d/china--shanghai/events/",
     category: "线下活动",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.tentimes,
   },
   {
-    name: "10times Shanghai",
-    url: "https://10times.com/shanghai-cn",
+    name: "Eventbrite Shanghai Business",
+    url: "https://www.eventbrite.com/d/china--shanghai/business--events/",
     category: "线下活动",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.tentimes,
   },
   {
-    name: "NYU Shanghai Events",
-    url: "https://events.shanghai.nyu.edu/",
-    category: "高校讲座",
-    parser: parseReadableDateBlocks,
+    name: "Eventbrite Shanghai Networking",
+    url: "https://www.eventbrite.com/d/china--shanghai/networking--events/",
+    category: "线下活动",
+    locale: "en",
+    parser: PARSERS.tentimes,
   },
+  { name: "Lu.ma Shanghai", url: "https://lu.ma/shanghai", category: "线下活动", locale: "en", parser: PARSERS.luma },
+  { name: "NYU Shanghai Events", url: "https://events.shanghai.nyu.edu/", category: "高校讲座", locale: "en", parser: PARSERS.nyu },
+  { name: "上外活动平台", url: "https://event.shisu.edu.cn/", category: "高校讲座", locale: "zh", parser: PARSERS.shisu },
+  { name: "上海交通大学活动", url: "https://gc.sjtu.edu.cn/cn/event/", category: "高校讲座", locale: "zh", parser: PARSERS.sjtu },
   {
-    name: "上外活动平台",
-    url: "https://event.shisu.edu.cn/",
+    name: "同济大学活动",
+    url: "https://see.tongji.edu.cn/index/jqzyhd.htm",
     category: "高校讲座",
-    parser: parseReadableDateBlocks,
-  },
-  {
-    name: "上海交通大学活动",
-    url: "https://gc.sjtu.edu.cn/cn/event/",
-    category: "高校讲座",
-    parser: parseReadableDateBlocks,
-  },
-  {
-    name: "上海交通大学大师讲坛",
-    url: "https://www.gs.sjtu.edu.cn/dsjt",
-    category: "高校讲座",
-    parser: parseReadableDateBlocks,
+    locale: "zh",
+    parser: PARSERS.tongjiSee,
   },
   {
     name: "AI Tinkerers Shanghai",
-    url: "https://shanghai.aitinkerers.org/",
+    url: "https://www.meetup.com/topics/artificial-intelligence/shanghai/",
     category: "AI聚会",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.aitinkerers,
   },
   {
     name: "ShanghAI AI Meetup",
     url: "https://www.meetup.com/shanghai-ai/",
     category: "AI聚会",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.meetup,
+  },
+  { name: "OpenClaw Shanghai", url: "https://lu.ma/shanghai", category: "AI聚会", locale: "en", parser: PARSERS.luma },
+  {
+    name: "Eventbrite Shanghai AI",
+    url: "https://www.eventbrite.com/d/china--shanghai/artificial-intelligence--events/",
+    category: "AI聚会",
+    locale: "en",
+    parser: PARSERS.eventbriteAiTech,
   },
   {
-    name: "OpenClaw Shanghai",
-    url: "https://lu.ma/openclaw-shanghai",
+    name: "Eventbrite Shanghai Tech",
+    url: "https://www.eventbrite.com/d/china--shanghai/science-and-tech--events/",
     category: "AI聚会",
-    parser: parseReadableDateBlocks,
+    locale: "en",
+    parser: PARSERS.eventbriteAiTech,
   },
+  ...(process.env.WECHAT_EVENTS_API_URL || process.env.WECHAT_EXPORTER_AUTH_KEY
+    ? [
+        {
+          name: "微信公众号活动",
+          url: process.env.WECHAT_EVENTS_API_URL || process.env.WECHAT_EXPORTER_BASE_URL || "http://localhost:3001",
+          category: process.env.WECHAT_DEFAULT_CATEGORY || "线下活动",
+          locale: "zh",
+          parser: PARSERS.wechat,
+          timeoutMs: 180_000,
+        },
+      ]
+    : []),
 ];
+
+async function withSourceTimeout(task, sourceName, timeoutMs) {
+  let timer;
+  try {
+    return await Promise.race([
+      task(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${sourceName} timed out after ${timeoutMs / 1000}s`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export async function collectEventsFromSources({
   sources = SOURCE_SEEDS,
@@ -123,14 +213,20 @@ export async function collectEventsFromSources({
   fetchHtml = defaultFetchHtml,
   now = new Date(),
 } = {}) {
-  const { startDate, endDate } = toShanghaiWeekRange(now);
+  const { startDate, endDate, days } = toShanghaiDayWindow(now);
   const failures = [];
   const collected = [];
 
   for (const source of sources) {
     try {
-      const html = await fetchHtml(source.url);
-      const parsed = await source.parser(html, source);
+      const parsed = await withSourceTimeout(
+        async () => {
+          const html = await fetchHtml(source.url);
+          return source.parser(html, source, { fetchHtml, now, window: { startDate, endDate, days } });
+        },
+        source.name,
+        source.timeoutMs || 45_000,
+      );
       collected.push(...parsed);
     } catch (error) {
       failures.push({
@@ -154,6 +250,7 @@ export async function collectEventsFromSources({
       publishedCount: previousEvents.length,
       startDate,
       endDate,
+      windowDays: days,
       lastUpdatedAt: new Date().toISOString(),
     };
   }
@@ -167,102 +264,7 @@ export async function collectEventsFromSources({
     publishedCount: events.length,
     startDate,
     endDate,
+    windowDays: days,
     lastUpdatedAt: new Date().toISOString(),
   };
-}
-
-export async function defaultFetchHtml(url) {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent": "ShanghaiWeeklyEventsBot/0.1 (+public event aggregation)",
-      accept: "text/html,application/xhtml+xml",
-    },
-    next: { revalidate: 3600 },
-  });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.text();
-}
-
-export function parseJsonLdEvents(html, source) {
-  const events = [];
-  const scriptMatches = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-
-  for (const match of scriptMatches) {
-    const text = stripHtml(match[1]);
-    try {
-      const data = JSON.parse(text);
-      const candidates = Array.isArray(data) ? data : [data];
-      for (const candidate of candidates.flatMap(expandGraph)) {
-        if (!isEventLike(candidate)) continue;
-        events.push(fromStructuredEvent(candidate, source));
-      }
-    } catch {
-      // Ignore malformed embedded JSON; source-level failure should not block other parsers.
-    }
-  }
-
-  return events;
-}
-
-export function parseReadableDateBlocks(html, source) {
-  const text = stripHtml(html)
-    .replace(/\s+/g, " ")
-    .replace(/(202[6-9][./-]\d{1,2}[./-]\d{1,2})/g, "\n$1");
-  const lines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-
-  return lines
-    .map((line) => {
-      const date = line.match(/(202[6-9])[./-](\d{1,2})[./-](\d{1,2})/);
-      if (!date) return null;
-      const title = line.replace(date[0], "").slice(0, 80).trim();
-      if (!title || title.length < 4) return null;
-      return {
-        title,
-        start_time: `${date[1]}-${date[2].padStart(2, "0")}-${date[3].padStart(2, "0")}T10:00:00+08:00`,
-        end_time: null,
-        venue: "上海",
-        category: source.category,
-        signup_url: source.url,
-        source_name: source.name,
-        source_url: source.url,
-      };
-    })
-    .filter(Boolean);
-}
-
-function expandGraph(candidate) {
-  if (candidate?.["@graph"]) return candidate["@graph"];
-  if (candidate?.itemListElement) return candidate.itemListElement.map((item) => item.item || item);
-  return [candidate];
-}
-
-function isEventLike(candidate) {
-  const type = candidate?.["@type"];
-  return type === "Event" || (Array.isArray(type) && type.includes("Event"));
-}
-
-function fromStructuredEvent(candidate, source) {
-  const location = candidate.location;
-  const venue = typeof location === "string" ? location : location?.name || location?.address?.name || "上海";
-  return {
-    title: candidate.name,
-    start_time: candidate.startDate,
-    end_time: candidate.endDate || null,
-    venue,
-    category: source.category,
-    signup_url: candidate.url || source.url,
-    source_name: source.name,
-    source_url: candidate.url || source.url,
-  };
-}
-
-function stripHtml(value) {
-  return String(value)
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script(?![^>]+application\/ld\+json)[\s\S]*?<\/script>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
 }

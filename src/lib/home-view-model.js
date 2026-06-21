@@ -1,20 +1,34 @@
-import { CATEGORIES } from "./events.js";
-import { getTopPicks } from "./recommendations.js";
+import { CATEGORIES, COLLECTION_WINDOW_DAYS, toShanghaiDayWindow } from "./events.js";
+import { getDisplayTopPicks } from "./recommendations.js";
 
-export function buildHomeViewModel(events, { now = new Date(), featuredLimit = 5, sectionLimit = 4 } = {}) {
+export const HOME_SECTION_PREVIEW_LIMIT = 4;
+
+export function categoryBrowsePath(category) {
+  return `/category/${encodeURIComponent(category)}`;
+}
+
+export function buildHomeViewModel(
+  events,
+  { now = new Date(), featuredLimit = 5, sectionLimit = HOME_SECTION_PREVIEW_LIMIT } = {},
+) {
+  const window = toShanghaiDayWindow(now);
   return {
-    updatedLabel: "Daily Update",
+    updatedLabel: `${COLLECTION_WINDOW_DAYS}-Day Update`,
     updatedDate: formatShanghaiShortDate(now),
-    featuredEvents: getTopPicks(events, featuredLimit, now),
-    categorySections: CATEGORIES.map((category) => ({
-      title: category,
-      eyebrow: CATEGORY_EYEBROWS[category],
-      events: getTopPicks(
-        events.filter((event) => event.category === category),
-        sectionLimit,
-        now,
-      ),
-    })).filter((section) => section.events.length > 0),
+    windowLabel: `${window.startDate} 至 ${window.endDate}`,
+    featuredEvents: getDisplayTopPicks(events, featuredLimit, now),
+    categorySections: CATEGORIES.map((category) => {
+      const inCategory = events.filter((event) => event.category === category);
+      const categoryEvents = getDisplayTopPicks(inCategory, inCategory.length, now);
+
+      return {
+        title: category,
+        eyebrow: CATEGORY_EYEBROWS[category],
+        totalCount: categoryEvents.length,
+        events: categoryEvents.slice(0, sectionLimit),
+        browseHref: categoryBrowsePath(category),
+      };
+    }).filter((section) => section.totalCount > 0),
   };
 }
 
@@ -37,3 +51,7 @@ const CATEGORY_EYEBROWS = {
   高校讲座: "Campus Talks",
   AI聚会: "AI Meetups",
 };
+
+export function getCategoryEyebrow(category) {
+  return CATEGORY_EYEBROWS[category] || "Category";
+}

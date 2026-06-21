@@ -1,7 +1,7 @@
 import pg from "pg";
 
 import { dedupeEvents } from "./dedupe.js";
-import { mergeDuplicateEvents, toShanghaiWeekRange } from "./events.js";
+import { isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
 import { SAMPLE_EVENTS } from "./sample-events.js";
 
 export function buildSchemaSql() {
@@ -195,7 +195,7 @@ export async function insertRawEvents(events, { runId = null } = {}) {
 }
 
 export async function listEvents({ week, category, search } = {}) {
-  const { startDate, endDate } = toShanghaiWeekRange(week || new Date());
+  const { startDate, endDate } = toShanghaiDayWindow(week || new Date());
 
   if (!process.env.DATABASE_URL) {
     return applyFilters(SAMPLE_EVENTS, { startDate, endDate, category, search });
@@ -203,7 +203,7 @@ export async function listEvents({ week, category, search } = {}) {
 
   await ensureSchema();
   const params = [`${startDate}T00:00:00+08:00`, `${endDate}T23:59:59+08:00`];
-  const filters = ["start_time >= $1", "start_time <= $2"];
+  const filters = [buildEventWindowWhereSql("$1", "$2")];
 
   if (category) {
     params.push(category);
@@ -239,7 +239,7 @@ export async function publishEvents(events, { week = new Date(), rawEventIds = [
 }
 
 export async function replaceWeekEvents(events, { week = new Date(), rawEventIds = [], dedupeProvider = "rules" } = {}) {
-  const { startDate, endDate } = toShanghaiWeekRange(week);
+  const { startDate, endDate } = toShanghaiDayWindow(week);
   const normalized = mergeDuplicateEvents(events);
 
   if (!process.env.DATABASE_URL) {
@@ -309,10 +309,18 @@ export async function cleanupOldData(options) {
   return { dryRun: false };
 }
 
+function databaseSsl() {
+  const url = process.env.DATABASE_URL ?? "";
+  if (url.includes("render.com") || url.includes("supabase.co") || url.includes("pooler.supabase.com")) {
+    return { rejectUnauthorized: false };
+  }
+  return undefined;
+}
+
 async function query(sqlText, params = []) {
   pool ||= new pg.Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL?.includes("render.com") ? { rejectUnauthorized: false } : undefined,
+    ssl: databaseSsl(),
   });
 
   return pool.query(sqlText, params);
@@ -332,10 +340,24 @@ function toIso(value) {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 }
 
+export function buildEventWindowWhereSql(startParam, endParam) {
+  return `(
+    (start_time >= ${startParam} and start_time <= ${endParam})
+    or (
+      category = '展览'
+      and start_time >= (${startParam}::timestamptz - interval '60 days')
+      and start_time <= ${endParam}
+    )
+  )`;
+}
+
+export function filterEventsForWindow(events, { startDate, endDate }) {
+  return events.filter((event) => isInDateRange(event, startDate, endDate));
+}
+
 function applyFilters(events, { startDate, endDate, category, search }) {
   const lowerSearch = search?.trim().toLowerCase();
-  return events
-    .filter((event) => event.start_time.slice(0, 10) >= startDate && event.start_time.slice(0, 10) <= endDate)
+  return filterEventsForWindow(events, { startDate, endDate })
     .filter((event) => !category || event.category === category)
     .filter((event) => {
       if (!lowerSearch) return true;

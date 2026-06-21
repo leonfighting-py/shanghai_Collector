@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   getCategoryFeatures,
+  getDisplayTopPicks,
   getHeroEvent,
   getTonightEvents,
   getTopPicks,
@@ -27,6 +28,22 @@ test("top picks are limited and sorted by recommendation score", () => {
 
   assert.equal(picks.length, 3);
   assert.equal(picks[0].title, "音乐节开幕现场");
+});
+
+test("display top picks prefer Chinese titles before English ones", () => {
+  const mixed = [
+    event("Jazz Night Live", "2026-05-22T20:00:00+08:00", "演出音乐", "Blue Note Shanghai"),
+    event("周末爵士现场", "2026-05-22T19:00:00+08:00", "演出音乐", "育音堂"),
+    event("Indie Showcase", "2026-05-23T21:00:00+08:00", "演出音乐", "MAO Livehouse"),
+    event("独立乐队专场", "2026-05-23T20:00:00+08:00", "演出音乐", "育音堂"),
+  ];
+  const picks = getDisplayTopPicks(mixed, 3, "2026-05-22T12:00:00+08:00");
+
+  assert.equal(picks.length, 3);
+  assert.equal(picks[0].title, "周末爵士现场");
+  assert.equal(picks[1].title, "独立乐队专场");
+  assert.ok(/[\u3400-\u9FFF]/.test(picks[0].title));
+  assert.ok(/[\u3400-\u9FFF]/.test(picks[1].title));
 });
 
 test("category features return one recommendation per category", () => {
