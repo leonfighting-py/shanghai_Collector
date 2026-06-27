@@ -12,6 +12,7 @@
     "wechat:exporter": "docker compose -f docker-compose.wechat-exporter.yml up -d",
     "wechat:exporter:down": "docker compose -f docker-compose.wechat-exporter.yml down",
     "wechat:probe": "node --env-file=.env scripts/wechat-exporter-probe.js",
+    "enrichment:probe": "node --env-file=.env scripts/enrichment-probe.js",
     "collect:render": "node scripts/collect-render.js",
     "cleanup:render": "node scripts/cleanup-render.js",
     "test": "node --test"

@@ -1,7 +1,7 @@
 import { buildDedupeKey, filterPublishableEvents, mergeDuplicateEvents, normalizeText, toShanghaiDate } from "./events.js";
 
 export function shouldUseLlmDedupe(env = process.env) {
-  return env.LLM_DEDUPE_ENABLED === "true" && Boolean(env.OPENAI_API_KEY);
+  return env.LLM_DEDUPE_ENABLED === "true" && Boolean(env.SILICONFLOW_API_KEY || env.OPENAI_API_KEY);
 }
 
 export async function dedupeEvents(events, { env = process.env } = {}) {
@@ -31,6 +31,7 @@ export function dedupeWithRules(events) {
 
     match.sources = mergeSources(match.sources, event.sources);
     if (!match.end_time && event.end_time) match.end_time = event.end_time;
+    if (!match.summary && event.summary) match.summary = event.summary;
   }
 
   return merged.sort((left, right) => new Date(left.start_time).getTime() - new Date(right.start_time).getTime());

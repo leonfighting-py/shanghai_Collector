@@ -389,6 +389,19 @@ h1 {
   line-height: 1.18;
 }
 
+.category-card .event-summary,
+.featured-summary {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.featured-summary {
+  max-width: 36em;
+}
+
 .category-card small {
   color: var(--muted);
   font-size: 14px;

@@ -104,6 +104,10 @@ let pool;
 export async function ensureSchema() {
   if (!process.env.DATABASE_URL) return;
   await query(buildSchemaSql());
+  await query(`
+    alter table events add column if not exists summary text not null default '';
+    alter table raw_events add column if not exists summary text;
+  `);
 }
 
 export async function upsertSourceConfigs(sources) {
@@ -212,13 +216,14 @@ export async function listEvents({ week, category, search } = {}) {
 
   if (search) {
     params.push(`%${search}%`);
-    filters.push(`(title ilike $${params.length} or venue ilike $${params.length})`);
+    filters.push(`(title ilike $${params.length} or venue ilike $${params.length} or summary ilike $${params.length})`);
   }
 
   const result = await query(
     `
       select title, start_time, end_time, venue, category, signup_url, source_name,
-             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, created_at, updated_at
+             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary,
+             created_at, updated_at
       from events
       where ${filters.join(" and ")}
       order by start_time asc, title asc
@@ -259,9 +264,9 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
         `
           insert into events (
             title, start_time, end_time, venue, category, signup_url, source_name,
-            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, updated_at
+            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, updated_at
           )
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, now())
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, $13, now())
           on conflict (dedupe_key) do update set
             title = excluded.title,
             start_time = excluded.start_time,
@@ -274,6 +279,7 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
             sources = excluded.sources,
             raw_event_ids = excluded.raw_event_ids,
             dedupe_provider = excluded.dedupe_provider,
+            summary = excluded.summary,
             updated_at = now()
         `,
         [
@@ -289,6 +295,7 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
           JSON.stringify(event.sources || []),
           JSON.stringify(rawEventIds),
           dedupeProvider,
+          event.summary || "",
         ],
       );
     }
@@ -361,7 +368,7 @@ function applyFilters(events, { startDate, endDate, category, search }) {
     .filter((event) => !category || event.category === category)
     .filter((event) => {
       if (!lowerSearch) return true;
-      return `${event.title} ${event.venue}`.toLowerCase().includes(lowerSearch);
+      return `${event.title} ${event.venue} ${event.summary || ""}`.toLowerCase().includes(lowerSearch);
     })
     .sort((left, right) => new Date(left.start_time).getTime() - new Date(right.start_time).getTime());
 }

@@ -3,6 +3,7 @@ export function CategoryEventCard({ event }) {
     <a className="category-card" href={event.signup_url}>
       <span>{formatDateTime(event.start_time)}</span>
       <strong>{event.title}</strong>
+      {event.summary ? <p className="event-summary">{event.summary}</p> : null}
       <small>
         {event.venue}
         {event.source_name ? ` · ${event.source_name}` : ""}

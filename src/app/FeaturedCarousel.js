@@ -45,6 +45,7 @@ export function FeaturedCarousel({ events }) {
       <a className="featured-slide" href={activeEvent.signup_url}>
         <span className="cover-kicker">{activeEvent.category}</span>
         <h2>{activeEvent.title}</h2>
+        {activeEvent.summary ? <p className="featured-summary">{activeEvent.summary}</p> : null}
         <p>
           {activeEvent.venue} / {formatDateTime(activeEvent.start_time)}
         </p>
