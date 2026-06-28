@@ -21,4 +21,4 @@ jobs:
       - name: Run cleanup
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npm run cleanup
+        run: node scripts/cleanup-local.js
