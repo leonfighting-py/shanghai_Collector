@@ -78,12 +78,20 @@ export function buildSchemaSql() {
 
 export function buildCleanupSql({ eventRetentionDays = 60, runRetentionDays = 90 } = {}) {
   return {
-    sql: `
-      delete from raw_events where start_time is not null and start_time < now() - ($1::int * interval '1 day');
-      delete from events where start_time < now() - ($2::int * interval '1 day');
-      delete from collection_runs where started_at < now() - ($3::int * interval '1 day');
-    `,
-    params: [eventRetentionDays, eventRetentionDays, runRetentionDays],
+    statements: [
+      {
+        sql: "delete from raw_events where start_time is not null and start_time < now() - ($1::int * interval '1 day')",
+        params: [eventRetentionDays],
+      },
+      {
+        sql: "delete from events where start_time < now() - ($1::int * interval '1 day')",
+        params: [eventRetentionDays],
+      },
+      {
+        sql: "delete from collection_runs where started_at < now() - ($1::int * interval '1 day')",
+        params: [runRetentionDays],
+      },
+    ],
   };
 }
 
@@ -312,7 +320,9 @@ export async function cleanupOldData(options) {
   if (!process.env.DATABASE_URL) return { dryRun: true };
   await ensureSchema();
   const cleanup = buildCleanupSql(options);
-  await query(cleanup.sql, cleanup.params);
+  for (const statement of cleanup.statements) {
+    await query(statement.sql, statement.params);
+  }
   return { dryRun: false };
 }
 

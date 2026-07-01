@@ -23,11 +23,15 @@ test("schema includes source configs, raw events, collection runs, and published
 test("cleanup SQL deletes old event data without removing source configs", () => {
   const cleanup = buildCleanupSql({ eventRetentionDays: 60, runRetentionDays: 90 });
 
-  assert.match(cleanup.sql, /delete from raw_events/);
-  assert.match(cleanup.sql, /delete from events/);
-  assert.match(cleanup.sql, /delete from collection_runs/);
-  assert.doesNotMatch(cleanup.sql, /delete from source_configs/);
-  assert.deepEqual(cleanup.params, [60, 60, 90]);
+  assert.deepEqual(
+    cleanup.statements.map((statement) => statement.params),
+    [[60], [60], [90]],
+  );
+  assert.match(cleanup.statements[0].sql, /delete from raw_events/);
+  assert.match(cleanup.statements[1].sql, /delete from events/);
+  assert.match(cleanup.statements[2].sql, /delete from collection_runs/);
+  assert.ok(cleanup.statements.every((statement) => !statement.sql.includes(";")));
+  assert.ok(cleanup.statements.every((statement) => !/delete from source_configs/.test(statement.sql)));
 });
 
 test("source configs persist parser metadata without functions", () => {
