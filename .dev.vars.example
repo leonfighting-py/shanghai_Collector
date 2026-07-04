@@ -1,0 +1,3 @@
+# Copy to .dev.vars for `npm run preview:cloudflare`
+# Use Supabase Session pooler (5432) or Direct connection for local Hyperdrive dev.
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.zvlnemhtzxtxaaxulodg.supabase.co:5432/postgres

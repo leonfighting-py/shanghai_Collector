@@ -1,5 +1,4 @@
-import pg from "pg";
-
+import { runQuery } from "./db-pool.js";
 import { dedupeEvents } from "./dedupe.js";
 import { isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
 import { SAMPLE_EVENTS } from "./sample-events.js";
@@ -107,7 +106,6 @@ export function normalizeSourceConfig(source) {
   };
 }
 
-let pool;
 
 export async function ensureSchema() {
   if (!process.env.DATABASE_URL) return;
@@ -326,21 +324,9 @@ export async function cleanupOldData(options) {
   return { dryRun: false };
 }
 
-function databaseSsl() {
-  const url = process.env.DATABASE_URL ?? "";
-  if (url.includes("render.com") || url.includes("supabase.co") || url.includes("pooler.supabase.com")) {
-    return { rejectUnauthorized: false };
-  }
-  return undefined;
-}
 
 async function query(sqlText, params = []) {
-  pool ||= new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: databaseSsl(),
-  });
-
-  return pool.query(sqlText, params);
+  return runQuery(sqlText, params);
 }
 
 function rowToEvent(row) {

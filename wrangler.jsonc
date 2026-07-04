@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "news-collector",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-04",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "e700165a80e741759b6feb9c052b4f5f"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "news.leoncoooolest.com",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

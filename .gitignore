@@ -1,7 +1,9 @@
 .env
 .env.local
+.dev.vars
 .next
+.open-next
+.wrangler
 node_modules
 coverage
 *.log
-

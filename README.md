@@ -38,6 +38,35 @@ npm run dev
 - `POST /api/collect`：采集并发布（Vercel 免费档会超时，请用 GitHub Actions）
 - `POST /api/cleanup`：清理 60 天以前活动、90 天以前采集日志
 
+## 免费部署（Cloudflare Workers + Supabase + GitHub Actions）
+
+```text
+访客 → Cloudflare Workers（news.leoncoooolest.com）
+         ↓ Hyperdrive
+      Supabase Postgres
+
+GitHub Actions（每两日）→ npm run collect → Supabase
+```
+
+### Cloudflare（推荐，当前线上）
+
+1. 安装依赖：`npm install`
+2. 创建 Hyperdrive（一次性）：
+   ```bash
+   npx wrangler hyperdrive create news-collector-supabase \
+     --connection-string="$DATABASE_URL" --caching-disabled
+   ```
+   把返回的 `id` 填入 `wrangler.jsonc` 的 `hyperdrive` 绑定。
+3. 本地预览：`cp .dev.vars.example .dev.vars` 并填入 `DATABASE_URL`
+4. 构建并部署：
+   ```bash
+   export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="$DATABASE_URL"
+   npm run build:cloudflare
+   npm run deploy:cloudflare
+   ```
+
+自定义域名在 `wrangler.jsonc` 的 `routes` 中配置（当前：`news.leoncoooolest.com`）。
+
 ## 免费部署（Vercel + Supabase + GitHub Actions）
 
 ```text
