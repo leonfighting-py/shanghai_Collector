@@ -26,6 +26,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LLM_ENRICHMENT_ENABLED: ${{ vars.LLM_ENRICHMENT_ENABLED || 'false' }}
           LLM_ENRICHMENT_SOURCES: ${{ vars.LLM_ENRICHMENT_SOURCES || 'all' }}
+          LLM_CATEGORY_FILTER_ENABLED: ${{ vars.LLM_CATEGORY_FILTER_ENABLED || '' }}
           SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
           SILICONFLOW_BASE_URL: ${{ vars.SILICONFLOW_BASE_URL || 'https://api.siliconflow.cn/v1' }}
           SILICONFLOW_MODEL: ${{ vars.SILICONFLOW_MODEL || 'Qwen/Qwen3.5-35B-A3B' }}

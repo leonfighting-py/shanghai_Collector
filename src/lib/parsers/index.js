@@ -9,6 +9,7 @@ import { parseHuodongBa } from "./huodongba.js";
 import { parseHuodongxing } from "./huodongxing.js";
 import { parseJsonLdEvents } from "./json-ld.js";
 import { parseLuma } from "./luma.js";
+import { parseLumaAiEvents, parseMeetupAiEvents } from "./meetup-ai.js";
 import { parseMaoyan } from "./maoyan.js";
 import { parseMapExhibitions } from "./map.js";
 import { parseNyuShanghai } from "./nyu.js";
@@ -55,8 +56,9 @@ export const PARSERS = {
   shisu: parseShisuEvents,
   sjtu: parseSjtuEvents,
   tongjiSee: parseTongjiSeeEvents,
-  aitinkerers: parseJsonLdEvents,
-  meetup: parseJsonLdEvents,
+  aitinkerers: parseMeetupAiEvents,
+  meetup: parseMeetupAiEvents,
   luma: parseLuma,
+  lumaAi: parseLumaAiEvents,
   wechat: parseWechatOfficialAccounts,
 };

@@ -221,7 +221,7 @@ export const SOURCE_SEEDS = [
     locale: "en",
     parser: PARSERS.meetup,
   },
-  { name: "OpenClaw Shanghai", url: "https://lu.ma/shanghai", category: "AI聚会", locale: "en", parser: PARSERS.luma },
+  { name: "OpenClaw Shanghai", url: "https://lu.ma/shanghai", category: "AI聚会", locale: "en", parser: PARSERS.lumaAi },
   {
     name: "Eventbrite Shanghai AI",
     url: "https://www.eventbrite.com/d/china--shanghai/artificial-intelligence--events/",
