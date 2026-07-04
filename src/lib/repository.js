@@ -237,7 +237,8 @@ export async function listEvents({ week, category, search } = {}) {
     params,
   );
 
-  return result.rows.map(rowToEvent);
+  const { events: deduped } = await dedupeEvents(result.rows.map(rowToEvent));
+  return deduped;
 }
 
 export async function publishEvents(events, { week = new Date(), rawEventIds = [], dedupeProvider = "rules" } = {}) {
@@ -260,7 +261,7 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
   await ensureSchema();
   await query("begin");
   try {
-    await query("delete from events where start_time >= $1 and start_time <= $2", [
+    await query(`delete from events where ${buildEventWindowWhereSql("$1", "$2")}`, [
       `${startDate}T00:00:00+08:00`,
       `${endDate}T23:59:59+08:00`,
     ]);
