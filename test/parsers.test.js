@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { parseBendibaoShanghai, extractEventsFromBendibaoArticle, parseBendibaoDateRange } from "../src/lib/parsers/bendibao.js";
 import { parseDoubanShanghai } from "../src/lib/parsers/douban.js";
 import { parseEventbriteAiTech } from "../src/lib/parsers/eventbrite.js";
 import { parseJsonLdEvents } from "../src/lib/parsers/json-ld.js";
@@ -113,4 +114,40 @@ test("china art museum parser reads current exhibition blocks", () => {
 
 test("news-like titles are still rejected after parser output", () => {
   assert.equal(isEventLikeTitle("上海市发展和改革委员会关于车用汽、柴油价格的通知"), false);
+});
+
+test("bendibao date parser handles month-day ranges", () => {
+  const range = parseBendibaoDateRange("7月11日—7月26日", { publishTime: "2026-07-02 09:48" });
+  assert.ok(range?.start_time);
+  assert.ok(range?.end_time);
+});
+
+test("bendibao article parser extracts headline event", () => {
+  const events = extractEventsFromBendibaoArticle(fixture("bendibao-article.html"), {
+    source: {
+      name: "上海本地宝·活动",
+      url: "https://sh.bendibao.com/xiuxian/",
+      category: "线下活动",
+    },
+    url: "http://sh.bendibao.com/xiuxian/202672/307253.shtm",
+  });
+
+  assert.equal(events.length, 1);
+  assert.match(events[0].title, /大宁公园/);
+  assert.equal(events[0].venue, "大宁公园");
+});
+
+test("bendibao list parser fetches article detail pages", async () => {
+  const events = await parseBendibaoShanghai(
+    fixture("bendibao-list.html"),
+    {
+      name: "上海本地宝·活动",
+      url: "https://sh.bendibao.com/xiuxian/",
+      category: "线下活动",
+    },
+    { fetchHtml: async (url) => (url.includes("307253") ? fixture("bendibao-article.html") : "") },
+  );
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].source_name, "上海本地宝·活动");
 });

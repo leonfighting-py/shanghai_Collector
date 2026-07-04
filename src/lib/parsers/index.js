@@ -1,3 +1,4 @@
+import { parseBendibaoShanghai } from "./bendibao.js";
 import { parseChinaArtMuseumExhibitions } from "./artmuseumonline.js";
 import { parseDamai } from "./damai.js";
 import { parseDoubanShanghai } from "./douban.js";
@@ -29,6 +30,7 @@ import { parseWechatOfficialAccounts } from "./wechat.js";
 export { parseJsonLdEvents };
 
 export const PARSERS = {
+  bendibao: parseBendibaoShanghai,
   maoyan: parseMaoyan,
   damai: parseDamai,
   showstart: parseShowstart,
