@@ -1,31 +1,27 @@
-:root {
-  --ink: #11100e;
-  --paper: #f3eee5;
-  --porcelain: #fffaf1;
-  --muted: #746c60;
-  --line: #cec1b1;
-  --red: #c5291f;
-  --smoke: #ded6ca;
-  --shadow: 0 24px 80px rgb(17 16 14 / 14%);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* ============================================
+   Base
+   ============================================ */
 * {
   box-sizing: border-box;
 }
 
 html {
-  background:
-    linear-gradient(90deg, rgb(17 16 14 / 4%) 1px, transparent 1px),
-    linear-gradient(180deg, rgb(17 16 14 / 3%) 1px, transparent 1px),
-    var(--paper);
-  background-size: 72px 72px, 72px 72px;
-  color: var(--ink);
+  background: #000;
+  color: #fff;
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
-  letter-spacing: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #000;
+  color: #fff;
 }
 
 a {
@@ -33,111 +29,216 @@ a {
   text-decoration: none;
 }
 
-.magazine-shell {
-  width: min(1240px, calc(100vw - 36px));
-  margin: 0 auto;
-  padding: 34px 0 72px;
+/* ============================================
+   Liquid Glass
+   ============================================ */
+.liquid-glass {
+  background: rgba(0, 0, 0, 0.4);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.masthead {
-  min-height: 210px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 190px;
-  gap: 28px;
-  align-items: end;
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 24px;
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-.eyebrow {
-  margin: 0 0 12px;
-  color: var(--red);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+/* ============================================
+   Video Hero
+   ============================================ */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* ============================================
+   Content Cards — Glass
+   ============================================ */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: transform 200ms ease, background 200ms ease, border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   Category Section Labels
+   ============================================ */
+.section-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.section-label .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 4px;
 }
 
-h1 {
-  margin: 0;
-  max-width: 960px;
-  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
-  font-size: clamp(50px, 8.4vw, 112px);
-  line-height: 0.94;
-  font-weight: 900;
+.section-label .title {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #fff;
 }
 
-.issue-mark {
-  aspect-ratio: 1;
-  background: var(--ink);
-  color: var(--porcelain);
+.section-more,
+.section-count {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 180ms ease;
+}
+
+.section-more:hover {
+  color: #fff;
+}
+
+/* ============================================
+   Category Grid
+   ============================================ */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.category-grid--browse {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* ============================================
+   Glass Event Card
+   ============================================ */
+.glass-event-card {
+  min-height: 260px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 18px;
-  box-shadow: var(--shadow);
+  gap: 12px;
 }
 
-.issue-mark span,
-.issue-mark small,
-.section-label span,
-.cover-kicker {
-  color: var(--muted);
+.glass-event-card .card-date {
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.issue-mark strong {
-  font-size: 42px;
-  line-height: 1;
-}
-
-.issue-mark small {
-  color: #bdb3a5;
-}
-
-.featured-carousel {
-  margin-top: 22px;
+.glass-event-card .card-title {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  border: 1px solid var(--line);
-  background: rgb(17 16 14 / 5%);
-  box-shadow: var(--shadow);
+}
+
+.glass-event-card .card-summary {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.6);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.glass-event-card .card-meta {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ============================================
+   Featured Carousel — Glass
+   ============================================ */
+.featured-carousel {
+  margin-top: 24px;
+  overflow: hidden;
+  border-radius: 20px;
   position: relative;
+  min-height: 480px;
 }
 
 .featured-slide {
-  min-height: 520px;
-  padding: 34px 34px 92px;
-  background:
-    linear-gradient(135deg, rgb(197 41 31 / 92%), rgb(17 16 14 / 94%)),
-    var(--ink);
-  color: var(--porcelain);
+  min-height: 480px;
+  padding: 40px 40px 100px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   position: relative;
   overflow: hidden;
+  transition: background 300ms ease;
+}
+
+.featured-slide:hover {
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .featured-slide::before {
-  content: "";
+  content: '';
   position: absolute;
-  inset: 22px;
-  border: 1px solid rgb(255 250 241 / 28%);
-  pointer-events: none;
-}
-
-.featured-slide::after {
-  content: "上海";
-  position: absolute;
-  top: -42px;
-  right: -14px;
-  color: rgb(255 250 241 / 8%);
-  font-family: "Songti SC", serif;
-  font-size: 230px;
-  line-height: 1;
+  inset: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   pointer-events: none;
 }
 
@@ -147,93 +248,109 @@ h1 {
 }
 
 .cover-kicker {
-  color: #f0d6c7;
-  margin-bottom: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 16px;
 }
 
 .featured-slide h2 {
   margin: 0;
-  max-width: min(860px, calc(100% - 96px));
-  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
-  font-size: clamp(34px, 5.2vw, 72px);
-  line-height: 1;
+  max-width: 860px;
+  font-size: clamp(32px, 4.8vw, 64px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.featured-slide p {
-  margin: 22px 0 0;
-  color: #eadccf;
-  font-size: 18px;
-  font-weight: 700;
+.featured-slide .featured-summary {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.55;
+  max-width: 36em;
 }
 
+.featured-slide .featured-meta {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+}
+
+/* Carousel controls */
 .carousel-arrow {
   position: absolute;
   top: 50%;
   z-index: 3;
-  border: 1px solid rgb(255 250 241 / 18%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  background: rgb(255 250 241 / 7%);
-  backdrop-filter: blur(18px);
-  color: var(--porcelain);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
   cursor: pointer;
   width: 48px;
   height: 48px;
   display: grid;
   place-items: center;
-  font-family: Georgia, serif;
-  font-size: 36px;
-  font-weight: 900;
+  font-size: 28px;
+  font-weight: 300;
   line-height: 1;
   opacity: 0;
   pointer-events: none;
   transform: translateY(-50%) scale(0.96);
-  transition: background 180ms ease, opacity 180ms ease, transform 180ms ease;
+  transition: opacity 200ms ease, transform 200ms ease, background 200ms ease;
 }
 
 .featured-carousel:hover .carousel-arrow,
 .featured-carousel:focus-within .carousel-arrow {
-  opacity: 0.72;
+  opacity: 0.8;
   pointer-events: auto;
   transform: translateY(-50%) scale(1);
 }
 
 .carousel-arrow:hover {
   opacity: 1;
-  background: rgb(255 250 241 / 18%);
+  background: rgba(255, 255, 255, 0.12);
   transform: translateY(-50%) scale(1.04);
 }
 
 .carousel-arrow-left {
-  left: 28px;
+  left: 20px;
 }
 
 .carousel-arrow-right {
-  right: 28px;
+  right: 20px;
 }
 
+/* Carousel dots */
 .carousel-dots {
   position: absolute;
   left: 50%;
-  bottom: 32px;
+  bottom: 28px;
   z-index: 3;
   display: flex;
   gap: 6px;
-  padding: 7px;
+  padding: 6px;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   transform: translateX(-50%);
-  transition: background 180ms ease, border-color 180ms ease;
+  transition: background 200ms ease, border-color 200ms ease;
 }
 
 .featured-carousel:hover .carousel-dots,
 .featured-carousel:focus-within .carousel-dots {
-  border-color: rgb(255 250 241 / 20%);
-  background: rgb(255 250 241 / 10%);
-  backdrop-filter: blur(18px);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .carousel-dots button {
@@ -243,225 +360,128 @@ h1 {
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: var(--porcelain);
+  background: rgba(255, 255, 255, 0.4);
   color: transparent;
   cursor: pointer;
-  opacity: 0.46;
+  opacity: 0.5;
   overflow: hidden;
-  transition: min-width 180ms ease, width 180ms ease, height 180ms ease, color 180ms ease, opacity 180ms ease;
+  transition: min-width 200ms ease, width 200ms ease, height 200ms ease,
+    opacity 200ms ease, background 200ms ease;
 }
 
-.carousel-dots button span {
-  opacity: 0;
-  transition: opacity 180ms ease;
+.carousel-dots button.is-active {
+  opacity: 1;
+  background: #fff;
 }
 
 .featured-carousel:hover .carousel-dots button,
 .featured-carousel:focus-within .carousel-dots button {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  color: var(--porcelain);
-  background: rgb(255 250 241 / 12%);
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.featured-carousel:hover .carousel-dots button.is-active,
+.featured-carousel:focus-within .carousel-dots button.is-active {
+  width: 40px;
+  min-width: 40px;
+  background: #fff;
 }
 
 .featured-carousel:hover .carousel-dots button span,
 .featured-carousel:focus-within .carousel-dots button span {
   opacity: 1;
+  color: #fff;
+  font-size: 11px;
 }
 
-.carousel-dots button.is-active {
-  opacity: 1;
+.featured-carousel:hover .carousel-dots button.is-active span,
+.featured-carousel:focus-within .carousel-dots button.is-active span {
+  color: #000;
 }
 
-.featured-carousel:hover .carousel-dots button.is-active,
-.featured-carousel:focus-within .carousel-dots button.is-active {
-  width: 42px;
-  min-width: 42px;
-  background: var(--porcelain);
-  color: var(--ink);
-}
-
-.category-stack {
-  margin-top: 34px;
-  display: grid;
-  gap: 34px;
-}
-
-.section-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  border-bottom: 2px solid var(--ink);
-  padding-bottom: 10px;
-  margin-bottom: 14px;
-}
-
-.section-label strong {
-  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
-  font-size: 30px;
-}
-
-.section-more,
-.section-count,
-.browse-back {
-  color: var(--red);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-.section-more:hover,
-.browse-back:hover {
-  text-decoration: underline;
-}
-
-.section-count {
-  color: var(--muted);
-}
-
+/* ============================================
+   Browse page
+   ============================================ */
 .browse-header {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .browse-back {
   display: inline-block;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 180ms ease;
+}
+
+.browse-back:hover {
+  color: #fff;
 }
 
 .browse-label {
-  align-items: start;
+  align-items: flex-start;
 }
 
 .browse-meta {
   margin: 8px 0 0;
-  color: var(--muted);
   font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .browse-empty {
-  color: var(--muted);
   font-size: 18px;
+  color: rgba(255, 255, 255, 0.35);
 }
 
-.category-grid--browse {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.category-card {
-  background: rgb(255 250 241 / 76%);
-  border: 1px solid var(--line);
-  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
-}
-
-.category-card:hover {
-  transform: translateY(-3px);
-  background: var(--porcelain);
-  box-shadow: 0 16px 36px rgb(17 16 14 / 10%);
-}
-
-.category-card {
-  min-height: 260px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.category-card span {
-  color: var(--red);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.category-card strong {
-  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
-  font-size: 26px;
-  line-height: 1.18;
-}
-
-.category-card .event-summary,
-.featured-summary {
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.55;
-  margin: 0;
-}
-
-.featured-summary {
-  max-width: 36em;
-}
-
-.category-card small {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.45;
-}
-
+/* ============================================
+   Responsive
+   ============================================ */
 @media (max-width: 980px) {
-  .masthead {
-    grid-template-columns: 1fr;
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .issue-mark {
-    width: 180px;
+  .category-grid--browse {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .featured-slide {
-    min-height: 430px;
-  }
-
-  .category-grid,
-  .category-grid--browse {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 400px;
+    padding: 28px 28px 100px;
   }
 }
 
 @media (max-width: 640px) {
-  .magazine-shell {
-    width: min(100vw - 24px, 1240px);
-    padding-top: 24px;
-  }
-
-  h1 {
-    font-size: 54px;
+  .category-grid,
+  .category-grid--browse {
+    grid-template-columns: 1fr;
   }
 
   .featured-slide {
-    padding: 22px 22px 112px;
+    min-height: 360px;
+    padding: 20px 20px 100px;
   }
 
   .carousel-arrow {
-    width: 42px;
-    height: 42px;
-    font-size: 30px;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
   }
 
   .carousel-arrow-left {
-    left: 12px;
+    left: 10px;
   }
 
   .carousel-arrow-right {
-    right: 12px;
+    right: 10px;
   }
 
-  .carousel-dots {
-    right: 14px;
-    bottom: 16px;
-  }
-
-  .category-grid {
-    grid-template-columns: 1fr;
+  .glass-event-card {
+    min-height: 220px;
+    padding: 20px;
   }
 }

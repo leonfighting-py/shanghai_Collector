@@ -2,11 +2,11 @@ export function CategoryEventCard({ event }) {
   const sourceLabel = formatSourceLabel(event);
 
   return (
-    <a className="category-card" href={event.signup_url}>
-      <span>{formatDateTime(event.start_time)}</span>
-      <strong>{event.title}</strong>
-      {event.summary ? <p className="event-summary">{event.summary}</p> : null}
-      <small>
+    <a className="glass-card glass-event-card" href={event.signup_url}>
+      <span className="card-date">{formatDateTime(event.start_time)}</span>
+      <strong className="card-title">{event.title}</strong>
+      {event.summary ? <p className="card-summary">{event.summary}</p> : null}
+      <small className="card-meta">
         {event.venue}
         {sourceLabel ? ` · ${sourceLabel}` : ""}
       </small>

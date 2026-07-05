@@ -2,7 +2,16 @@ import { defaultFetchHtml } from "../fetch-html.js";
 import { parseChineseEventDateRange, parseChineseEventTime } from "../wechat-date-parser.js";
 import { absoluteUrl, buildEvent, mapWithLimit, stripTags, uniqueBy } from "./shared.js";
 
-const ARTICLE_PATH = /\/xiuxian\/\d+\/\d+\.shtm/i;
+const ARTICLE_PATH = /\/(?:xiuxian|tour)\/\d+\/\d+\.shtm/i;
+const CAPTCHA_HINT = /拼图验证|滑动验证|验证以继续访问/;
+
+export function isBendibaoBlocked(html) {
+  return typeof html === "string" && html.length < 5000 && CAPTCHA_HINT.test(html);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function inferReferenceYear(publishTime) {
   if (publishTime) {
@@ -87,11 +96,45 @@ function cleanBendibaoVenue(raw = "") {
     .slice(0, 80);
 }
 
+/**
+ * Strip HTML tags but preserve paragraph breaks (unlike shared.stripTags
+ * which collapses all whitespace). Used for articles where events are
+ * separated by <p> boundaries rather than full-width punctuation.
+ */
+function stripTagsKeepBreaks(html) {
+  return String(html)
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/[^\S\n]+/g, " ")
+    .replace(/ *\n+ */g, "\n")
+    .trim();
+}
+
 function extractArticleBody(html) {
   const contentMatch =
     html.match(/<div class="content[^"]*"[^>]*>([\s\S]*?)<div class="daofen"/i) ||
     html.match(/<div class="article[^"]*"[^>]*>([\s\S]*?)<div class="daofen"/i);
-  return stripTags(contentMatch?.[1] || html);
+  if (contentMatch) return stripTags(contentMatch[1]);
+
+  // Fallback: locate content div and slice out of the page,
+  // stopping at common footer markers. Preserve <p> / <br>
+  // boundaries so the downstream paragraph-based regex can
+  // distinguish individual event blocks.
+  const contentStart = html.indexOf('<div class="content');
+  if (contentStart >= 0) {
+    const markers = ['推荐阅读', '温馨提示：', 'class="page"', 'class="art_crumb"'];
+    let endIdx = html.length;
+    for (const marker of markers) {
+      const idx = html.indexOf(marker, contentStart + 100);
+      if (idx > 0 && idx < endIdx) endIdx = idx;
+    }
+    return stripTagsKeepBreaks(html.slice(contentStart, endIdx));
+  }
+
+  return stripTags(html);
 }
 
 function extractPublishTime(html) {
@@ -106,12 +149,107 @@ function extractPageTitle(html) {
   return cleanBendibaoTitle(stripTags(titleTag).replace(/-?\s*上海本地宝.*$/i, ""));
 }
 
+/**
+ * Extract events from roundup tables (名称 | 时间 | 地点), used by
+ * 快闪汇总 / 商场活动汇总 style articles.
+ */
+export function extractEventsFromBendibaoTable(html, { source, url, publishTime }) {
+  const events = [];
+
+  for (const tableMatch of html.matchAll(/<table[\s\S]*?<\/table>/gi)) {
+    const rows = [...tableMatch[0].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)];
+    if (rows.length < 2) continue;
+
+    const headerCells = [...rows[0][1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((cell) =>
+      stripTags(cell[1]).trim(),
+    );
+    const nameIdx = headerCells.findIndex((cell) => /名称|活动/.test(cell));
+    const timeIdx = headerCells.findIndex((cell) => /时间/.test(cell));
+    const venueIdx = headerCells.findIndex((cell) => /地点|地址/.test(cell));
+    if (nameIdx < 0 || timeIdx < 0 || venueIdx < 0) continue;
+
+    for (const row of rows.slice(1)) {
+      const cells = [...row[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((cell) =>
+        stripTags(cell[1]).trim(),
+      );
+      if (cells.length <= Math.max(nameIdx, timeIdx, venueIdx)) continue;
+
+      const title = cells[nameIdx];
+      const range = parseBendibaoDateRange(cells[timeIdx], publishTime);
+      if (!title || !range?.start_time) continue;
+
+      const event = buildEvent({
+        title,
+        start_time: range.start_time,
+        end_time: range.end_time,
+        venue: cells[venueIdx] || "上海",
+        signup_url: url,
+        source,
+      });
+      if (event) events.push(event);
+    }
+  }
+
+  return events;
+}
+
+/**
+ * Extract events from articles where each event is a numbered section
+ * (一、二、… / 1、2、…) with its own title, time, and venue lines.
+ * Used for /tour/ roundup articles that don't fit the simpler paragraph
+ * regex in the main extractor.
+ */
+function extractEventsFromNumberedSections(body, { source, url, publishTime, seen }) {
+  const events = [];
+  // Split at section-number boundaries
+  const sections = body.split(/\n(?=[一二三四五六七八九十\d]+[、.)）])/);
+
+  for (const section of sections) {
+    const firstLine = section.split("\n")[0];
+    const titleMatch = firstLine.match(/^[一二三四五六七八九十\d]+[、.)）]\s*(.+)/);
+    if (!titleMatch) continue;
+    const title = cleanBendibaoTitle(titleMatch[1]);
+    if (!title || title.length < 2) continue;
+
+    // Within this section, look for time & venue on their own lines
+    const timeMatch = section.match(/(?:活动)?时间[：:]\s*([^\n。；]{2,40})/);
+    const venueMatch = section.match(/(?:活动)?地点[：:]\s*([^\n。；]{2,60})/);
+    if (!timeMatch || !venueMatch) continue;
+
+    const range = parseBendibaoDateRange(timeMatch[1].trim(), publishTime);
+    if (!range?.start_time) continue;
+
+    const key = `${title}|${range.start_time}|${venueMatch[1].trim()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const event = buildEvent({
+      title,
+      start_time: range.start_time,
+      end_time: range.end_time,
+      venue: cleanBendibaoVenue(venueMatch[1].trim()) || "上海",
+      signup_url: url,
+      source,
+    });
+    if (event) events.push(event);
+  }
+
+  return events;
+}
+
 export function extractEventsFromBendibaoArticle(html, { source, url }) {
   const pageTitle = extractPageTitle(html);
   const publishTime = extractPublishTime(html);
   const body = extractArticleBody(html);
   const events = [];
   const seen = new Set();
+
+  for (const tableEvent of extractEventsFromBendibaoTable(html, { source, url, publishTime })) {
+    const key = `${tableEvent.title}|${tableEvent.start_time}|${tableEvent.venue}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    events.push(tableEvent);
+  }
 
   function pushEvent({ title, dateText, timeText, venueText }) {
     const range = parseBendibaoDateRange(dateText, publishTime);
@@ -147,6 +285,7 @@ export function extractEventsFromBendibaoArticle(html, { source, url }) {
     if (event) events.push(event);
   }
 
+  // --- existing paragraph-based regex extraction ---
   const mainMatch = body.match(
     /(?:活动)?时间[：:]\s*([^。；\n地点]{2,40}?)(?:活动)?地点[：:]\s*([^。；\n]{2,60})/,
   );
@@ -173,6 +312,19 @@ export function extractEventsFromBendibaoArticle(html, { source, url }) {
       dateText: match[1],
       venueText: match[2],
     });
+  }
+
+  // --- numbered-section extraction for /tour/ roundup articles ---
+  // Trigger when the paragraph regex picked up few events but the body
+  // contains clear section-number markers (一、/ 1、 etc.)
+  if (events.length <= 2 && /[\n][一二三四五六七八九十\d]+[、.)）]/.test(body)) {
+    const sectionEvents = extractEventsFromNumberedSections(body, {
+      source,
+      url,
+      publishTime,
+      seen,
+    });
+    events.push(...sectionEvents);
   }
 
   if (events.length === 0 && pageTitle) {
@@ -213,19 +365,49 @@ export function collectBendibaoArticleLinks(html, baseUrl, { maxLinks = 12 } = {
   return uniqueBy(links, (href) => href).slice(0, maxLinks);
 }
 
+async function fetchArticlesPolitely(links, { fetchHtml, source, delayMs = 400 }) {
+  const batches = [];
+  for (const href of links) {
+    try {
+      const detail = await fetchHtml(href);
+      if (isBendibaoBlocked(detail)) break; // rate-limited: stop hammering, keep what we have
+      batches.push(extractEventsFromBendibaoArticle(detail, { source, url: href }));
+    } catch {
+      // skip failed article
+    }
+    if (delayMs > 0) await sleep(delayMs);
+  }
+  return batches.flat();
+}
+
 export async function parseBendibaoShanghai(html, source, { fetchHtml = defaultFetchHtml, maxLinks = 12 } = {}) {
+  if (isBendibaoBlocked(html)) {
+    throw new Error("bendibao anti-bot captcha triggered");
+  }
   const links = collectBendibaoArticleLinks(html, source.url, { maxLinks });
 
   if (links.length === 0) return [];
 
-  const batches = await mapWithLimit(links, 3, async (href) => {
-    try {
-      const detail = await fetchHtml(href);
-      return extractEventsFromBendibaoArticle(detail, { source, url: href });
-    } catch {
-      return [];
-    }
-  });
+  const events = await fetchArticlesPolitely(links, { fetchHtml, source });
 
-  return uniqueBy(batches.flat(), (event) => `${event.title}|${event.start_time}|${event.signup_url}`);
+  return uniqueBy(events, (event) => `${event.title}|${event.start_time}|${event.signup_url}`);
+}
+
+/**
+ * Parser for a pinned roundup article (e.g. 商场活动汇总/快闪汇总 with a stable URL):
+ * extracts events from the article itself, then follows its linked articles
+ * (相关推荐 usually points at the monthly 快闪汇总).
+ */
+export async function parseBendibaoRoundup(html, source, { fetchHtml = defaultFetchHtml, maxLinks = 6 } = {}) {
+  if (isBendibaoBlocked(html)) {
+    throw new Error("bendibao anti-bot captcha triggered");
+  }
+  const own = extractEventsFromBendibaoArticle(html, { source, url: source.url });
+
+  const links = collectBendibaoArticleLinks(html, source.url, { maxLinks }).filter(
+    (href) => href !== source.url,
+  );
+  const linked = await fetchArticlesPolitely(links, { fetchHtml, source });
+
+  return uniqueBy([...own, ...linked], (event) => `${event.title}|${event.start_time}|${event.venue}`);
 }

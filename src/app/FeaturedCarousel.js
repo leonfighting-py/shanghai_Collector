@@ -41,25 +41,32 @@ export function FeaturedCarousel({ events }) {
   }
 
   return (
-    <section className="featured-carousel" aria-label="近两日强推活动">
+    <section className="featured-carousel" aria-label="Featured events">
       <a className="featured-slide" href={activeEvent.signup_url}>
         <span className="cover-kicker">{activeEvent.category}</span>
         <h2>{activeEvent.title}</h2>
-        {activeEvent.summary ? <p className="featured-summary">{activeEvent.summary}</p> : null}
-        <p>
+        {activeEvent.summary ? (
+          <p className="featured-summary">{activeEvent.summary}</p>
+        ) : null}
+        <p className="featured-meta">
           {activeEvent.venue} / {formatDateTime(activeEvent.start_time)}
         </p>
       </a>
 
       {total > 1 && (
         <>
-          <button className="carousel-arrow carousel-arrow-left" type="button" aria-label="上一条" onClick={showPrevious}>
+          <button
+            className="carousel-arrow carousel-arrow-left"
+            type="button"
+            aria-label="Previous"
+            onClick={showPrevious}
+          >
             ‹
           </button>
-          <div className="carousel-dots" aria-label="切换强推活动">
+          <div className="carousel-dots" aria-label="Slide navigation">
             {events.map((event, index) => (
               <button
-                aria-label={`切换到 ${event.title}`}
+                aria-label={`Go to ${event.title}`}
                 aria-pressed={index === activeIndex}
                 className={index === activeIndex ? "is-active" : ""}
                 key={event.dedupe_key}
@@ -70,7 +77,12 @@ export function FeaturedCarousel({ events }) {
               </button>
             ))}
           </div>
-          <button className="carousel-arrow carousel-arrow-right" type="button" aria-label="下一条" onClick={showNext}>
+          <button
+            className="carousel-arrow carousel-arrow-right"
+            type="button"
+            aria-label="Next"
+            onClick={showNext}
+          >
             ›
           </button>
         </>
