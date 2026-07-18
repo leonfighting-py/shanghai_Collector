@@ -4,6 +4,7 @@
 .next
 .open-next
 .wrangler
+.worktrees/
 node_modules
 coverage
 *.log
