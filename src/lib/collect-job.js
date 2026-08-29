@@ -11,8 +11,8 @@ import {
 } from "./repository.js";
 
 export function dedupeProvider() {
-  if (process.env.LLM_DEDUPE_ENABLED !== "true") return "rules";
-  return process.env.SILICONFLOW_MODEL || process.env.DEDUPER_MODEL || "llm";
+  // 去重仅由规则实现；此值写入 collection_runs.dedupe_provider 用于审计
+  return "rules";
 }
 
 export function enrichmentProvider() {

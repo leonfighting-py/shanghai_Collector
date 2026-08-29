@@ -1,20 +1,8 @@
 import { buildDedupeKey, filterPublishableEvents, mergeDuplicateEvents, normalizeText, toShanghaiDate } from "./events.js";
 
-export function shouldUseLlmDedupe(env = process.env) {
-  return env.LLM_DEDUPE_ENABLED === "true" && Boolean(env.SILICONFLOW_API_KEY || env.OPENAI_API_KEY);
-}
-
-export async function dedupeEvents(events, { env = process.env } = {}) {
-  const ruleEvents = dedupeWithRules(events);
-
-  if (!shouldUseLlmDedupe(env)) {
-    return { provider: "rules", events: ruleEvents };
-  }
-
-  return {
-    provider: env.DEDUPER_MODEL || "llm",
-    events: await dedupeWithLlmFallback(ruleEvents, env),
-  };
+// 去重当前仅由规则实现（曾预留 LLM 二次去重接口，一直未实现且配置会误导，2026-08 移除）
+export async function dedupeEvents(events) {
+  return { provider: "rules", events: dedupeWithRules(events) };
 }
 
 export function dedupeWithRules(events) {
@@ -55,12 +43,6 @@ export function isSoftDuplicate(left, right) {
 
 function comparableTitle(value) {
   return normalizeText(value).replace(/20\d{2}/g, "");
-}
-
-async function dedupeWithLlmFallback(events) {
-  // Intentionally conservative for now: the provider interface is reserved, and rules remain authoritative.
-  // Future small-model dedupe should only inspect rule-uncertain candidate pairs.
-  return events;
 }
 
 function dateDistanceDays(left, right) {

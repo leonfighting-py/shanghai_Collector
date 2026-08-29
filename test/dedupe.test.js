@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { dedupeEvents, shouldUseLlmDedupe } from "../src/lib/dedupe.js";
+import { dedupeEvents } from "../src/lib/dedupe.js";
 
 test("rule dedupe merges same-day similar-title events before publish", async () => {
   const result = await dedupeEvents([
@@ -55,10 +55,4 @@ test("rule dedupe merges duplicate exhibition rows from different sources", asyn
 
   assert.equal(result.events.length, 1);
   assert.equal(result.events[0].summary, "浦东美术馆展出让·努维尔建筑作品，2026年6月27日开展。");
-});
-
-test("LLM dedupe is opt-in and needs API credentials", () => {
-  assert.equal(shouldUseLlmDedupe({ LLM_DEDUPE_ENABLED: "false", OPENAI_API_KEY: "x" }), false);
-  assert.equal(shouldUseLlmDedupe({ LLM_DEDUPE_ENABLED: "true" }), false);
-  assert.equal(shouldUseLlmDedupe({ LLM_DEDUPE_ENABLED: "true", OPENAI_API_KEY: "x" }), true);
 });

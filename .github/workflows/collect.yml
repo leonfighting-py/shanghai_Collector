@@ -21,9 +21,6 @@ jobs:
       - name: Run collector
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          LLM_DEDUPE_ENABLED: ${{ vars.LLM_DEDUPE_ENABLED || 'false' }}
-          DEDUPER_MODEL: ${{ vars.DEDUPER_MODEL || 'gpt-5-nano' }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LLM_ENRICHMENT_ENABLED: ${{ vars.LLM_ENRICHMENT_ENABLED || 'false' }}
           LLM_ENRICHMENT_SOURCES: ${{ vars.LLM_ENRICHMENT_SOURCES || 'all' }}
           LLM_CATEGORY_FILTER_ENABLED: ${{ vars.LLM_CATEGORY_FILTER_ENABLED || '' }}

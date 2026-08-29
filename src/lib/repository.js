@@ -211,7 +211,7 @@ export async function listEvents({ week, category, search } = {}) {
     return applyFilters(SAMPLE_EVENTS, { startDate, endDate, category, search });
   }
 
-  await ensureSchema();
+  // 读路径不执行 DDL：建表仅由采集/清理任务负责，读账号无需 CREATE/ALTER 权限
   const params = [`${startDate}T00:00:00+08:00`, `${endDate}T23:59:59+08:00`];
   const filters = [buildEventWindowWhereSql("$1", "$2")];
 
