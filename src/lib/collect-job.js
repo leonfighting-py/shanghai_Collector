@@ -2,6 +2,11 @@ import { collectEventsFromSources, SOURCE_SEEDS } from "./collector.js";
 import { filterEventCategories, getCategoryFilterConfig } from "./category-filter.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
 import {
+  evaluatePublishGuard,
+  getPublishGuardConfig,
+  publishGuardFailure,
+} from "./publish-guard.js";
+import {
   finishCollectionRun,
   insertRawEvents,
   listEvents,
@@ -39,29 +44,45 @@ export async function runCollectJob() {
       ? { events: enrichment.events, reclassifiedCount: 0, rejectedCount: 0, failures: [], enabled: false }
       : await filterEventCategories(enrichment.events);
   const rawResult = await insertRawEvents(result.rawEvents || result.events, { runId: run.id });
-  const publishResult =
-    result.events !== previousEvents
+
+  // 发布守门：新数据量相对已发布数据暴跌时拒绝覆盖，保留旧数据
+  const guardConfig = getPublishGuardConfig();
+  const guard = result.events !== previousEvents
+    ? evaluatePublishGuard(previousEvents, categoryFilter.events, guardConfig)
+    : { allowed: true, reason: null, previousCount: previousEvents.length, newCount: previousEvents.length };
+
+  const publishResult = result.events !== previousEvents && guard.allowed
       ? await publishEvents(categoryFilter.events, {
           rawEventIds: rawResult.rawEventIds,
           dedupeProvider: dedupeProvider(),
         })
       : { inserted: previousEvents.length };
 
+  const guardFailures = guard.allowed ? [] : [publishGuardFailure(guard)];
+
   await finishCollectionRun(run.id, {
-    status: result.ok ? "success" : "partial",
+    status: result.ok && guard.allowed ? "success" : "partial",
     rawCount: result.collectedCount,
     publishedCount: publishResult.inserted,
     failures: [
       ...(result.failures || []),
       ...(enrichment.failures || []),
       ...(categoryFilter.failures || []),
+      ...guardFailures,
     ],
     dedupeProvider: dedupeProvider(),
   });
 
   return {
     ...result,
-    events: categoryFilter.events,
+    events: guard.allowed ? categoryFilter.events : previousEvents,
+    publish_guard: {
+      allowed: guard.allowed,
+      reason: guard.reason,
+      previousCount: guard.previousCount,
+      newCount: guard.newCount,
+      ratio: guardConfig.ratio,
+    },
     enrichment: {
       enabled: getEventEnrichmentConfig().enabled,
       provider: enrichmentProvider(),
