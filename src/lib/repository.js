@@ -1,4 +1,4 @@
-import { runQuery } from "./db-pool.js";
+import { runQuery, runTransaction } from "./db-pool.js";
 import { dedupeEvents } from "./dedupe.js";
 import { isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
 import { SAMPLE_EVENTS } from "./sample-events.js";
@@ -259,16 +259,15 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
   }
 
   await ensureSchema();
-  await query("begin");
-  try {
-    await query(`delete from events where ${buildEventWindowWhereSql("$1", "$2")}`, [
-      `${startDate}T00:00:00+08:00`,
-      `${endDate}T23:59:59+08:00`,
-    ]);
 
-    for (const event of normalized) {
-      await query(
-        `
+  // 单连接事务：BEGIN/DELETE/INSERT/COMMIT 必须落在同一连接上才具备原子性
+  const statements = [
+    {
+      sql: `delete from events where ${buildEventWindowWhereSql("$1", "$2")}`,
+      params: [`${startDate}T00:00:00+08:00`, `${endDate}T23:59:59+08:00`],
+    },
+    ...normalized.map((event) => ({
+      sql: `
           insert into events (
             title, start_time, end_time, venue, category, signup_url, source_name,
             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, updated_at
@@ -288,31 +287,27 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
             dedupe_provider = excluded.dedupe_provider,
             summary = excluded.summary,
             updated_at = now()
-        `,
-        [
-          event.title,
-          event.start_time,
-          event.end_time,
-          event.venue,
-          event.category,
-          event.signup_url,
-          event.source_name,
-          event.source_url,
-          event.dedupe_key,
-          JSON.stringify(event.sources || []),
-          JSON.stringify(rawEventIds),
-          dedupeProvider,
-          event.summary || "",
-        ],
-      );
-    }
+      `,
+      params: [
+        event.title,
+        event.start_time,
+        event.end_time,
+        event.venue,
+        event.category,
+        event.signup_url,
+        event.source_name,
+        event.source_url,
+        event.dedupe_key,
+        JSON.stringify(event.sources || []),
+        JSON.stringify(rawEventIds),
+        dedupeProvider,
+        event.summary || "",
+      ],
+    })),
+  ];
 
-    await query("commit");
-    return { inserted: normalized.length, startDate, endDate, dryRun: false };
-  } catch (error) {
-    await query("rollback");
-    throw error;
-  }
+  await runTransaction(statements);
+  return { inserted: normalized.length, startDate, endDate, dryRun: false };
 }
 
 export async function cleanupOldData(options) {
