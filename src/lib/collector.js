@@ -284,11 +284,13 @@ export const SOURCE_SEEDS = [
     notes: "上海财经大学 · 学术讲座与校园活动",
   },
   {
+    // 通用 LLM 抽取源试点：自建站 /events 页有 Cloudflare 403，首页 SSR 可用
     name: "AI Tinkerers Shanghai",
-    url: "https://www.meetup.com/topics/artificial-intelligence/shanghai/",
+    url: "https://shanghai.aitinkerers.org/",
     category: "AI聚会",
     locale: "en",
-    parser: PARSERS.aitinkerers,
+    parser: PARSERS.llmExtract,
+    notes: "通用 LLM 抽取（需 LLM_EXTRACT_ENABLED）· 官网 shanghai.aitinkerers.org",
   },
   {
     name: "ShanghAI AI Meetup",

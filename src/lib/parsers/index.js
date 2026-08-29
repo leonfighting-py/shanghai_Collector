@@ -15,6 +15,7 @@ import { parseIMuseumShanghai } from "./imuseum.js";
 import { parseLongMuseum } from "./longmuseum.js";
 import { parseJsonLdEvents } from "./json-ld.js";
 import { parseLuma } from "./luma.js";
+import { parseWithLlmExtraction } from "./llm-extract.js";
 import { parseLumaAiEvents, parseMeetupAiEvents } from "./meetup-ai.js";
 import { parseMaoyan } from "./maoyan.js";
 import { parseMinshengArt } from "./minsheng.js";
@@ -87,6 +88,7 @@ export const PARSERS = {
   tentimes: parseEventbrite,
   eventbriteAiTech: parseEventbriteAiTech,
   listing: parseListingSite,
+  llmExtract: parseWithLlmExtraction,
   nyu: parseNyuShanghai,
   shisu: parseShisuEvents,
   sjtu: parseSjtuEvents,
