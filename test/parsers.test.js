@@ -7,6 +7,8 @@ import { parseDoubanShanghai } from "../src/lib/parsers/douban.js";
 import { parseEventbriteAiTech } from "../src/lib/parsers/eventbrite.js";
 import { parseJsonLdEvents } from "../src/lib/parsers/json-ld.js";
 import { parseMaoyan } from "../src/lib/parsers/maoyan.js";
+import { parseHuodongxing } from "../src/lib/parsers/huodongxing.js";
+import { parseShcstheatre } from "../src/lib/parsers/shcstheatre.js";
 import { parseSmartShanghai } from "../src/lib/parsers/smartshanghai.js";
 import { isEventLikeTitle } from "../src/lib/events.js";
 import { buildEvent, parseFlexibleDate } from "../src/lib/parsers/shared.js";
@@ -114,6 +116,49 @@ test("china art museum parser reads current exhibition blocks", () => {
 
 test("news-like titles are still rejected after parser output", () => {
   assert.equal(isEventLikeTitle("上海市发展和改革委员会关于车用汽、柴油价格的通知"), false);
+});
+
+test("shcstheatre parser reads bilingual labels", () => {
+  const html = `
+    <div id="datarow"><div class='col-md-12 pad-top scape-top-bottom col12-no-paddiing'>
+      <div class='program-name'><h2><a href='ProgramDetails.aspx?headtype=YanChu&ARTICLE_ID=41885&id=41885'>音乐剧《大状王》</a></h2></div>
+      <ul class='program-intro'>
+        <li class='size16'>地点 Venue：上海文化广场&nbsp; 主剧场</li>
+        <li class='size16'>日期 Date：2026.8.14-2026.8.30</li>
+        <li class='size16'>时间 Time：14:00,19:30</li>
+      </ul>
+    </div></div>
+    <div class="load-more"></div>`;
+  const events = parseShcstheatre(html, {
+    name: "上海文化广场",
+    url: "https://www.shcstheatre.com/Program/ProgramList.aspx",
+    category: "演出音乐",
+  });
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].title, "音乐剧《大状王》");
+  assert.equal(events[0].start_time, "2026-08-14T06:00:00.000Z");
+  assert.equal(events[0].venue, "上海文化广场 主剧场");
+});
+
+test("huodongxing parser reads eventlist item blocks", async () => {
+  const html = `
+    <div class="search-tab-content-item flex">
+      <a class="item-title" href="/event/2873278205712?utm_source=x&amp;utm_campaign=eventspage" target="_blank">上海AI开发者线下聚会</a>
+      <p class="item-data flex"><span class="item-data-icon icon"></span>2026.09.26-2026.09.26</p>
+      <p class="item-dress flex"><span class="item-dress-icon icon"></span>上海浦东柏悦酒店</p>
+    </div>`;
+  const events = await parseHuodongxing(html, {
+    name: "活动行上海",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&orderby=hot",
+    category: "线下活动",
+  });
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].title, "上海AI开发者线下聚会");
+  assert.equal(events[0].venue, "上海浦东柏悦酒店");
+  assert.equal(events[0].start_time, "2026-09-26T02:00:00.000Z");
+  assert.equal(events[0].signup_url, "https://www.huodongxing.com/event/2873278205712?utm_source=x&utm_campaign=eventspage");
 });
 
 test("bendibao date parser handles month-day ranges", () => {

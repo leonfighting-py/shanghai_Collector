@@ -9,3 +9,6 @@ node_modules
 coverage
 *.log
 .DS_Store
+# 体检脚本生成的报告产物
+scripts/source-health-report.*
+scripts/probe-*.js

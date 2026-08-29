@@ -9,6 +9,7 @@
     "start": "next start",
     "collect": "node --env-file=.env scripts/collect-local.js",
     "cleanup": "node --env-file=.env scripts/cleanup-local.js",
+    "health": "node scripts/source-health-check.js",
     "wechat:exporter": "docker compose -f docker-compose.wechat-exporter.yml up -d",
     "wechat:exporter:down": "docker compose -f docker-compose.wechat-exporter.yml down",
     "wechat:probe": "node --env-file=.env scripts/wechat-exporter-probe.js",

@@ -59,6 +59,26 @@ test("tonight and weekend shelves use Shanghai local dates", () => {
   assert.equal(getWeekendEvents(events).length, 3);
 });
 
+test("weekend/tonight classification is independent of runtime timezone", () => {
+  // 2026-05-23 是上海周六；UTC 表示为 05-22T16:00Z 之后。若用 getDay()（UTC 周五）会漏判。
+  const saturdayEveningShanghai = event("周六晚演出", "2026-05-23T19:00:00+08:00", "演出音乐", "上海音乐厅");
+  // 2026-05-22 是上海周五
+  const fridayNight = event("周五夜晚场", "2026-05-22T20:00:00+08:00", "演出音乐", "上海音乐厅");
+
+  const weekend = getWeekendEvents([saturdayEveningShanghai, fridayNight]);
+  assert.equal(weekend.length, 1);
+  assert.equal(weekend[0].title, "周六晚演出");
+
+  const tonight = getTonightEvents([saturdayEveningShanghai], "2026-05-23T10:00:00+08:00");
+  assert.equal(tonight.length, 1);
+  assert.equal(tonight[0].title, "周六晚演出");
+
+  // 上海周六凌晨 1 点（= UTC 周五 17 点）：不算今晚（<18 点），但算周末
+  const saturdayEarlyMorning = event("周六凌晨活动", "2026-05-23T01:00:00+08:00", "演出音乐", "上海音乐厅");
+  assert.equal(getTonightEvents([saturdayEarlyMorning], "2026-05-22T20:00:00+08:00").length, 0);
+  assert.equal(getWeekendEvents([saturdayEarlyMorning]).length, 1);
+});
+
 function event(title, start_time, category, venue) {
   return {
     title,

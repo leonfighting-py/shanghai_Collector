@@ -2,6 +2,36 @@ import { defaultFetchHtml } from "../fetch-html.js";
 import { absoluteUrl, buildEvent, mapWithLimit, parseFlexibleDate, stripTags, uniqueBy } from "./shared.js";
 
 export async function parseHuodongxing(html, source, { fetchHtml = defaultFetchHtml } = {}) {
+  // eventlist 页面（SSR）：item-title（标题）+ item-data（日期）+ item-dress（地点）
+  const listed = [];
+  const seenEventIds = new Set();
+
+  for (const match of html.matchAll(
+    /<a class="item-title" href="(\/event\/\d+[^"]*)"[^>]*>([^<]+)<\/a>/g,
+  )) {
+    const href = absoluteUrl(source.url, match[1].replace(/&amp;/g, "&"));
+    const eventId = href.match(/\/event\/(\d+)/)?.[1];
+    if (!eventId || seenEventIds.has(eventId)) continue;
+    seenEventIds.add(eventId);
+
+    const context = html.slice(match.index, match.index + 1000);
+    const dateText = context.match(/(20\d{2})[.\-](\d{1,2})[.\-](\d{1,2})/)?.[0];
+    const venue = stripTags(
+      context.match(/class="item-dress[^"]*"[^>]*>[\s\S]*?<\/span>([^<]+)/i)?.[1] || "",
+    );
+
+    const event = buildEvent({
+      title: stripTags(match[2]),
+      start_time: parseFlexibleDate(dateText),
+      venue: venue || "上海",
+      signup_url: href,
+      source,
+    });
+    if (event) listed.push(event);
+  }
+
+  if (listed.length > 0) return listed.slice(0, 20);
+
   const inline = [];
 
   for (const match of html.matchAll(/href="(\/event\/\d+[^"?#]*)"[\s\S]{0,300}?/g)) {

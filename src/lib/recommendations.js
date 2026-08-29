@@ -16,11 +16,23 @@ const KEYWORD_WEIGHTS = [
   ["设计", 6],
 ];
 
+const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/** 上海时区的小时数（0-23），避免运行时本地时区（如 UTC）导致"今晚/周末"判断错误 */
+function shanghaiHour(value) {
+  return ((new Date(value).getTime() + SHANGHAI_OFFSET_MS) % 86_400_000) / 3_600_000;
+}
+
+/** 上海时区的星期（0=周日），取上海当日正午避免边界日期偏移 */
+function shanghaiDay(value) {
+  return new Date(`${toShanghaiDate(value)}T12:00:00+08:00`).getUTCDay();
+}
+
 export function scoreEvent(event, now = new Date()) {
   let score = 0;
   const sourceCount = event.sources?.length || 1;
-  const hour = new Date(event.start_time).getHours();
-  const day = new Date(event.start_time).getDay();
+  const hour = shanghaiHour(event.start_time);
+  const day = shanghaiDay(event.start_time);
   const title = event.title || "";
 
   score += Math.min(sourceCount, 4) * 8;
@@ -84,7 +96,7 @@ export function getTonightEvents(events, now = new Date()) {
   const today = toShanghaiDate(now);
   return getTopPicks(
     events.filter((event) => {
-      const hour = new Date(event.start_time).getHours();
+      const hour = shanghaiHour(event.start_time);
       return toShanghaiDate(event.start_time) === today && hour >= 18;
     }),
     4,
@@ -95,7 +107,7 @@ export function getTonightEvents(events, now = new Date()) {
 export function getWeekendEvents(events, now = new Date()) {
   return getTopPicks(
     events.filter((event) => {
-      const day = new Date(event.start_time).getDay();
+      const day = shanghaiDay(event.start_time);
       return day === 0 || day === 6;
     }),
     6,

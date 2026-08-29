@@ -11,14 +11,8 @@ export { defaultFetchHtml } from "./fetch-html.js";
 export { parseJsonLdEvents } from "./parsers/json-ld.js";
 
 export const SOURCE_SEEDS = [
-  { name: "猫眼演出", url: "https://show.maoyan.com/", category: "演出音乐", locale: "zh", parser: PARSERS.maoyan },
-  {
-    name: "秀动上海",
-    url: "https://www.showstart.com/event/list?cityCode=310000",
-    category: "演出音乐",
-    locale: "zh",
-    parser: PARSERS.showstart,
-  },
+  // 秀动上海：整站 JS 渲染，h5 网络不可达，API 需签名（2026-08 探明），待逆向后恢复：
+  // { name: "秀动上海", url: "https://www.showstart.com/event/list?cityCode=310000", category: "演出音乐", locale: "zh", parser: PARSERS.showstart },
   {
     name: "豆瓣同城上海",
     url: "https://www.douban.com/location/shanghai/events",
@@ -50,7 +44,7 @@ export const SOURCE_SEEDS = [
   },
   {
     name: "复星艺术中心",
-    url: "https://www.fosunfoundation.com/zh/current-exhibitions",
+    url: "https://www.fosunfoundation.com/",
     category: "展览",
     locale: "zh",
     parser: PARSERS.fosun,
@@ -69,13 +63,7 @@ export const SOURCE_SEEDS = [
     locale: "zh",
     parser: PARSERS.teamlab,
   },
-  {
-    name: "上海当代艺术博物馆",
-    url: "https://www.powerstationofart.com/exhibitions.html",
-    category: "展览",
-    locale: "zh",
-    parser: PARSERS.psa,
-  },
+  // 上海当代艺术博物馆（PSA）：整站 JS 渲染无 API；其展览已被 iMuseum 聚合源覆盖（2026-08 验证）
   {
     name: "中华艺术宫",
     url: "https://www.artmuseumonline.org/art/art/zlgz/zl/dqzl/index.html",
@@ -168,54 +156,9 @@ export const SOURCE_SEEDS = [
     parser: PARSERS.szmuseum,
     notes: "苏州博物馆 · 长三角周边展览",
   },
-  {
-    name: "西岸艺术与设计博览会",
-    url: "https://www.westbund.com/",
-    category: "展览",
-    locale: "zh",
-    parser: PARSERS.westbund,
-    notes: "西岸艺博会 · 年度当代艺术盛会",
-  },
-  {
-    name: "上海本地宝·活动",
-    url: "https://sh.bendibao.com/xiuxian/",
-    category: "线下活动",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "替代公众号「上海本地宝」",
-  },
-  {
-    name: "上海本地宝·周末活动",
-    url: "https://sh.bendibao.com/xiuxian/zhoumohd/",
-    category: "线下活动",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "替代公众号「上海本地宝」周末推荐",
-  },
-  {
-    name: "上海本地宝·市集",
-    url: "https://sh.bendibao.com/xiuxian/shiji/",
-    category: "线下活动",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "替代公众号「魔都探索队」等市集合集",
-  },
-  {
-    name: "上海本地宝·音乐演出",
-    url: "https://sh.bendibao.com/xiuxian/yinyueyanchu/",
-    category: "演出音乐",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "替代公众号「MAOLivehouse上海」等演出合集",
-  },
-  {
-    name: "上海本地宝·演唱会",
-    url: "https://sh.bendibao.com/xiuxian/yanchanghui/",
-    category: "演出音乐",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "演唱会时间地点与购票信息",
-  },
+  // 西岸艺博会：整站 JS 渲染无 API（2026-08 探明）
+  // 本地宝系（活动/周末/市集/音乐演出/演唱会/商场快闪/展览/展会）：拼图验证码反爬，7 源全挂（2026-08 验证）；
+  // 公众号类内容改走 wechat-exporter 管线（WECHAT_EVENTS_API_URL）
   {
     name: "上海文化广场",
     url: "https://www.shcstheatre.com/Program/ProgramList.aspx",
@@ -223,14 +166,6 @@ export const SOURCE_SEEDS = [
     locale: "zh",
     parser: PARSERS.shcstheatre,
     notes: "音乐剧、话剧、音乐会演出排期",
-  },
-  {
-    name: "上海话剧艺术中心",
-    url: "https://www.china-drama.com/",
-    category: "演出音乐",
-    locale: "zh",
-    parser: PARSERS.chinadrama,
-    notes: "话剧、舞台剧演出信息",
   },
   {
     name: "格瓦拉",
@@ -248,22 +183,8 @@ export const SOURCE_SEEDS = [
     parser: PARSERS.piaoniu,
     notes: "演唱会/音乐会/话剧/体育赛事票务",
   },
-  {
-    name: "中国上海国际艺术节",
-    url: "https://www.artsbird.com/",
-    category: "演出音乐",
-    locale: "zh",
-    parser: PARSERS.artsbird,
-    notes: "年度国际艺术节演出资讯",
-  },
-  {
-    name: "上海本地宝·商场快闪",
-    url: "https://sh.bendibao.com/tour/2026430/305650.shtm",
-    category: "线下活动",
-    locale: "zh",
-    parser: PARSERS.bendibaoRoundup,
-    notes: "商场快闪活动汇总（持续更新）· 含月度快闪汇总",
-  },
+  // 上海话剧艺术中心：API 仅剧目库无档期、页面无演出数据；售票信息已被格瓦拉覆盖（2026-08 验证）
+  // 中国上海国际艺术节：整站 JS 渲染；参演剧目已被格瓦拉覆盖（2026-08 验证，样本含2条艺术节剧目）
   {
     name: "赢商网",
     url: "http://www.winshang.com/",
@@ -296,14 +217,7 @@ export const SOURCE_SEEDS = [
     parser: PARSERS.shanghaiOnline,
     notes: "上海本地门户 · 各类活动资讯",
   },
-  {
-    name: "上海群众艺术馆",
-    url: "http://www.shqyg.com/",
-    category: "线下活动",
-    locale: "zh",
-    parser: PARSERS.shqyg,
-    notes: "市群艺馆 · 展览/演出/讲座/工作坊（API驱动，需注意）",
-  },
+  // 上海群艺馆：整站 JS 渲染无 API（2026-08 探明）
   {
     name: "上海文旅局·艺术活动",
     url: "https://whlyj.sh.gov.cn/yshd/",
@@ -312,45 +226,15 @@ export const SOURCE_SEEDS = [
     parser: PARSERS.whlyj,
     notes: "上海市文旅局 · 月度美术馆观展指南/文化活动",
   },
-  {
-    name: "上海自然博物馆",
-    url: "https://www.snhm.org.cn/",
-    category: "展览",
-    locale: "zh",
-    parser: PARSERS.snhm,
-    notes: "上海自然博物馆 · 自然科普展览与活动",
-  },
-  {
-    name: "上海本地宝·展览",
-    url: "https://sh.bendibao.com/xiuxian/zhanlan/",
-    category: "展览",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "替代公众号「ShanghaiLOOK」等展览合集",
-  },
-  {
-    name: "上海本地宝·展会活动",
-    url: "https://sh.bendibao.com/xiuxian/zhanhui/",
-    category: "线下活动",
-    locale: "zh",
-    parser: PARSERS.bendibao,
-    notes: "替代公众号「ShanghaiWOW」等活动清单",
-  },
-  {
-    name: "大麦上海",
-    url: "https://www.damai.cn/search.html?city=上海&order=1",
-    category: "演出音乐",
-    locale: "zh",
-    parser: PARSERS.damai,
-    notes: "替代「走起Go」等平台的票务演出",
-  },
+  // 上海自然博物馆：整站 JS 渲染无 API（2026-08 探明）
+  // 大麦上海：HTTP 500 反爬（2026-08 探明）；票务信息由格瓦拉/票牛覆盖
   {
     name: "活动行上海",
-    url: "https://www.huodongxing.com/events?orderby=hot&city=%E4%B8%8A%E6%B5%B7",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&orderby=hot",
     category: "线下活动",
     locale: "zh",
     parser: PARSERS.huodong,
-    notes: "替代「走起Go」等活动平台",
+    notes: "eventlist 端点为 SSR 渲染，events 页为 JS 渲染",
   },
   {
     name: "互动吧上海",
@@ -413,7 +297,7 @@ export const SOURCE_SEEDS = [
     locale: "en",
     parser: PARSERS.meetup,
   },
-  { name: "OpenClaw Shanghai", url: "https://lu.ma/shanghai", category: "AI聚会", locale: "en", parser: PARSERS.lumaAi },
+  // OpenClaw Shanghai：与 Lu.ma Shanghai 同 URL（lu.ma/shanghai）重复，已删（2026-08 验证）
   {
     name: "Eventbrite Shanghai AI",
     url: "https://www.eventbrite.com/d/china--shanghai/artificial-intelligence--events/",

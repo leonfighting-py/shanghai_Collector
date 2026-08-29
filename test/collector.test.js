@@ -14,7 +14,8 @@ test("source seeds cover each required category with enough recall depth", () =>
   assert.ok(counts["展览"] >= 8);
   assert.ok(counts["线下活动"] >= 6);
   assert.ok(counts["高校讲座"] >= 4);
-  assert.ok(counts["AI聚会"] >= 5);
+  // AI聚会 4 个源（原第 5 个 OpenClaw 与 Lu.ma Shanghai 同 URL，纯重复已删，2026-08）
+  assert.ok(counts["AI聚会"] >= 4);
 });
 
 test("source seeds include a strong Chinese primary layer", () => {
