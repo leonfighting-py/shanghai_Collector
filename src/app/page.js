@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CategoryEventCard } from "./components/CategoryEventCard.js";
+import { ExploreBar } from "./components/ExploreBar.js";
 import { HomeHero } from "./components/HomeHero.js";
 import { StickyNavbar } from "./components/StickyNavbar.js";
 import { FeaturedCarousel } from "./FeaturedCarousel.js";
@@ -26,8 +27,11 @@ export default async function Home({ searchParams }) {
   const params = await searchParams;
   // 默认锚点取上海日期（UTC 日期在 0-8 点会比上海晚一天）
   const anchor = params?.week || toShanghaiDate(new Date());
-  const events = await listEvents({ week: anchor });
+  const search = typeof params?.search === "string" ? params.search.trim().slice(0, 100) : "";
+  const category = typeof params?.category === "string" ? params.category : "";
+  const events = await listEvents({ week: anchor, search: search || undefined });
   const view = buildHomeViewModel(events, { now: new Date(anchor) });
+  const isFiltering = Boolean(search || category);
 
   return (
     <div id="top" style={{ background: "var(--bg)", color: "var(--text)" }}>
@@ -62,15 +66,43 @@ export default async function Home({ searchParams }) {
             </p>
           </div>
 
-          {/* ---- Featured Carousel ---- */}
-          <FeaturedCarousel events={view.featuredEvents} />
+          {/* ---- Explore Bar：搜索 + 分类 + 起始日 ---- */}
+          <ExploreBar initialSearch={search} initialCategory={category} initialWeek={params?.week || ""} />
 
-          {/* ---- Category Sections ---- */}
-          <div className="mt-10 flex flex-col gap-12">
-            {view.categorySections.map((section) => (
-              <CategorySection section={section} key={section.title} />
-            ))}
-          </div>
+          {isFiltering ? (
+            /* ---- 筛选模式：平铺全部命中结果 ---- */
+            <div className="mt-10">
+              <div className="section-label">
+                <div>
+                  <p className="eyebrow">SEARCH RESULTS</p>
+                  <span className="title">
+                    {search ? `“${search}”` : ""}{category || "全部"} · {events.length} 条
+                  </span>
+                </div>
+              </div>
+              {events.length === 0 ? (
+                <p className="browse-empty">没有匹配的活动，试试换个关键词或分类。</p>
+              ) : (
+                <div className="category-grid category-grid--browse">
+                  {events.map((event) => (
+                    <CategoryEventCard event={event} key={event.dedupe_key} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* ---- Featured Carousel ---- */}
+              <FeaturedCarousel events={view.featuredEvents} />
+
+              {/* ---- Category Sections ---- */}
+              <div className="mt-10 flex flex-col gap-12">
+                {view.categorySections.map((section) => (
+                  <CategorySection section={section} key={section.title} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
