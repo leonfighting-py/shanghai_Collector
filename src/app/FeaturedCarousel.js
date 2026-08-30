@@ -50,11 +50,10 @@ export function FeaturedCarousel({ events }) {
         href={safeExternalUrl(activeEvent.signup_url)}
         target="_blank"
         rel="noopener noreferrer"
-        style={{ backgroundImage: `url(${activeEvent.image_url})` }}
       >
         <span className="featured-cover-scrim" aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="featured-cover-img" src={activeEvent.image_url} alt="" loading="eager" referrerPolicy="no-referrer" />
+        <img className="featured-cover-img" src={carouselImageUrl(activeEvent.image_url)} alt="" loading="eager" referrerPolicy="no-referrer" />
         <span className="featured-slide-content">
           <span className="cover-kicker">{activeEvent.category}</span>
           <h2>{activeEvent.title}</h2>
@@ -107,6 +106,19 @@ export function FeaturedCarousel({ events }) {
 
 function isUsableImage(url) {
   return typeof url === "string" && /^https?:\/\//i.test(url.trim());
+}
+
+/**
+ * 轮播图走压缩版：pipi.cn 图床（格瓦拉/猫眼系）支持 imageMogr2 缩放。
+ * 已实测：thumbnail/1200x + quality/75 对已压缩原图仍有体积收益，且统一到 1200 宽。
+ * 其他图床（无法确认支持）原样返回。
+ */
+function carouselImageUrl(url) {
+  if (typeof url !== "string") return url;
+  if (/\.pipi\.cn\//.test(url)) {
+    return `${url.split("?")[0]}?imageMogr2/thumbnail/1200x/quality/75`;
+  }
+  return url;
 }
 
 function formatDateTime(value) {
