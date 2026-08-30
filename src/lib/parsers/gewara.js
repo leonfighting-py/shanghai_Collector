@@ -104,6 +104,74 @@ function parseDateRange(dateText) {
 }
 
 /**
+ * 从内联 __NEXT_DATA__ JS 变量中提取 performanceId → posterUrl 映射。
+ * 数据形如 { props: { pageProps: { categoryList: [ { hotXxxList: [ { performanceId, posterUrl, ... } ] } ] } } }
+ *
+ * @param {string} html
+ * @returns {Map<string, string>}
+ */
+/**
+ * 从 startBrace 开始做括号平衡扫描，返回完整 JSON 文本。
+ * 跳过字符串字面量中的括号和转义。
+ */
+function extractBalancedJson(text, startBrace) {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = startBrace; index < text.length; index += 1) {
+    const char = text[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === "{" || char === "[") depth += 1;
+    else if (char === "}" || char === "]") {
+      depth -= 1;
+      if (depth === 0) return text.slice(startBrace, index + 1);
+    }
+  }
+  return null;
+}
+
+function extractPosterMap(html) {
+  const map = new Map();
+  // __NEXT_DATA__ = {...}（JS 变量赋值；同一 script 内还跟有其他代码）
+  const start = html.match(/__NEXT_DATA__\s*=\s*\{/);
+  if (!start) return map;
+  const jsonText = extractBalancedJson(html, html.indexOf("{", start.index));
+
+  let data;
+  try {
+    data = JSON.parse(jsonText);
+  } catch {
+    return map;
+  }
+
+  const walk = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (node && typeof node === "object") {
+      if (node.performanceId && node.posterUrl && /^https?:\/\//.test(String(node.posterUrl))) {
+        map.set(String(node.performanceId), String(node.posterUrl));
+      }
+      Object.values(node).forEach(walk);
+    }
+  };
+  walk(data);
+
+  return map;
+}
+
+/**
  * Extract events from Gewara hotlist section (main content grid).
  * Each card: div.hotlist-item with id="{id}hotlist-item"
  *
@@ -111,7 +179,7 @@ function parseDateRange(dateText) {
  * @param {{name: string, url: string, category: string, locale: string}} source
  * @returns {Array<object>}
  */
-function extractHotlistItems(html, source) {
+function extractHotlistItems(html, source, posters) {
   const events = [];
 
   // Match each hotlist item card
@@ -155,6 +223,7 @@ function extractHotlistItems(html, source) {
       end_time: range.end_time,
       venue,
       signup_url: signupUrl,
+      image_url: posters.get(eventId),
       source,
     });
 
@@ -236,7 +305,8 @@ function extractNewlistItems(html, source) {
  * @returns {Array<object>} Parsed events
  */
 export function parseGewara(html, source) {
-  const hotlistEvents = extractHotlistItems(html, source);
+  const posters = extractPosterMap(html);
+  const hotlistEvents = extractHotlistItems(html, source, posters);
   const newlistEvents = extractNewlistItems(html, source);
 
   // Deduplicate: hotlist + newlist may overlap; prefer hotlist (richer data)

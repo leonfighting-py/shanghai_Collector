@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { CategoryEventCard } from "./components/CategoryEventCard.js";
 import { ExploreBar } from "./components/ExploreBar.js";
+import { FavoritesShelf } from "./components/FavoritesShelf.js";
 import { HomeHero } from "./components/HomeHero.js";
 import { StickyNavbar } from "./components/StickyNavbar.js";
 import { FeaturedCarousel } from "./FeaturedCarousel.js";
@@ -68,6 +69,9 @@ export default async function Home({ searchParams }) {
 
           {/* ---- Explore Bar：搜索 + 分类 + 起始日 ---- */}
           <ExploreBar initialSearch={search} initialCategory={category} initialWeek={params?.week || ""} />
+
+          {/* ---- 我的收藏（localStorage）---- */}
+          <FavoritesShelf events={events} />
 
           {isFiltering ? (
             /* ---- 筛选模式：平铺全部命中结果 ---- */

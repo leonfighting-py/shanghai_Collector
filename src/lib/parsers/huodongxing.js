@@ -2,7 +2,7 @@ import { defaultFetchHtml } from "../fetch-html.js";
 import { absoluteUrl, buildEvent, mapWithLimit, parseFlexibleDate, stripTags, uniqueBy } from "./shared.js";
 
 export async function parseHuodongxing(html, source, { fetchHtml = defaultFetchHtml } = {}) {
-  // eventlist 页面（SSR）：item-title（标题）+ item-data（日期）+ item-dress（地点）
+  // eventlist 页面（SSR）：item-title（标题）+ item-data（日期）+ item-dress（地点）+ item-logo（封面）
   const listed = [];
   const seenEventIds = new Set();
 
@@ -14,17 +14,22 @@ export async function parseHuodongxing(html, source, { fetchHtml = defaultFetchH
     if (!eventId || seenEventIds.has(eventId)) continue;
     seenEventIds.add(eventId);
 
-    const context = html.slice(match.index, match.index + 1000);
+    const context = html.slice(match.index, match.index + 1200);
     const dateText = context.match(/(20\d{2})[.\-](\d{1,2})[.\-](\d{1,2})/)?.[0];
     const venue = stripTags(
       context.match(/class="item-dress[^"]*"[^>]*>[\s\S]*?<\/span>([^<]+)/i)?.[1] || "",
     );
+    // 封面图：本卡片上方的 <img class="item-logo" src="...">（取最近一个）
+    const before = html.slice(Math.max(0, match.index - 500), match.index);
+    const logoMatches = [...before.matchAll(/class="item-logo" src="([^"]+)"/gi)];
+    const logo = logoMatches.length > 0 ? logoMatches[logoMatches.length - 1][1] : null;
 
     const event = buildEvent({
       title: stripTags(match[2]),
       start_time: parseFlexibleDate(dateText),
       venue: venue || "上海",
       signup_url: href,
+      image_url: logo,
       source,
     });
     if (event) listed.push(event);

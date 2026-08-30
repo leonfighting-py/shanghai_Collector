@@ -144,9 +144,16 @@ test("shcstheatre parser reads bilingual labels", () => {
 test("huodongxing parser reads eventlist item blocks", async () => {
   const html = `
     <div class="search-tab-content-item flex">
-      <a class="item-title" href="/event/2873278205712?utm_source=x&amp;utm_campaign=eventspage" target="_blank">上海AI开发者线下聚会</a>
-      <p class="item-data flex"><span class="item-data-icon icon"></span>2026.09.26-2026.09.26</p>
-      <p class="item-dress flex"><span class="item-dress-icon icon"></span>上海浦东柏悦酒店</p>
+      <a href="/event/2873278205712?utm_source=x&amp;utm_campaign=eventspage" target="_blank">
+        <img class="item-logo" src="https://cdn.huodongxing.com/logo/202608/2873278205712/x.jpg" alt="上海AI开发者线下聚会" />
+      </a>
+      <div class="search-tab-content-item-right">
+        <div class="flex item-title-wrap">
+          <a class="item-title" href="/event/2873278205712?utm_source=x&amp;utm_campaign=eventspage" target="_blank">上海AI开发者线下聚会</a>
+        </div>
+        <p class="item-data flex"><span class="item-data-icon icon"></span>2026.09.26-2026.09.26</p>
+        <p class="item-dress flex"><span class="item-dress-icon icon"></span>上海浦东柏悦酒店</p>
+      </div>
     </div>`;
   const events = await parseHuodongxing(html, {
     name: "活动行上海",
@@ -159,6 +166,7 @@ test("huodongxing parser reads eventlist item blocks", async () => {
   assert.equal(events[0].venue, "上海浦东柏悦酒店");
   assert.equal(events[0].start_time, "2026-09-26T02:00:00.000Z");
   assert.equal(events[0].signup_url, "https://www.huodongxing.com/event/2873278205712?utm_source=x&utm_campaign=eventspage");
+  assert.equal(events[0].image_url, "https://cdn.huodongxing.com/logo/202608/2873278205712/x.jpg");
 });
 
 test("bendibao date parser handles month-day ranges", () => {

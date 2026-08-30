@@ -21,7 +21,7 @@ export function absoluteUrl(base, href) {
   }
 }
 
-export function buildEvent({ title, start_time, end_time, venue, signup_url, source }) {
+export function buildEvent({ title, start_time, end_time, venue, signup_url, image_url, source }) {
   if (!title || !start_time || !source) return null;
   const cleanTitle = decodeHtml(title);
   if (!isEventLikeTitle(cleanTitle)) return null;
@@ -30,6 +30,8 @@ export function buildEvent({ title, start_time, end_time, venue, signup_url, sou
   if (!normalizedStart) return null;
 
   const url = signup_url || source.url;
+  // 封面图仅接受 http(s)，防止解析出协议注入
+  const image = typeof image_url === "string" && /^https?:\/\//i.test(image_url.trim()) ? image_url.trim() : null;
   return {
     title: cleanTitle,
     start_time: normalizedStart,
@@ -39,6 +41,7 @@ export function buildEvent({ title, start_time, end_time, venue, signup_url, sou
     signup_url: url,
     source_name: source.name,
     source_url: url,
+    image_url: image,
   };
 }
 

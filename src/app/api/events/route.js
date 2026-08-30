@@ -15,6 +15,7 @@ const PUBLIC_FIELDS = [
   "source_url",
   "sources",
   "summary",
+  "image_url",
 ];
 
 function toPublicEvent(event) {

@@ -112,7 +112,9 @@ export async function ensureSchema() {
   await query(buildSchemaSql());
   await query(`
     alter table events add column if not exists summary text not null default '';
+    alter table events add column if not exists image_url text;
     alter table raw_events add column if not exists summary text;
+    alter table raw_events add column if not exists image_url text;
   `);
 }
 
@@ -178,9 +180,9 @@ export async function insertRawEvents(events, { runId = null } = {}) {
       `
         insert into raw_events (
           run_id, title, start_time, end_time, venue, category, signup_url,
-          source_name, source_url, raw_payload, publishable, rejection_reason
+          source_name, source_url, raw_payload, publishable, rejection_reason, image_url
         )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12)
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13)
         returning id
       `,
       [
@@ -196,6 +198,7 @@ export async function insertRawEvents(events, { runId = null } = {}) {
         JSON.stringify(event),
         publishable,
         publishable ? null : "missing_required_fields",
+        event.image_url || null,
       ],
     );
     rawEventIds.push(result.rows[0].id);
@@ -228,7 +231,7 @@ export async function listEvents({ week, category, search } = {}) {
   const result = await query(
     `
       select title, start_time, end_time, venue, category, signup_url, source_name,
-             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary,
+             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, image_url,
              created_at, updated_at
       from events
       where ${filters.join(" and ")}
@@ -270,9 +273,9 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
       sql: `
           insert into events (
             title, start_time, end_time, venue, category, signup_url, source_name,
-            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, updated_at
+            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, image_url, updated_at
           )
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, $13, now())
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, $13, $14, now())
           on conflict (dedupe_key) do update set
             title = excluded.title,
             start_time = excluded.start_time,
@@ -286,6 +289,7 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
             raw_event_ids = excluded.raw_event_ids,
             dedupe_provider = excluded.dedupe_provider,
             summary = excluded.summary,
+            image_url = excluded.image_url,
             updated_at = now()
       `,
       params: [
@@ -302,6 +306,7 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
         JSON.stringify(rawEventIds),
         dedupeProvider,
         event.summary || "",
+        event.image_url || null,
       ],
     })),
   ];
