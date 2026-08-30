@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY = "shanghai-radar-favorites";
-
-// 模块级：同页所有 hook 实例共享的订阅总线，保证卡片间星标状态同步
-const listeners = new Set();
+// window 级事件：跨 bundle chunk 同步（模块级变量会因代码分割产生多实例）
+const FAV_CHANGED_EVENT = "shanghai-radar-favorites-changed";
 
 function readFavorites() {
   try {
@@ -20,7 +19,7 @@ function readFavorites() {
 function writeFavorites(list) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    listeners.forEach((notify) => notify(list));
+    window.dispatchEvent(new CustomEvent(FAV_CHANGED_EVENT, { detail: list }));
   } catch {
     // 隐私模式等场景静默失败
   }
@@ -28,20 +27,24 @@ function writeFavorites(list) {
 
 /**
  * localStorage 收藏：以 dedupe_key 为标识。
- * SSR 首帧返回空集（避免水合不一致），挂载后读取。
+ * SSR 首帧返回空集（避免水合不一致），挂载后读取；
+ * 通过 window 事件保证同页所有卡片与收藏区状态同步。
  */
 export function useFavorites() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    setFavorites(readFavorites());
-    listeners.add(setFavorites);
+    const sync = (list) => setFavorites(Array.isArray(list) ? list : readFavorites());
+    sync(readFavorites());
+
+    const onCustom = (event) => sync(event.detail);
     const onStorage = (event) => {
-      if (event.key === STORAGE_KEY) setFavorites(readFavorites());
+      if (event.key === STORAGE_KEY) sync(readFavorites());
     };
+    window.addEventListener(FAV_CHANGED_EVENT, onCustom);
     window.addEventListener("storage", onStorage);
     return () => {
-      listeners.delete(setFavorites);
+      window.removeEventListener(FAV_CHANGED_EVENT, onCustom);
       window.removeEventListener("storage", onStorage);
     };
   }, []);

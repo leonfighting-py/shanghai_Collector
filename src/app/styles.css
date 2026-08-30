@@ -791,6 +791,39 @@ a {
   transition: transform 400ms ease;
 }
 
+/* 无图兜底封面：分类色渐变 + 品牌水印，保证卡片视觉统一 */
+.card-cover--fallback {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.card-cover--fallback .cover-glyph {
+  font-size: 13px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+  writing-mode: vertical-rl;
+  font-weight: 600;
+}
+
+[data-theme="light"] .card-cover--fallback .cover-glyph {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* 分类渐变（演出音乐 玫红→深紫 / 展览 青→蓝 / 线下活动 橙→绯 / 高校讲座 绿→青 / AI聚会 靛→紫） */
+.cover-0 { background: linear-gradient(135deg, #7b2ff7 0%, #c53066 100%); }
+.cover-1 { background: linear-gradient(160deg, #0c8b8b 0%, #14507e 100%); }
+.cover-2 { background: linear-gradient(115deg, #d95f18 0%, #8e2246 100%); }
+.cover-3 { background: linear-gradient(200deg, #1f6f4a 0%, #10456b 100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card-cover img {
+    transition: none;
+  }
+}
+
 .glass-event-card:hover .card-cover img {
   transform: scale(1.04);
 }

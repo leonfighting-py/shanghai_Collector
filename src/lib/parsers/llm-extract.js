@@ -12,14 +12,15 @@ const SYSTEM_PROMPT = `你是「上海活动雷达」的信息抽取器。输入
 
 输出要求（必须遵守）：
 1. 只返回 JSON，不要 markdown，不要解释。
-2. JSON 结构：{"items":[{"title":"...","start":"YYYY-MM-DD","end":"YYYY-MM-DD 或 null","venue":"...","url":"..."}]}
+2. JSON 结构：{"items":[{"title":"...","start":"YYYY-MM-DD","end":"YYYY-MM-DD 或 null","venue":"...","url":"...","image":"..."}]}
 3. title：活动完整名称，保留展览名/艺人名，未提及城市时不要添加。
 4. start：活动开始日期（YYYY-MM-DD）。只有年月时取当月 1 日。完全没有日期的活动跳过。
 5. end：结束日期，单日活动为 null。
 6. venue：场馆/地点，没有则填「上海」。
 7. url：活动详情链接（相对路径转绝对），没有则留空字符串。
-8. 只抽取未来会发生的公开活动；跳过导航、菜单、往期回顾、招聘、新闻类内容。
-9. 没有可抽取的活动时返回 {"items":[]}。最多返回 20 条。`;
+8. image：活动封面/海报图片的绝对 URL（http/https），没有则留空字符串。
+9. 只抽取未来会发生的公开活动；跳过导航、菜单、往期回顾、招聘、新闻类内容。
+10. 没有可抽取的活动时返回 {"items":[]}。最多返回 20 条。`;
 
 export function getLlmExtractConfig(env = process.env) {
   const silicon = getSiliconFlowConfig(env);
@@ -78,6 +79,7 @@ export async function parseWithLlmExtraction(html, source, context = {}) {
       end_time: item?.end || null,
       venue: item?.venue || "上海",
       signup_url: item?.url || source.url,
+      image_url: item?.image,
       source,
     });
     if (event) events.push(event);

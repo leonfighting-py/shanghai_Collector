@@ -138,6 +138,7 @@ export function mergeDuplicateEvents(events) {
     current.sources = mergeSources(current.sources, normalizeSources(event));
     if (!current.end_time && event.end_time) current.end_time = event.end_time;
     if (!current.summary && event.summary) current.summary = event.summary;
+    if (!current.image_url && event.image_url) current.image_url = event.image_url;
   }
 
   return [...merged.values()].sort(

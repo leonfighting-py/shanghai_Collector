@@ -108,6 +108,11 @@ function extractInfoCards(html) {
     const title = titleMatch ? decodeHtml(titleMatch[1]) : "";
     if (!title) continue;
 
+    // 封面图：同一 <li> 内、info 卡片前的 <img class="cover">
+    const before = section.slice(Math.max(0, match.index - 400), match.index);
+    const coverMatches = [...before.matchAll(/<img\s+class="cover"\s+src="([^"]+)"/gi)];
+    const cover = coverMatches.length > 0 ? coverMatches[coverMatches.length - 1][1] : null;
+
     // Clean pretitle: extract only the date text, strip nested spans
     const pretitle = pretitleRaw
       ? stripTags(pretitleRaw[1]).replace(/\s+/g, " ").trim()
@@ -118,7 +123,7 @@ function extractInfoCards(html) {
       ? stripTags(subtitleRaw[1]).replace(/\s+/g, " ").trim()
       : "";
 
-    cards.push({ url, title, pretitle, venue: subtitle });
+    cards.push({ url, title, pretitle, venue: subtitle, cover });
   }
 
   return cards;
@@ -145,6 +150,7 @@ export function parseIMuseumShanghai(html, source, { now = new Date() } = {}) {
       end_time,
       venue: cleanVenue(card.venue),
       signup_url: `https://art.icity.ly${card.url}`,
+      image_url: card.cover,
       source,
     });
 

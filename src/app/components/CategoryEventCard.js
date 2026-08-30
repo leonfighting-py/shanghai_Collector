@@ -11,7 +11,7 @@ export function CategoryEventCard({ event }) {
 
   return (
     <a
-      className={`glass-card glass-event-card ${image ? "has-image" : ""}`}
+      className="glass-card glass-event-card has-image"
       href={safeExternalUrl(event.signup_url)}
       target="_blank"
       rel="noopener noreferrer"
@@ -21,7 +21,11 @@ export function CategoryEventCard({ event }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={image} alt="" loading="lazy" referrerPolicy="no-referrer" />
         </span>
-      ) : null}
+      ) : (
+        <span className={`card-cover card-cover--fallback cover-${fallbackVariant(event)}`} aria-hidden="true">
+          <span className="cover-glyph">{event.category}</span>
+        </span>
+      )}
       <span className="card-body">
         <span className="card-date">{formatDateTime(event.start_time)}</span>
         <strong className="card-title">{event.title}</strong>
@@ -54,6 +58,16 @@ export function CategoryEventCard({ event }) {
       </button>
     </a>
   );
+}
+
+/** 无图兜底：按 dedupe_key 哈希选渐变变体（0-3），避免所有卡片同角度 */
+function fallbackVariant(event) {
+  const key = event.dedupe_key || event.title || "x";
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % 4;
 }
 
 function formatSourceLabel(event) {

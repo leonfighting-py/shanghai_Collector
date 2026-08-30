@@ -18,6 +18,9 @@ const KEYWORD_WEIGHTS = [
 
 const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
 
+// 有封面图的活动显著加权：视觉密度是首页第一印象
+const COVER_IMAGE_BOOST = 40;
+
 /** 上海时区的小时数（0-23），避免运行时本地时区（如 UTC）导致"今晚/周末"判断错误 */
 function shanghaiHour(value) {
   return ((new Date(value).getTime() + SHANGHAI_OFFSET_MS) % 86_400_000) / 3_600_000;
@@ -39,6 +42,7 @@ export function scoreEvent(event, now = new Date()) {
   score += categoryBoost(event.category);
   score += event.venue && event.venue !== "上海" ? 12 : 0;
   score += event.signup_url ? 6 : 0;
+  score += event.image_url ? COVER_IMAGE_BOOST : 0;
   score += day === 0 || day === 6 ? 10 : 0;
   score += hour >= 18 ? 8 : 0;
   score += proximityScore(event.start_time, now);
