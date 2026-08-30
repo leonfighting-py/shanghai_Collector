@@ -2,6 +2,8 @@
 
 import { useCallback } from "react";
 
+import { ThemeToggle } from "./ThemeToggle.js";
+
 const NAV_LINKS = [
   { label: "演出音乐", sectionId: "section-演出音乐" },
   { label: "展览", sectionId: "section-展览" },
@@ -32,7 +34,7 @@ export function StickyNavbar() {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className="text-2xl font-semibold tracking-tight text-white"
+          className="navbar-brand"
         >
           Shanghai Radar
         </a>
@@ -44,15 +46,15 @@ export function StickyNavbar() {
               key={link.sectionId}
               href={`#${link.sectionId}`}
               onClick={(e) => scrollTo(e, link.sectionId)}
-              className="text-sm font-normal text-white/70 transition-colors duration-200 hover:text-white"
+              className="navbar-link"
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        {/* Right: spacer for balance */}
-        <div className="w-[100px]" />
+        {/* Right: theme toggle */}
+        <ThemeToggle />
       </div>
     </nav>
   );

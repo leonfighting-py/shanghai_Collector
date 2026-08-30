@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CategoryEventCard } from "../../components/CategoryEventCard.js";
-import { CATEGORIES, toShanghaiDayWindow } from "../../../lib/events.js";
+import { CATEGORIES, toShanghaiDate, toShanghaiDayWindow } from "../../../lib/events.js";
 import { getCategoryEyebrow } from "../../../lib/home-view-model.js";
 import { getDisplayTopPicks } from "../../../lib/recommendations.js";
 import { listEvents } from "../../../lib/repository.js";
@@ -13,9 +13,9 @@ export default async function CategoryPage({ params, searchParams }) {
 
   if (!CATEGORIES.includes(category)) {
     return (
-      <main className="bg-black text-white">
+      <main style={{ background: "var(--bg)", color: "var(--text)" }}>
         <div className="mx-auto max-w-[1240px] px-6 py-20 md:px-12 lg:px-16">
-          <p className="text-white/50">未找到该分类。</p>
+          <p style={{ color: "var(--text-muted)" }}>未找到该分类。</p>
           <Link className="browse-back" href="/">
             ← 返回首页
           </Link>
@@ -24,14 +24,15 @@ export default async function CategoryPage({ params, searchParams }) {
     );
   }
 
-  const anchor = query?.week || new Date().toISOString().slice(0, 10);
+  // 默认锚点取上海日期（UTC 日期在 0-8 点会比上海晚一天）
+  const anchor = query?.week || toShanghaiDate(new Date());
   const range = toShanghaiDayWindow(anchor);
   const rawEvents = await listEvents({ week: anchor, category });
   const events = getDisplayTopPicks(rawEvents, rawEvents.length, anchor);
   const eyebrow = getCategoryEyebrow(category);
 
   return (
-    <main className="bg-black text-white">
+    <main style={{ background: "var(--bg)", color: "var(--text)" }}>
       <div className="mx-auto max-w-[1240px] px-6 py-20 md:px-12 lg:px-16">
         {/* Header */}
         <header className="browse-header">

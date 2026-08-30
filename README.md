@@ -14,11 +14,11 @@ npm run dev
 
 ## 环境变量
 
-| 变量 | 必须 | 说明 |
-|------|------|------|
+| 变量               | 必须   | 说明                                                |
+| ---------------- | ---- | ------------------------------------------------- |
 | `DATABASE_URL` | 线上必须 | Supabase Postgres 连接串（见下方） |
-| `COLLECT_SECRET` | 建议 | 保护 `/api/collect`、`/api/cleanup` 手动调用 |
-| `LLM_DEDUPE_ENABLED` | 否 | 小模型二次去重，默认 `false` |
+| `COLLECT_SECRET` | 建议 | 保护 `/api/collect`、`/api/cleanup` 手动调用（未配置时接口直接拒绝） |
+| `LLM_EXTRACT_ENABLED` | 否 | 通用 LLM 抽取（`parser: llmExtract` 的源），需配合 `SILICONFLOW_API_KEY` |
 
 **不需要** Supabase 的 Project URL、anon key、JWT secret。本项目用 `pg` 直连 Postgres。
 
@@ -27,16 +27,18 @@ npm run dev
 1. 打开 Supabase 项目首页
 2. 点右上角绿色 **Connect** 按钮
 3. 复制 **URI**：
-   - **Direct connection（5432）** → 本地开发、GitHub Actions 采集
-   - **Transaction pooler（6543）** → Vercel 部署
+
+   * **Direct connection（5432）** → 本地开发、GitHub Actions 采集
+
+   * **Transaction pooler（6543）** → Vercel 部署
 4. 把 `[YOUR-PASSWORD]` 换成数据库密码（忘了可在 Database settings 里 Reset）
 
 ## 数据接口
 
 - `GET /`：活动首页，默认展示未来 14 天
 - `GET /api/events?week=YYYY-MM-DD&category=演出音乐&search=爵士`：查询活动（`week` 为窗口起始日）
-- `POST /api/collect`：采集并发布（Vercel 免费档会超时，请用 GitHub Actions）
-- `POST /api/cleanup`：清理 60 天以前活动、90 天以前采集日志
+
+采集与清理只通过 GitHub Actions 调用本地脚本（`npm run collect` / `npm run cleanup`），Worker 上不暴露任何管理接口。
 
 ## 免费部署（Cloudflare Workers + Supabase + GitHub Actions）
 
@@ -52,13 +54,16 @@ GitHub Actions（每两日）→ npm run collect → Supabase
 
 1. 安装依赖：`npm install`
 2. 创建 Hyperdrive（一次性）：
+
    ```bash
    npx wrangler hyperdrive create news-collector-supabase \
      --connection-string="$DATABASE_URL" --caching-disabled
    ```
+
    把返回的 `id` 填入 `wrangler.jsonc` 的 `hyperdrive` 绑定。
 3. 本地预览：`cp .dev.vars.example .dev.vars` 并填入 `DATABASE_URL`
 4. 构建并部署：
+
    ```bash
    export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="$DATABASE_URL"
    npm run build:cloudflare
@@ -80,23 +85,26 @@ GitHub Actions（每两月）→ npm run cleanup → Supabase
 
 ### 1. Supabase
 
-- 创建项目（你已有：`zvlnemhtzxtxaaxulodg`）
-- 首次 `npm run collect` 会自动建表
+* 创建项目（你已有：`zvlnemhtzxtxaaxulodg`）
+
+* 首次 `npm run collect` 会自动建表
 
 ### 2. Vercel
 
 1. [vercel.com](https://vercel.com) → Import GitHub 仓库 `shanghai_Collector`
 2. Environment Variables：
-   - `DATABASE_URL` = Supabase **Transaction pooler（6543）** 连接串
-   - `COLLECT_SECRET` = 随机字符串（可选）
+
+   * `DATABASE_URL` = Supabase **Transaction pooler（6543）** 连接串
+
+   * `COLLECT_SECRET` = 随机字符串（可选）
 3. Deploy
 
 ### 3. GitHub Actions
 
 仓库 **Settings → Secrets and variables → Actions** 添加：
 
-| Secret | 值 |
-|--------|-----|
+| Secret         | 值                                        |
+| -------------- | ---------------------------------------- |
 | `DATABASE_URL` | Supabase **Direct connection（5432）** 连接串 |
 
 采集默认定时：每两日 01:00 UTC。也可在 Actions 页手动 **Run workflow** 触发首次采集。
@@ -110,13 +118,19 @@ npm run dev       # 打开 http://localhost:3000 查看真实数据
 
 ## 后端数据结构
 
-- `source_configs`：采集源配置
-- `collection_runs`：每次采集任务状态
-- `raw_events`：原始召回候选
-- `events`：去重后发布的活动
+* `source_configs`：采集源配置
+
+* `collection_runs`：每次采集任务状态
+
+* `raw_events`：原始召回候选
+
+* `events`：去重后发布的活动
 
 ## 第一版边界
 
-- 只抓公开网页，登录、验证码、强反爬页面先跳过并记录失败
-- 必须具备标题、时间、地点、分类、报名链接、来源，缺字段不发布
-- 去重先用规则硬去重，小模型二次去重默认关闭
+* 只抓公开网页，登录、验证码、强反爬页面先跳过并记录失败
+
+* 必须具备标题、时间、地点、分类、报名链接、来源，缺字段不发布
+
+* 去重先用规则硬去重，小模型二次去重默认关闭
+
