@@ -6,9 +6,11 @@ import { CAROUSEL_INTERVAL_MS, nextCarouselIndex } from "../lib/carousel.js";
 import { safeExternalUrl } from "../lib/events.js";
 
 export function FeaturedCarousel({ events }) {
+  // 只展示有真实封面的事件；无图事件在分类网格里已有渐变兜底，featured 走纯图片位
+  const withCovers = events.filter((event) => isUsableImage(event.image_url));
   const [activeIndex, setActiveIndex] = useState(0);
-  const total = events.length;
-  const activeEvent = events[activeIndex];
+  const total = withCovers.length;
+  const activeEvent = withCovers[activeIndex];
 
   useEffect(() => {
     if (total <= 1) return undefined;
@@ -44,19 +46,25 @@ export function FeaturedCarousel({ events }) {
   return (
     <section className="featured-carousel" aria-label="Featured events">
       <a
-        className="featured-slide"
+        className="featured-slide featured-slide--image"
         href={safeExternalUrl(activeEvent.signup_url)}
         target="_blank"
         rel="noopener noreferrer"
+        style={{ backgroundImage: `url(${activeEvent.image_url})` }}
       >
-        <span className="cover-kicker">{activeEvent.category}</span>
-        <h2>{activeEvent.title}</h2>
-        {activeEvent.summary ? (
-          <p className="featured-summary">{activeEvent.summary}</p>
-        ) : null}
-        <p className="featured-meta">
-          {activeEvent.venue} / {formatDateTime(activeEvent.start_time)}
-        </p>
+        <span className="featured-cover-scrim" aria-hidden="true" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="featured-cover-img" src={activeEvent.image_url} alt="" loading="eager" referrerPolicy="no-referrer" />
+        <span className="featured-slide-content">
+          <span className="cover-kicker">{activeEvent.category}</span>
+          <h2>{activeEvent.title}</h2>
+          {activeEvent.summary ? (
+            <p className="featured-summary">{activeEvent.summary}</p>
+          ) : null}
+          <p className="featured-meta">
+            {activeEvent.venue} / {formatDateTime(activeEvent.start_time)}
+          </p>
+        </span>
       </a>
 
       {total > 1 && (
@@ -70,7 +78,7 @@ export function FeaturedCarousel({ events }) {
             ‹
           </button>
           <div className="carousel-dots" aria-label="Slide navigation">
-            {events.map((event, index) => (
+            {withCovers.map((event, index) => (
               <button
                 aria-label={`Go to ${event.title}`}
                 aria-pressed={index === activeIndex}
@@ -95,6 +103,10 @@ export function FeaturedCarousel({ events }) {
       )}
     </section>
   );
+}
+
+function isUsableImage(url) {
+  return typeof url === "string" && /^https?:\/\//i.test(url.trim());
 }
 
 function formatDateTime(value) {
