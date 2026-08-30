@@ -8,9 +8,19 @@ import {
   isEventLikeTitle,
   isInDateRange,
   mergeDuplicateEvents,
+  safeExternalUrl,
   toShanghaiDayWindow,
   toShanghaiWeekRange,
 } from "../src/lib/events.js";
+
+test("external urls only allow http(s) schemes", () => {
+  assert.equal(safeExternalUrl("https://example.com/e"), "https://example.com/e");
+  assert.equal(safeExternalUrl("http://example.com/e"), "http://example.com/e");
+  assert.equal(safeExternalUrl("javascript:alert(1)"), "#");
+  assert.equal(safeExternalUrl("data:text/html,x"), "#");
+  assert.equal(safeExternalUrl(""), "#");
+  assert.equal(safeExternalUrl(null), "#");
+});
 
 test("keeps the homepage categories stable", () => {
   assert.deepEqual(CATEGORIES, ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"]);

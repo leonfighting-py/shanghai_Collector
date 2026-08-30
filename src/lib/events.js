@@ -192,3 +192,9 @@ export function getWeekDays(startDate) {
     return date.toISOString().slice(0, 10);
   });
 }
+
+/** 外链安全：活动链接只接受 http(s)，其余（如 javascript:）退化为 # */
+export function safeExternalUrl(url) {
+  const text = String(url || "").trim();
+  return /^https?:\/\//i.test(text) ? text : "#";
+}

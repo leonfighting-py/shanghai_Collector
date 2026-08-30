@@ -1,8 +1,15 @@
+import { safeExternalUrl } from "../../lib/events.js";
+
 export function CategoryEventCard({ event }) {
   const sourceLabel = formatSourceLabel(event);
 
   return (
-    <a className="glass-card glass-event-card" href={event.signup_url}>
+    <a
+      className="glass-card glass-event-card"
+      href={safeExternalUrl(event.signup_url)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <span className="card-date">{formatDateTime(event.start_time)}</span>
       <strong className="card-title">{event.title}</strong>
       {event.summary ? <p className="card-summary">{event.summary}</p> : null}

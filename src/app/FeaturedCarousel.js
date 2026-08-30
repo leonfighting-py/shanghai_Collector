@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { CAROUSEL_INTERVAL_MS, nextCarouselIndex } from "../lib/carousel.js";
+import { safeExternalUrl } from "../lib/events.js";
 
 export function FeaturedCarousel({ events }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -42,7 +43,12 @@ export function FeaturedCarousel({ events }) {
 
   return (
     <section className="featured-carousel" aria-label="Featured events">
-      <a className="featured-slide" href={activeEvent.signup_url}>
+      <a
+        className="featured-slide"
+        href={safeExternalUrl(activeEvent.signup_url)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         <span className="cover-kicker">{activeEvent.category}</span>
         <h2>{activeEvent.title}</h2>
         {activeEvent.summary ? (
