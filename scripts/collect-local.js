@@ -20,6 +20,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
     `- 召回：${result.collectedCount} 条原始 → ${result.publishedCount} 条可发布（窗口 ${result.startDate} ~ ${result.endDate}）`,
     `- 入库：raw ${result.raw_inserted} / published ${result.published_inserted}`,
     `- LLM 润色：${result.enrichment?.enrichedCount ?? 0} 条（${result.enrichment?.provider || "disabled"}）`,
+    `- 封面图：回填 ${result.image_backfill?.backfilled ?? 0}/${result.image_backfill?.attempted ?? 0} 条`,
     `- 发布守门：${guard.allowed ? "通过" : `拦截（${guard.reason}，新 ${guard.newCount} < 旧 ${guard.previousCount}）`}`,
     "",
     failedSources ? `### 失败源（${result.failures.length}）\n${failedSources}` : "### 全部源成功",

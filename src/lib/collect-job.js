@@ -1,6 +1,7 @@
 import { collectEventsFromSources, SOURCE_SEEDS } from "./collector.js";
 import { filterEventCategories, getCategoryFilterConfig } from "./category-filter.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
+import { backfillEventImages } from "./image-backfill.js";
 import {
   evaluatePublishGuard,
   getPublishGuardConfig,
@@ -39,6 +40,11 @@ export async function runCollectJob() {
     result.events === previousEvents
       ? { events: previousEvents, enrichedCount: 0, skippedCount: 0, failures: [] }
       : await enrichEventsForPublish(result.events);
+  // 图片回填：对列表页没带图的事件抓详情页 og:image（失败静默，渐变兜底兜住）
+  const imageBackfill =
+    result.events === previousEvents
+      ? { attempted: 0, backfilled: 0, failed: 0 }
+      : await backfillEventImages(enrichment.events);
   const categoryFilter =
     result.events === previousEvents
       ? { events: enrichment.events, reclassifiedCount: 0, rejectedCount: 0, failures: [], enabled: false }
@@ -83,6 +89,7 @@ export async function runCollectJob() {
       newCount: guard.newCount,
       ratio: guardConfig.ratio,
     },
+    image_backfill: imageBackfill,
     enrichment: {
       enabled: getEventEnrichmentConfig().enabled,
       provider: enrichmentProvider(),
