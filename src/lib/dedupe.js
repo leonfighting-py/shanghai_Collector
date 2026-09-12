@@ -20,25 +20,34 @@ export function dedupeWithRules(events) {
     match.sources = mergeSources(match.sources, event.sources);
     if (!match.end_time && event.end_time) match.end_time = event.end_time;
     if (!match.summary && event.summary) match.summary = event.summary;
+    if (!match.image_url && event.image_url) match.image_url = event.image_url;
   }
 
   return merged.sort((left, right) => new Date(left.start_time).getTime() - new Date(right.start_time).getTime());
 }
 
-export function isSoftDuplicate(left, right) {
-  if (left.category !== right.category) return false;
-  if (Math.abs(dateDistanceDays(left.start_time, right.start_time)) > 1) return false;
+// 同一报名/源链接且标题相近即判为同一事件：LLM 抽取常把同一活动切成多个标题/日期变体。
+// 门槛设得较低但要 >0：既能收拢 NYU 这类"同链接、标题改写"的重复，又能避免误并
+// "共用场馆总览页链接"的不同展览（后者标题完全不相交，jaccard=0）。实证稳定区间 0.05–0.20。
+const SAME_URL_TITLE_FLOOR = 0.12;
 
+export function isSoftDuplicate(left, right) {
   const leftTitle = comparableTitle(left.title);
   const rightTitle = comparableTitle(right.title);
   const titleSimilarity = jaccardSimilarity(leftTitle, rightTitle);
   const leftVenue = normalizeText(left.venue);
   const rightVenue = normalizeText(right.venue);
-  const venueSimilarity = jaccardSimilarity(leftVenue, rightVenue);
-  const venueContains = leftVenue.includes(rightVenue) || rightVenue.includes(leftVenue);
   const sameUrl = left.signup_url === right.signup_url || left.source_url === right.source_url;
 
-  return sameUrl || (titleSimilarity >= 0.82 && (venueSimilarity >= 0.35 || venueContains));
+  if (sameUrl && titleSimilarity >= SAME_URL_TITLE_FLOOR) return true;
+
+  if (left.category !== right.category) return false;
+  if (Math.abs(dateDistanceDays(left.start_time, right.start_time)) > 1) return false;
+
+  const venueSimilarity = jaccardSimilarity(leftVenue, rightVenue);
+  const venueContains = leftVenue.includes(rightVenue) || rightVenue.includes(leftVenue);
+
+  return titleSimilarity >= 0.82 && (venueSimilarity >= 0.35 || venueContains);
 }
 
 function comparableTitle(value) {

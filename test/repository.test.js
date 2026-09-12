@@ -49,17 +49,19 @@ test("source configs persist parser metadata without functions", () => {
   assert.equal(config.notes, "");
 });
 
-test("event window SQL includes recent ongoing exhibitions", () => {
+test("event window SQL includes recent ongoing exhibitions and campus lectures", () => {
   const where = buildEventWindowWhereSql("$1", "$2");
 
   assert.match(where, /category = '展览'/);
   assert.match(where, /interval '60 days'/);
+  assert.match(where, /category = '高校讲座'/);
+  assert.match(where, /interval '30 days'/);
 });
 
 test("local event filtering includes recent ongoing exhibitions", () => {
   const events = [
     event("常设展", "2026-06-02T10:00:00+08:00", "展览"),
-    event("旧讲座", "2026-06-02T10:00:00+08:00", "高校讲座"),
+    event("旧线下活动", "2026-06-02T10:00:00+08:00", "线下活动"),
     event("周末活动", "2026-06-20T10:00:00+08:00", "线下活动"),
   ];
 
@@ -71,6 +73,24 @@ test("local event filtering includes recent ongoing exhibitions", () => {
   assert.deepEqual(
     filtered.map((item) => item.title),
     ["常设展", "周末活动"],
+  );
+});
+
+test("local event filtering keeps recently announced campus lectures", () => {
+  const events = [
+    event("近期讲座", "2026-06-02T10:00:00+08:00", "高校讲座"),
+    event("过期刊座", "2026-05-01T10:00:00+08:00", "高校讲座"),
+    event("周末活动", "2026-06-20T10:00:00+08:00", "线下活动"),
+  ];
+
+  const filtered = filterEventsForWindow(events, {
+    startDate: "2026-06-19",
+    endDate: "2026-07-02",
+  });
+
+  assert.deepEqual(
+    filtered.map((item) => item.title),
+    ["近期讲座", "周末活动"],
   );
 });
 

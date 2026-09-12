@@ -1,13 +1,14 @@
 "use client";
 
 import { safeExternalUrl } from "../../lib/events.js";
+import { isUsableImage, optimizedImageUrl } from "../../lib/image-url.js";
 import { useFavorites } from "./useFavorites.js";
 
 export function CategoryEventCard({ event }) {
   const sourceLabel = formatSourceLabel(event);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(event.dedupe_key);
-  const image = event.image_url && /^https?:\/\//i.test(event.image_url) ? event.image_url : null;
+  const image = isUsableImage(event.image_url) ? event.image_url : null;
 
   return (
     <a
@@ -19,7 +20,7 @@ export function CategoryEventCard({ event }) {
       {image ? (
         <span className="card-cover">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image} alt="" loading="lazy" referrerPolicy="no-referrer" />
+          <img src={optimizedImageUrl(image, { width: 600 })} alt="" loading="lazy" referrerPolicy="no-referrer" />
         </span>
       ) : (
         <span className={`card-cover card-cover--fallback cover-${fallbackVariant(event)}`} aria-hidden="true">

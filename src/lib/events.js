@@ -175,11 +175,13 @@ export function isInDateRange(event, startDate, endDate) {
   const eventDate = toShanghaiDate(event.start_time);
   if (eventDate >= startDate && eventDate <= endDate) return true;
 
-  if (event.category === "展览" && eventDate && eventDate < startDate) {
+  if (eventDate && eventDate < startDate) {
     const start = new Date(`${startDate}T00:00:00.000Z`);
     const opened = new Date(`${eventDate}T00:00:00.000Z`);
     const daysSinceOpening = Math.floor((start.getTime() - opened.getTime()) / 86_400_000);
-    return daysSinceOpening <= 60;
+
+    if (event.category === "展览" && daysSinceOpening <= 60) return true;
+    if (event.category === "高校讲座" && daysSinceOpening <= 30) return true;
   }
 
   return false;

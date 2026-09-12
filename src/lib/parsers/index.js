@@ -6,6 +6,16 @@ import { parseChinaDrama } from "./chinadrama.js";
 import { parseDamai } from "./damai.js";
 import { parseDoubanShanghai } from "./douban.js";
 import { parseEventbrite, parseEventbriteAiTech } from "./eventbrite.js";
+import { parseEcnuLectures } from "./ecnu-lectures.js";
+import {
+  parseFudanChemistry,
+  parseSjtuNewsLectures,
+  parseShiepLectures,
+  parseShanghaitechLectures,
+  parseEcustLectures,
+  parseFudanShmcLectures,
+  parseFudanSpfduLectures,
+} from "./university-lectures.js";
 import { parseFosunFoundation } from "./fosun.js";
 import { parseFotografiska } from "./fotografiska.js";
 import { parseGewara } from "./gewara.js";
@@ -66,6 +76,14 @@ export const PARSERS = {
   shqyg: parseShqyg,
   showstart: parseShowstart,
   douban: parseDoubanShanghai,
+  ecnuLectures: parseEcnuLectures,
+  fudanChemistry: parseFudanChemistry,
+  sjtuNewsLectures: parseSjtuNewsLectures,
+  shiepLectures: parseShiepLectures,
+  shanghaitechLectures: parseShanghaitechLectures,
+  ecustLectures: parseEcustLectures,
+  fudanShmcLectures: parseFudanShmcLectures,
+  fudanSpfduLectures: parseFudanSpfduLectures,
   smartshanghai: parseSmartShanghai,
   allevents: parseJsonLdEvents,
   fotografiska: parseFotografiska,

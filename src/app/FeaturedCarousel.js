@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 
 import { CAROUSEL_INTERVAL_MS, nextCarouselIndex } from "../lib/carousel.js";
 import { safeExternalUrl } from "../lib/events.js";
+import { isUsableImage, optimizedImageUrl } from "../lib/image-url.js";
 
 export function FeaturedCarousel({ events }) {
   // 只展示有真实封面的事件；无图事件在分类网格里已有渐变兜底，featured 走纯图片位
-  const withCovers = events.filter((event) => isUsableImage(event.image_url));
+  // 同一张海报只展示一次：宝山店/长风店这类同品牌多场次会共用一张图，
+  // 轮播里连放两张体验很差。保留评分最高（排序最前）的一条，另一条仍出现在分类网格。
+  const withCovers = dedupeByImage(events.filter((event) => isUsableImage(event.image_url)));
   const [activeIndex, setActiveIndex] = useState(0);
   const total = withCovers.length;
   const activeEvent = withCovers[activeIndex];
@@ -53,7 +56,7 @@ export function FeaturedCarousel({ events }) {
       >
         <span className="featured-cover-scrim" aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="featured-cover-img" src={carouselImageUrl(activeEvent.image_url)} alt="" loading="eager" referrerPolicy="no-referrer" />
+        <img className="featured-cover-img" src={optimizedImageUrl(activeEvent.image_url)} alt="" loading="eager" referrerPolicy="no-referrer" />
         <span className="featured-slide-content">
           <span className="cover-kicker">{activeEvent.category}</span>
           <h2>{activeEvent.title}</h2>
@@ -104,21 +107,14 @@ export function FeaturedCarousel({ events }) {
   );
 }
 
-function isUsableImage(url) {
-  return typeof url === "string" && /^https?:\/\//i.test(url.trim());
-}
-
-/**
- * 轮播图走压缩版：pipi.cn 图床（格瓦拉/猫眼系）支持 imageMogr2 缩放。
- * 已实测：thumbnail/1200x + quality/75 对已压缩原图仍有体积收益，且统一到 1200 宽。
- * 其他图床（无法确认支持）原样返回。
- */
-function carouselImageUrl(url) {
-  if (typeof url !== "string") return url;
-  if (/\.pipi\.cn\//.test(url)) {
-    return `${url.split("?")[0]}?imageMogr2/thumbnail/1200x/quality/75`;
-  }
-  return url;
+function dedupeByImage(events) {
+  const seen = new Set();
+  return events.filter((event) => {
+    const key = event.image_url;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function formatDateTime(value) {

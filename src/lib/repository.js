@@ -352,6 +352,11 @@ export function buildEventWindowWhereSql(startParam, endParam) {
       and start_time >= (${startParam}::timestamptz - interval '60 days')
       and start_time <= ${endParam}
     )
+    or (
+      category = '高校讲座'
+      and start_time >= (${startParam}::timestamptz - interval '30 days')
+      and start_time <= ${endParam}
+    )
   )`;
 }
 

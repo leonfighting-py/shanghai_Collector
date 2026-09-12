@@ -2,14 +2,13 @@
 
 import { useCallback } from "react";
 
+import { CATEGORIES } from "../../lib/events.js";
 import { ThemeToggle } from "./ThemeToggle.js";
 
-const NAV_LINKS = [
-  { label: "演出音乐", sectionId: "section-演出音乐" },
-  { label: "展览", sectionId: "section-展览" },
-  { label: "线下活动", sectionId: "section-线下活动" },
-  { label: "高校讲座", sectionId: "section-高校讲座" },
-];
+const NAV_LINKS = CATEGORIES.map((category) => ({
+  label: category,
+  sectionId: `section-${category}`,
+}));
 
 /**
  * Fixed-position navbar with liquid-glass styling.
