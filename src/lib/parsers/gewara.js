@@ -1,4 +1,4 @@
-import { buildEvent, decodeHtml, uniqueBy } from "./shared.js";
+import { buildEvent, decodeHtml, uniqueBy, isRelevantPerformance } from "./shared.js";
 
 const DETAIL_BASE = "https://www.gewara.com/detail/";
 
@@ -313,7 +313,7 @@ export function parseGewara(html, source) {
   const allEvents = [...hotlistEvents, ...newlistEvents];
 
   return uniqueBy(
-    allEvents,
+    allEvents.filter(isRelevantPerformance),
     (e) => `${e.title}|${e.start_time}`,
   );
 }

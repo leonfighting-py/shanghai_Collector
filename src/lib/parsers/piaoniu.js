@@ -1,4 +1,4 @@
-import { buildEvent, decodeHtml, absoluteUrl, uniqueBy } from "./shared.js";
+import { buildEvent, decodeHtml, absoluteUrl, uniqueBy, isRelevantPerformance } from "./shared.js";
 
 const BASE_URL = "https://www.piaoniu.com/";
 
@@ -192,7 +192,7 @@ export function parsePiaoniu(html, source) {
   }
 
   return uniqueBy(
-    events,
+    events.filter(isRelevantPerformance),
     (e) => `${e.title}|${e.start_time}`,
   );
 }

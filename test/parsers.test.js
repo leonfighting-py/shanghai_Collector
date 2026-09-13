@@ -11,7 +11,7 @@ import { parseHuodongxing } from "../src/lib/parsers/huodongxing.js";
 import { parseShcstheatre } from "../src/lib/parsers/shcstheatre.js";
 import { parseSmartShanghai } from "../src/lib/parsers/smartshanghai.js";
 import { isEventLikeTitle } from "../src/lib/events.js";
-import { buildEvent, parseFlexibleDate } from "../src/lib/parsers/shared.js";
+import { buildEvent, parseFlexibleDate, isRelevantPerformance } from "../src/lib/parsers/shared.js";
 import { parseChinaArtMuseumExhibitions } from "../src/lib/parsers/artmuseumonline.js";
 import { parseMapExhibitions } from "../src/lib/parsers/map.js";
 
@@ -203,4 +203,20 @@ test("bendibao list parser fetches article detail pages", async () => {
 
   assert.equal(events.length, 1);
   assert.equal(events[0].source_name, "上海本地宝·活动");
+});
+
+test("isRelevantPerformance filters sports titles and non-Shanghai venues", () => {
+  assert.equal(isRelevantPerformance({ title: "2026广州黄埔国际网球公开赛ATP100", venue: "广州开发区国际网球学校" }), false);
+  assert.equal(isRelevantPerformance({ title: "2026国际篮联洲际杯赛事", venue: "国家体育馆" }), false);
+  assert.equal(isRelevantPerformance({ title: "2026小米CTCC汽车联赛上海嘉定站", venue: "上海国际赛车场" }), false);
+  assert.equal(isRelevantPerformance({ title: "2026上海8小时耐力赛", venue: "上海国际赛车场" }), false);
+  assert.equal(isRelevantPerformance({ title: "2026上海马拉松", venue: "上海体育场" }), false);
+  assert.equal(isRelevantPerformance({ title: "某演唱会", venue: "深圳湾体育中心" }), false);
+  assert.equal(isRelevantPerformance({ title: "某演出", venue: "成都城市音乐厅" }), false);
+
+  assert.equal(isRelevantPerformance({ title: "李荣浩黑马世界巡回演唱会", venue: "上海体育场" }), true);
+  assert.equal(isRelevantPerformance({ title: "音乐剧《狂炎奏鸣曲》共舞台热演", venue: "上海共舞台" }), true);
+  assert.equal(isRelevantPerformance({ title: "潘玮柏MADLOVEULTRA巡回演唱会", venue: "上海虹口足球场" }), true);
+  assert.equal(isRelevantPerformance({ title: "沉浸式剧场《9号秘事》", venue: "上海大剧院" }), true);
+  assert.equal(isRelevantPerformance({ title: "林肯爵士乐Shenel Johns四重奏演出", venue: "林肯爵士乐上海中心" }), true);
 });
