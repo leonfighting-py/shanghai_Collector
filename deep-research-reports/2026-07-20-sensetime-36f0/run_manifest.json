@@ -1,0 +1,187 @@
+{
+  "schema_version": "2.0",
+  "manifest_id": "run_20260720_sensetime_36f0",
+  "runtime": {
+    "name": "Claude Code",
+    "model": "sensenova-6.7-flash-lite",
+    "skill": "sn-deep-research",
+    "skill_version": "2.0",
+    "skill_git_commit": "n/a (deep-research-reports/ not git-tracked)",
+    "repo_git_head": "301035a",
+    "env": "vscode_extension",
+    "host_platform": "darwin"
+  },
+  "session": {
+    "start_time": "2026-07-20T23:40:00+08:00",
+    "end_time": "2026-07-22T23:55:00+08:00",
+    "total_duration_minutes": 2955,
+    "last_modified": "2026-07-22T23:55:00+08:00"
+  },
+  "target": {
+    "company": "商汤科技 SenseTime Research Limited",
+    "stock_code": "00020.HK",
+    "objective": "面向 ToB 企业管理层，提供采购合作与投资决策辅助",
+    "dimensions": ["基本面", "产品", "竞争", "财务风险", "2025补充"]
+  },
+  "phases": [
+    {
+      "name": "scout",
+      "status": "completed",
+      "output": "briefing.json, format_proposal.json",
+      "duration_estimate": "5 min"
+    },
+    {
+      "name": "plan",
+      "status": "completed",
+      "output": "plan.json",
+      "schema": "v1.0",
+      "dimensions": 5,
+      "last_modified": "2026-07-20T23:40:33+08:00"
+    },
+    {
+      "name": "research",
+      "status": "completed",
+      "output": "sub_reports/d1~d5.evidence.json",
+      "schema": "v1.2",
+      "total_claims": 37,
+      "sources_collected": 9
+    },
+    {
+      "name": "review",
+      "status": "completed",
+      "issues_found": 6,
+      "issues_fixed": 6,
+      "notes": "发现并修正 2024 年财务数据严重错误（营收币种、数值、增长率）"
+    },
+    {
+      "name": "outline",
+      "status": "completed",
+      "output": "outline.json",
+      "schema": "v2.0",
+      "content_units": 11
+    },
+    {
+      "name": "writer",
+      "status": "completed",
+      "output": "report.md",
+      "language": "zh-Hans",
+      "sections": 9
+    },
+    {
+      "name": "stitcher",
+      "status": "completed",
+      "output": "report.md (合并版)",
+      "notes": "d1~d5 evidence 合并为完整报告"
+    },
+    {
+      "name": "render",
+      "status": "completed",
+      "output": "report.html",
+      "format": "single-file HTML",
+      "file_size_bytes": 86611
+    },
+    {
+      "name": "data_correction",
+      "status": "completed",
+      "trigger": "审计发现 2024 财务数据为模型幻觉",
+      "fixes_applied": [
+        "d1.evidence.json: 营收币种 RMB 修正，增长率 +10.8%（原 +5.1%）",
+        "d4.evidence.json: 现金储备 141 亿港元（原 433 亿港元）",
+        "d5.evidence.json: 来源 URL 与验证信息完善",
+        "citations.json: 6→9 来源，添加 verified 字段",
+        "report.md: 12 处财务数据修正",
+        "report.html: 12 处财务数据 + 图表修正",
+        "outline.json: 修复格式错误的 claim ID"
+      ],
+      "verification": "HKEX 年报 PDF (4份) 实际下载并提取全文验证"
+    },
+    {
+      "name": "console",
+      "status": "completed",
+      "output": "report.html 研究控制台 (UI + JS)",
+      "notes": "新增 researchConsole 组件：输入配置→流程动画→报告阅读页"
+    },
+    {
+      "name": "manifest",
+      "status": "completed",
+      "output": "run_manifest.json, events.jsonl"
+    }
+  ],
+  "tool_usage": {
+    "total_tool_calls_estimated": 150,
+    "web_fetch": 12,
+    "bash": 45,
+    "read": 30,
+    "write": 15,
+    "edit": 20,
+    "other": 28
+  },
+  "errors_and_retries": [
+    {
+      "phase": "research",
+      "issue": "HKEX PDF URL (MAR20250327013.pdf) 返回 HTTP 404",
+      "resolution": "从 SenseTime 官网快照中提取正确 HKEX PDF 链接并重新下载",
+      "files_affected": ["sensetime_annual_2024 URL"]
+    },
+    {
+      "phase": "research",
+      "issue": "缓存的 sensetime_2024_report.pdf 实际为港交所错误页面 (HTML)",
+      "resolution": "重新下载真实 PDF 并提取财务数据",
+      "files_affected": ["sensetime_2024_report.pdf"]
+    },
+    {
+      "phase": "review",
+      "issue": "d1.c2 营收币种为 HKD，实际年报为 RMB",
+      "resolution": "全部财务数据修正为 RMB，标注 HKD 换算",
+      "files_affected": ["d1.evidence.json", "report.md", "report.html"]
+    },
+    {
+      "phase": "review",
+      "issue": "d4.c3 现金储备 433 亿港元为模型幻觉",
+      "resolution": "修正为 141 亿港元（127.52 亿 RMB）",
+      "files_affected": ["d4.evidence.json", "report.md", "report.html"]
+    },
+    {
+      "phase": "review",
+      "issue": "citations.json 仅 6 来源，报告声明 9 来源",
+      "resolution": "扩展至 9 来源，对齐证据文件",
+      "files_affected": ["citations.json"]
+    },
+    {
+      "phase": "review",
+      "issue": "outline.json 中 claim ID 格式错误 (d3.5→d3.c5)",
+      "resolution": "文本级修正所有格式错误的 claim ID",
+      "files_affected": ["outline.json"]
+    }
+  ],
+  "deliverables": {
+    "report_md": "report.md",
+    "report_html": "report.html",
+    "evidence_files": ["sub_reports/d1.evidence.json", "sub_reports/d2.evidence.json", "sub_reports/d3.evidence.json", "sub_reports/d4.evidence.json", "sub_reports/d5.evidence.json"],
+    "citations": "citations.json",
+    "outline": "outline.json",
+    "plan": "plan.json",
+    "briefing": "briefing.json",
+    "format_proposal": "format_proposal.json",
+    "manifest": "run_manifest.json",
+    "events": "events.jsonl"
+  },
+  "data_integrity": {
+    "primary_sources_verified": 7,
+    "secondary_sources_verified": 2,
+    "financial_data_source": "HKEX annual report PDFs (2021-2024)",
+    "financial_data_verified": true,
+    "verification_method": "pypdf 文本提取 + 人工比对",
+    "currency": "RMB (primary) / HKD (converted, rate ~1.11)",
+    "2025_data_status": "press_release (unaudited)",
+    "2025_audit_date_expected": "2026-03"
+  },
+  "open_gaps": [
+    "券商评级和目标价: 东方财富 HSF10 显示无覆盖",
+    "SLA 服务等级协议: 公测期未公开",
+    "第三方客户满意度: 无量化数据",
+    "IDC 精确市场份额: 仅有定性梯队",
+    "产品付费档位定价: 尚未上线",
+    "2025 年度经审计年报: 预计 2026-03 发布"
+  ]
+}

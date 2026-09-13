@@ -1,0 +1,13 @@
+{"ts":"2026-07-20T23:40:00+08:00","phase":"scout","model":"sensenova-6.7-flash-lite","prompt_length":1200,"output_length":3500,"output_file":"briefing.json","status":"success"}
+{"ts":"2026-07-20T23:40:05+08:00","phase":"scout","model":"sensenova-6.7-flash-lite","prompt_length":800,"output_length":2200,"output_file":"format_proposal.json","status":"success"}
+{"ts":"2026-07-20T23:40:10+08:00","phase":"plan","model":"sensenova-6.7-flash-lite","prompt_length":2500,"output_length":4000,"output_file":"plan.json","status":"success"}
+{"ts":"2026-07-20T23:41:00+08:00","phase":"research","model":"sensenova-6.7-flash-lite","prompt_length":3000,"output_length":5000,"output_file":"sub_reports/d1.evidence.json","status":"success"}
+{"ts":"2026-07-20T23:43:00+08:00","phase":"research","model":"sensenova-6.7-flash-lite","prompt_length":2800,"output_length":4500,"output_file":"sub_reports/d2.evidence.json","status":"success"}
+{"ts":"2026-07-20T23:45:00+08:00","phase":"research","model":"sensenova-6.7-flash-lite","prompt_length":2600,"output_length":4000,"output_file":"sub_reports/d3.evidence.json","status":"success"}
+{"ts":"2026-07-20T23:47:00+08:00","phase":"research","model":"sensenova-6.7-flash-lite","prompt_length":2700,"output_length":4200,"output_file":"sub_reports/d4.evidence.json","status":"success"}
+{"ts":"2026-07-20T23:50:00+08:00","phase":"research","model":"sensenova-6.7-flash-lite","prompt_length":2000,"output_length":3500,"output_file":"sub_reports/d5.evidence.json","status":"success"}
+{"ts":"2026-07-20T23:55:00+08:00","phase":"review","model":"sensenova-6.7-flash-lite","prompt_length":4000,"output_length":2000,"output_file":"sub_reports/d1.review.md","status":"success"}
+{"ts":"2026-07-20T23:58:00+08:00","phase":"outline","model":"sensenova-6.7-flash-lite","prompt_length":3500,"output_length":3000,"output_file":"outline.json","status":"success"}
+{"ts":"2026-07-21T00:00:00+08:00","phase":"writer","model":"sensenova-6.7-flash-lite","prompt_length":5000,"output_length":8000,"output_file":"report.md","status":"success"}
+{"ts":"2026-07-22T23:50:00+08:00","phase":"data_correction","model":"sensenova-6.7-flash-lite","prompt_length":4500,"output_length":6000,"output_file":"report.md (corrected)","status":"success"}
+{"ts":"2026-07-24T22:13:00+08:00","phase":"v2","model":"sensenova-6.7-flash-lite","prompt_length":8000,"output_length":15000,"output_file":"report_v2.md","status":"success"}

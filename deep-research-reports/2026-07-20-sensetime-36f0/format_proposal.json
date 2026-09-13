@@ -1,0 +1,31 @@
+{
+  "container": "markdown",
+  "source": "user_specified",
+  "recommended_format_id": "research_report",
+  "structure_preference": {
+    "requested_type": "narrative",
+    "custom_type": null,
+    "strength": "preferred",
+    "notes": "用户确认叙事为主体（结论前置、决策导向），对比表格为辅"
+  },
+  "candidates": [
+    {
+      "id": "research_report",
+      "label": "公司深度研究报告",
+      "best_for": "面向 ToB 企业管理层，对单一公司做多维度综合评估并给出采购与投资决策建议",
+      "defining_features": [
+        "结论前置：开篇即给出采购合作适配性与投资观察名单价值的明确判断",
+        "决策导向：每个维度结论均落到可执行建议（做/不做/条件性）",
+        "叙事主体：以连贯叙事承载四维度分析，而非碎片化罗列",
+        "辅以对比表格：竞争格局、产品对比、估值等处以表格增强扫读",
+        "四维结构：公司基本面与商业化能力、产品与企业采购价值、竞争格局与替代方案、投资观察价值与风险",
+        "明确标注数据时点与证据缺口，对未验证信息标注不确定性"
+      ],
+      "rationale": "用户已明确指定为面向普通 ToB 企业管理层的公司深度研究报告，结论前置、决策导向、叙事主体、辅以对比表格；完全匹配 research_report 形态。"
+    }
+  ],
+  "format_research_sources": [],
+  "fallback_used": false,
+  "fallback_reason": null,
+  "confirmed_by_user": false
+}

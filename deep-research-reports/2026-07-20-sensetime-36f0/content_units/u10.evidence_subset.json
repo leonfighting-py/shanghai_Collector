@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.2",
+  "content_unit_id": "u10",
+  "claims": [
+    {
+      "id": "d4.c7",
+      "text": "进入投资观察名单的核心催化因素包括：AI大模型商业化收入突破10亿港元/年（规模化拐点）、亏损收窄至20亿港元以下（经营改善）、与头部企业签订大型AI服务合同（订单里程碑）、完成新一轮战略融资或引入产业资本（估值支撑）。核心下行风险包括：营收继续下降或增速转负、亏损扩大、美国出口管制升级限制算力获取、AI大模型市场被DeepSeek等竞品进一步挤压、组织稳定性问题（核心人才流失）。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "observation_triggers",
+      "answers_key_question": "kq7",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "价格战:\n- DeepSeek率先以极低定价和开源策略冲击市场\n- 云厂商利用云服务交叉补贴，定价更具灵活性\n- 商汤定价策略相对保守，缺乏透明公开的API定价",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d4.c8",
+      "text": "公开市场对商汤的看多逻辑：①AI大模型商业化预期（SenseNova平台+小浣熊+行业解决方案）；②账面现金充裕，短期无流动性风险；③估值已回落至接近净资产水平（PB约1.15），下行空间有限；④视觉多模态和行业垂直能力为差异化护城河。看空逻辑：①持续亏损且盈利路径不明；②营收四年未实现规模化增长；③竞争加剧（DeepSeek等以低价冲击市场）；④美国实体清单限制算力和海外业务；⑤管理层和核心人才稳定性存疑（多次组织调整、裁员）。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "market_views",
+      "answers_key_question": "kq8",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "- 2024年: 净亏损约42.18亿港元\n- 2023年: 净亏损约42.81亿港元\n- 亏损同比收窄约1.5%\n\n研发费用:\n- 2024年: 约12.8亿港元（约占营收22%）\n\n现金流:\n- 2024年末现金及现金等价物: 约433.4亿港元",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    }
+  ]
+}

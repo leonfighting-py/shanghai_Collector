@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Baidu Tongji -->
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?92a1ccafa5aefff56adb4ea8dac8e5a1";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+    <!-- End Baidu Tongji -->
+    <!-- GrowingIO Analytics code version 2.1 -->
+    <script type='text/javascript'>
+    !function(e,t,n,g,i){e[i]=e[i]||function(){(e[i].q=e[i].q||[]).push(arguments)},n=t.createElement("script"),tag=t.getElementsByTagName("script")[0],n.async=1,n.src=('https:'==document.location.protocol?'https://':'http://')+g,tag.parentNode.insertBefore(n,tag)}(window,document,"script","assets.giocdn.com/2.1/gio.js","gio");
+      gio('init', '8539273bfa333d53', {});
+      gio('send');
+    </script>
+    <!-- End GrowingIO Analytics code version: 2.1 -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style id="route-hash-scroll-guard">html { scroll-behavior: auto !important; }</style>
+    <script>
+      (function () {
+        const hash = location.hash;
+        if (!hash || hash.length < 2) {
+          document.getElementById("route-hash-scroll-guard")?.remove();
+          return;
+        }
+        let id;
+        try {
+          id = decodeURIComponent(hash.slice(1));
+        } catch {
+          return;
+        }
+        function snapRouteHash() {
+          const target = document.getElementById(id);
+          if (!target) return;
+          document.documentElement.style.scrollBehavior = "auto";
+          document.body.style.scrollBehavior = "auto";
+          target.scrollIntoView({ block: "start", behavior: "instant" });
+        }
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", snapRouteHash, { once: true });
+        } else {
+          snapRouteHash();
+        }
+      })();
+    </script>
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
+    <title>商汤科技 SenseTime</title>
+    <meta
+      name="description"
+      content="全球领先的人工智能公司，提供生成式 AI、视觉 AI、AI 算力及场景丰富的产品技术服务"
+    />
+    <meta
+      name="keywords"
+      content="商汤科技，日日新大模型，商量 SenseChat, 生成式 AI, 计算机视觉，SenseCore 大装置"
+    />
+    <link rel="canonical" href="https://www.sensetime.com/cn/" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "商汤科技SenseTime",
+          "url": "https://www.sensetime.com/cn/",
+          "description": "全球领先的人工智能公司，提供生成式 AI、视觉 AI、AI 算力及场景丰富的产品技术服务",
+          "inLanguage": "zh-CN",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://www.sensetime.com/cn/search?keyword={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "name": "商汤科技 SenseTime",
+          "url": "https://www.sensetime.com/cn/",
+          "canonicalUrl": "https://www.sensetime.com/cn/",
+          "isPartOf": {
+            "@type": "WebSite",
+            "name": "商汤科技SenseTime",
+            "url": "https://www.sensetime.com/cn/"
+          }
+        },
+        {
+          "@type": "Organization",
+          "name": "商汤科技SenseTime",
+          "alternateName": "商汤科技",
+          "url": "https://www.sensetime.com/cn/",
+          "telephone": "400 900 5986",
+          "email": "business@sensetime.com",
+          "description": "商汤科技以SenseCore AI大装置为基座，打造日日新SenseNova多模态大模型，覆盖商量对话、秒画文生图、如影数字人、绝影智能驾驶、SenseCare智慧医疗等全栈AI解决方案，深耕计算机视觉与生成式AI产业落地。"
+        }
+      ]
+    }
+    </script>
+    <script>
+      const previewMode = new URLSearchParams(window.location.search).get("view");
+      if (previewMode === "4k" || previewMode === "2k") {
+        document.documentElement.classList.add(`preview-${previewMode}`);
+      }
+    </script>
+    <link rel="stylesheet" href="../styles.css?v=20260721180408" />
+  </head>
+  <body>
+    <header class="site-header" data-header>
+      <a class="brand" href="/cn" aria-label="商汤首页">
+        <img src="../assets/logo-frame10.png" alt="商汤 SenseTime" />
+      </a>
+
+      <nav class="desktop-nav" aria-label="主导航">
+        <div class="nav-item">
+          <a class="nav-trigger" href="#products" data-section="products"><span>产品</span></a>
+        </div>
+        <div class="nav-item">
+          <a class="nav-trigger" href="#technology" data-section="technology"><span>技术</span></a>
+        </div>
+        <div class="nav-item">
+          <a class="nav-trigger" href="/cn/news/"><span>新闻</span></a>
+        </div>
+        <div class="nav-item">
+          <a class="nav-trigger" href="/cn/investor/"><span>投资者</span></a>
+        </div>
+        <div class="nav-item">
+          <a class="nav-trigger" href="/cn/join-index" target="_blank" rel="noopener"><span>人才招聘</span></a>
+        </div>
+        <div class="nav-item">
+          <button class="nav-trigger" type="button" data-section="about"><span>公司</span><span class="nav-chevron" aria-hidden="true"></span></button>
+          <div class="nav-dropdown nav-dropdown--about" role="menu" aria-label="公司导航">
+            <div class="nav-dropdown__group">
+              <h3 class="nav-dropdown__title">关于商汤</h3>
+              <a href="/cn/about/">公司介绍</a>
+              <a href="/cn/ethics/">AI 伦理与治理</a>
+              <a href="/cn/about/#contact">联系我们</a>
+            </div>
+            <div class="nav-dropdown__group">
+              <h3 class="nav-dropdown__title">企业社会责任</h3>
+              <a href="/cn/csr" target="_blank" rel="noopener">社会与环境</a>
+              <a href="/cn/csr#cate004" target="_blank" rel="noopener">可持续发展报告</a>
+            </div>
+            <div class="nav-dropdown__group">
+              <h3 class="nav-dropdown__title">商汤生态</h3>
+              <a href="/cn/partner/">大模型生态伙伴计划</a>
+              <a href="/cn/partner/#recruit">成为伙伴</a>
+            </div>
+            <div class="nav-dropdown__group">
+              <a href="https://www.sensetime.com/xo" target="_blank" rel="noopener">致敬创始人</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="header-actions">
+        <div class="language-menu" data-language-menu>
+          <button class="language-switch" type="button" data-language-toggle aria-label="语言" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+              <path d="M3.6 9h16.8M3.6 15h16.8M12 3c2.2 2.4 3.4 5.4 3.4 9s-1.2 6.6-3.4 9c-2.2-2.4-3.4-5.4-3.4-9S9.8 5.4 12 3Z" />
+            </svg>
+            <span data-language-current>简体中文</span>
+            <span class="language-switch__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="language-dropdown" role="menu" aria-label="语言选择">
+            <button type="button" role="menuitem" data-language-option="简体中文">简体中文</button>
+            <button type="button" role="menuitem" data-language-option="繁體中文">繁體中文</button>
+            <button type="button" role="menuitem" data-language-option="English">English</button>
+            <button type="button" role="menuitem" data-language-option="日本語">日本語</button>
+            <button type="button" role="menuitem" data-language-option="한국어">한국어</button>
+          </div>
+        </div>
+        <a class="primary-button primary-button--small" href="https://www.sensetime.com/cn/apply-index" target="_blank" rel="noopener" data-nav-cta>产品咨询</a>
+        <button class="menu-button" type="button" data-menu aria-label="菜单" aria-expanded="false" aria-controls="mobile-navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="mobile-panel" id="mobile-navigation" data-mobile-panel aria-label="移动端导航">
+      <div class="mobile-panel__inner">
+        <div class="mobile-panel__section mobile-panel__section--main">
+          <a class="mobile-panel__primary-link" href="#products">产品</a>
+          <a class="mobile-panel__primary-link" href="#technology">技术</a>
+          <a class="mobile-panel__primary-link" href="/cn/news/">新闻</a>
+          <a class="mobile-panel__primary-link" href="/cn/investor/">投资者</a>
+          <a class="mobile-panel__primary-link" href="/cn/join-index" target="_blank" rel="noopener">人才招聘</a>
+        </div>
+
+        <section class="mobile-panel__section mobile-panel__section--accordion" aria-labelledby="mobile-about-title">
+          <button class="mobile-panel__accordion" type="button" data-mobile-accordion aria-expanded="false" aria-controls="mobile-about-submenu">
+            <span id="mobile-about-title">公司</span>
+            <span class="mobile-panel__arrow" aria-hidden="true"></span>
+          </button>
+          <div class="mobile-panel__submenu" id="mobile-about-submenu" data-mobile-submenu aria-hidden="true">
+            <div class="mobile-panel__group">
+              <div class="mobile-panel__links">
+                <a href="/cn/about/">公司介绍</a>
+                <a href="/cn/ethics/">AI 伦理与治理</a>
+                <a href="/cn/about/#contact">联系我们</a>
+              </div>
+            </div>
+            <div class="mobile-panel__group">
+              <p class="mobile-panel__eyebrow">企业社会责任</p>
+              <div class="mobile-panel__links">
+                <a href="/cn/csr" target="_blank" rel="noopener">社会与环境</a>
+                <a href="/cn/csr#cate004" target="_blank" rel="noopener">可持续发展报告</a>
+              </div>
+            </div>
+            <div class="mobile-panel__group">
+              <p class="mobile-panel__eyebrow">商汤生态</p>
+              <div class="mobile-panel__links">
+                <a href="/cn/partner/">大模型生态伙伴计划</a>
+                <a href="/cn/partner/#recruit">成为伙伴</a>
+              </div>
+            </div>
+            <a class="mobile-panel__primary-link mobile-panel__primary-link--founder" href="https://www.sensetime.com/xo" target="_blank" rel="noopener">致敬创始人</a>
+          </div>
+        </section>
+
+        <a class="mobile-panel__cta" href="https://www.sensetime.com/cn/apply-index" target="_blank" rel="noopener" data-nav-cta-mobile>产品咨询</a>
+      </div>
+    </nav>
+
+    <main class="page-shell">
+      <section class="hero section" id="hero" aria-labelledby="hero-title">
+        <div class="hero__motion" aria-hidden="true">
+          <span class="hero__motion-layer hero__motion-layer--left"></span>
+          <span class="hero__motion-layer hero__motion-layer--cyan"></span>
+          <span class="hero__motion-layer hero__motion-layer--warm"></span>
+          <span class="hero__motion-layer hero__motion-layer--violet"></span>
+        </div>
+        <div class="hero__wash" aria-hidden="true"></div>
+        <div class="hero-icon-cloud" aria-hidden="true">
+          <span class="liquid-icon liquid-icon--1"><img class="liquid-icon__logo liquid-icon__logo--wide" src="../assets/hero-icon-office-assistant.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--2"><img class="liquid-icon__logo liquid-icon__logo--tall" src="../assets/hero-icon-logoblack.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--3"><img class="liquid-icon__logo liquid-icon__logo--wide" src="../assets/hero-icon-senseaudio.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--4"><img class="liquid-icon__logo" src="../assets/hero-icon-sensear.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--5"><img class="liquid-icon__logo" src="../assets/hero-icon-ririxin.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--6"><img class="liquid-icon__logo liquid-icon__logo--wide" src="../assets/hero-icon-foundation.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--7"><img class="liquid-icon__logo liquid-icon__logo--tall" src="../assets/hero-icon-ruying.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--8"><img class="liquid-icon__logo" src="../assets/hero-icon-shangliang.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--9"><img class="liquid-icon__logo" src="../assets/hero-icon-maskgroup.png" alt="" /></span>
+          <span class="liquid-icon liquid-icon--10"><img class="liquid-icon__logo" src="../assets/hero-icon-appstore.png" alt="" /></span>
+        </div>
+        <div class="hero__content">
+          <h1 id="hero-title">商汤日日新大模型体系<br />多模态融合，性能更卓越</h1>
+          <p>开创模型理解与生成统一的新时代</p>
+          <a class="hero-button" href="https://www.sensenova.cn/" target="_blank" rel="noopener">立即试用</a>
+        </div>
+      </section>
+
+      <section class="news section" id="news" aria-labelledby="news-title">
+        <div class="section-heading">
+          <h2 id="news-title">最新动态</h2>
+        </div>
+
+        <div class="news-layout">
+          <article class="news-feature glass-panel news-feature--light news-feature--strong-nowrap news-feature--single-slide" data-news>
+            <div class="news-feature__carousel" data-news-carousel aria-hidden="true">
+              <div class="news-feature__slide news-feature__slide--contained is-active" data-news-slide data-news-url="https://www.sensenova.cn/" data-news-theme="light" data-news-strong-nowrap>
+                <div class="news-feature__image news-feature__dynamic-bg" data-dynamic-bg="sensenova-u1-pro-banner-demo.js" aria-hidden="true"></div>
+              </div>
+            </div>
+            <button class="news-arrow news-arrow--prev" type="button" data-news-prev aria-label="上一条最新动态">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <button class="news-arrow news-arrow--next" type="button" data-news-next aria-label="下一条最新动态">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+            <div class="news-feature__chips">
+              <span>异步创作</span>
+              <span>顶级效果</span>
+            </div>
+            <div class="news-feature__copy">
+              <h3>SenseNova U1 Pro</h3>
+              <strong>旗舰版图片创作模型</strong>
+              <p>可通过内生的图文交错思维链创作出内容准确、设计精美、生产可用的图片素材，效果比肩海外顶尖模型</p>
+              <button class="primary-button primary-button--arrow news-feature__cta" type="button">了解更多</button>
+            </div>
+          </article>
+
+        </div>
+
+        <button class="text-link" type="button" data-open-news>更多新闻</button>
+      </section>
+
+      <section class="products section" id="products" aria-labelledby="products-title">
+        <div class="section-heading">
+          <h2 id="products-title">产品体系</h2>
+          <p>商汤日日新大模型体系与原生应用矩阵</p>
+        </div>
+
+        <div class="product-accordion" data-product-accordion>
+          <div class="product-drawer" data-product-item="sensenova">
+      <div class="product-row" data-product-row="sensenova" role="button" tabindex="0" aria-label="展开商汤日日新 SenseNova 大模型及应用" aria-expanded="false">
+      <span>01</span>
+      <div class="product-row__heading">
+        <strong><span class="product-title-keep">商汤日日新 SenseNova</span> <br class="product-title-mobile-break" />大模型及应用</strong>
+        <small class="product-row__subtitle">苟日新 · 日日新 · 又日新</small>
+      </div>
+      <em class="product-row__toggle" aria-hidden="true"></em>
+    </div>
+      <div class="product-drawer__panel" aria-hidden="true">
+        <div class="product-drawer__panel-inner">
+          <article class="product-expanded product-expanded--sensenova product-expanded--dynamic glass-panel" data-product-expanded data-product-motion="initial">
+      <div class="product-expanded__copy">
+        <span class="product-number" data-product-number>01</span>
+        <div>
+          <h3 data-product-title><span class="product-title-keep">商汤日日新 SenseNova</span> <br class="product-title-mobile-break" />大模型及应用</h3>
+          <p data-product-subtitle>苟日新 · 日日新 · 又日新</p>
+          <ul data-product-list>
+            <li><a href="https://www.sensenova.cn/" target="_blank" rel="noopener" class="is-active" aria-current="true" data-product-tool-index="0" data-product-link="日日新大模型体系">日日新大模型体系</a></li><li><a href="https://www.sensenova.cn/token-plan" target="_blank" rel="noopener" data-product-tool-index="1" data-product-link="Token Plan">Token Plan</a></li><li><a href="https://seko.sensetime.com/" target="_blank" rel="noopener" data-product-tool-index="2" data-product-link="Seko 多模态短片创作平台">Seko 多模态短片创作平台</a></li><li><a href="https://xiaohuanxiong.com/" target="_blank" rel="noopener" data-product-tool-index="3" data-product-link="小浣熊 AI 办公智能体">小浣熊 AI 办公智能体</a></li><li><a href="https://senseavatar.sensetime.com/" target="_blank" rel="noopener" data-product-tool-index="4" data-product-link="如影 数字人全域营销解决方案">如影 数字人全域营销解决方案</a></li><li><a href="https://apps.apple.com/cn/app/id6738811698" target="_blank" rel="noopener" data-product-tool-index="5" data-product-link="咔皮记账">咔皮记账</a></li><li><a href="https://apps.apple.com/cn/app/kapi%E7%9B%B8%E6%9C%BA/id1602677577" target="_blank" rel="noopener" data-product-tool-index="6" data-product-link="Kapi相机">Kapi相机</a></li><li><a href="https://apps.apple.com/cn/app/%E5%92%94%E7%9A%AE%E5%81%A5%E5%BA%B7/id6760928653" target="_blank" rel="noopener" data-product-tool-index="7" data-product-link="咔皮健康">咔皮健康</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="product-stage product-stage--sensenova" aria-hidden="true">
+        
+      </div>
+      <span class="product-stage-hotspot" aria-hidden="true"></span>
+    </article>
+        </div>
+      </div>
+    </div>
+
+          <div class="product-drawer" data-product-item="infra">
+      <div class="product-row" data-product-row="infra" role="button" tabindex="0" aria-label="展开商汤大装置 SenseCore 原生 AI 云基础设施" aria-expanded="false">
+      <span>02</span>
+      <div class="product-row__heading">
+        <strong><span class="product-title-keep">商汤大装置 SenseCore</span> <br class="product-title-mobile-break" />原生 AI 云基础设施</strong>
+        <small class="product-row__subtitle">最懂大模型的 AI 基础设施</small>
+      </div>
+      <em class="product-row__toggle" aria-hidden="true"></em>
+    </div>
+      <div class="product-drawer__panel" aria-hidden="true">
+        <div class="product-drawer__panel-inner">
+          <article class="product-expanded product-expanded--infra product-expanded--dynamic glass-panel" data-product-expanded data-product-motion="initial">
+      <div class="product-expanded__copy">
+        <span class="product-number" data-product-number>02</span>
+        <div>
+          <h3 data-product-title><span class="product-title-keep">商汤大装置 SenseCore</span> <br class="product-title-mobile-break" />原生 AI 云基础设施</h3>
+          <p data-product-subtitle>最懂大模型的 AI 基础设施</p>
+          <ul data-product-list>
+            <li><a href="https://www.sensecore.cn/product/ssp" target="_blank" rel="noopener" class="is-active" aria-current="true" data-product-tool-index="0" data-product-link="AI 算力池 SSP">AI 算力池 SSP</a></li><li><a href="https://www.sensecore.cn/product/ecp" target="_blank" rel="noopener" data-product-tool-index="1" data-product-link="托管 Kubernetes 服务 ECP">托管 Kubernetes 服务 ECP</a></li><li><a href="https://www.sensecore.cn/product/ecs" target="_blank" rel="noopener" data-product-tool-index="2" data-product-link="云服务器 ECS">云服务器 ECS</a></li><li><a href="https://www.sensecore.cn/product/afs" target="_blank" rel="noopener" data-product-tool-index="3" data-product-link="文件存储 AFS">文件存储 AFS</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="product-stage product-stage--infra" aria-hidden="true">
+        
+      </div>
+      <span class="product-stage-hotspot" aria-hidden="true"></span>
+    </article>
+        </div>
+      </div>
+    </div>
+
+          <div class="product-drawer" data-product-item="city">
+      <div class="product-row" data-product-row="city" role="button" tabindex="0" aria-label="展开商汤方舟 SenseFoundry 视觉 AI 及应用" aria-expanded="false">
+      <span>03</span>
+      <div class="product-row__heading">
+        <strong><span class="product-title-keep">商汤方舟 SenseFoundry</span> <br class="product-title-mobile-break" />视觉 AI 及应用</strong>
+        <small class="product-row__subtitle">构筑领先数字化能力，精准发掘更多价值</small>
+      </div>
+      <em class="product-row__toggle" aria-hidden="true"></em>
+    </div>
+      <div class="product-drawer__panel" aria-hidden="true">
+        <div class="product-drawer__panel-inner">
+          <article class="product-expanded product-expanded--city product-expanded--dynamic glass-panel" data-product-expanded data-product-motion="initial">
+      <div class="product-expanded__copy">
+        <span class="product-number" data-product-number>03</span>
+        <div>
+          <h3 data-product-title><span class="product-title-keep">商汤方舟 SenseFoundry</span> <br class="product-title-mobile-break" />视觉 AI 及应用</h3>
+          <p data-product-subtitle>构筑领先数字化能力，精准发掘更多价值</p>
+          <ul data-product-list>
+            <li><a href="https://www.sensefoundry.cn/product/1.html" target="_blank" rel="noopener" class="is-active" aria-current="true" data-product-tool-index="0" data-product-link="城市 AI 赋能平台">城市 AI 赋能平台</a></li><li><a href="https://www.sensefoundry.cn/product/6.html" target="_blank" rel="noopener" data-product-tool-index="1" data-product-link="企业 AI 赋能平台">企业 AI 赋能平台</a></li><li><a href="https://sensestudio-id.sensetime.com/ssid_sdk_introduce/ssid_sdk_introduce.html" target="_blank" rel="noopener" data-product-tool-index="2" data-product-link="身份核验私有化服务 SFE ID">身份核验私有化服务 SFE ID</a></li><li><a href="https://www.sensefoundry.cn/product/13.html" target="_blank" rel="noopener" data-product-tool-index="3" data-product-link="星云智能门禁一体机">星云智能门禁一体机</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="product-stage product-stage--city" aria-hidden="true">
+        
+      </div>
+      <span class="product-stage-hotspot" aria-hidden="true"></span>
+    </article>
+        </div>
+      </div>
+    </div>
+
+          <div class="product-drawer" data-product-item="innovation">
+      <div class="product-row" data-product-row="innovation" role="button" tabindex="0" aria-label="展开更多产品" aria-expanded="false">
+      <span>04</span>
+      <div class="product-row__heading">
+        <strong>更多产品</strong>
+        <small class="product-row__subtitle">AI 赋能，万物智联</small>
+      </div>
+      <em class="product-row__toggle" aria-hidden="true"></em>
+    </div>
+      <div class="product-drawer__panel" aria-hidden="true">
+        <div class="product-drawer__panel-inner">
+          <article class="product-expanded product-expanded--innovation product-expanded--dynamic glass-panel" data-product-expanded data-product-motion="initial">
+      <div class="product-expanded__copy">
+        <span class="product-number" data-product-number>04</span>
+        <div>
+          <h3 data-product-title>更多产品</h3>
+          <p data-product-subtitle>AI 赋能，万物智联</p>
+          <ul data-product-list>
+            <li><a href="https://sensear.sensetime.com/" target="_blank" rel="noopener" class="is-active" aria-current="true" data-product-tool-index="0" data-product-link="SenseAR 美颜特效 SDK">SenseAR 美颜特效 SDK</a></li><li><a href="https://www.sensetime.com/cn/product-detail?categoryId=51134673&amp;gioNav=1" target="_blank" rel="noopener" data-product-tool-index="1" data-product-link="商汤烧卖购">商汤烧卖购</a></li><li><a href="https://robot.sensetime.com/" target="_blank" rel="noopener" data-product-tool-index="2" data-product-link="元萝卜下棋机器人">元萝卜下棋机器人</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="product-stage product-stage--innovation" aria-hidden="true">
+        
+      </div>
+      <span class="product-stage-hotspot" aria-hidden="true"></span>
+    </article>
+        </div>
+      </div>
+    </div>
+        </div>
+      </section>
+
+      <section class="technology section" id="technology" aria-labelledby="technology-title">
+        <div class="section-heading">
+          <div class="section-heading__copy">
+            <h2 id="technology-title">技术</h2>
+            <p>以原创技术体系为根基，布局多领域、多方向前沿研究</p>
+          </div>
+        </div>
+
+        <div class="tech-carousel" data-tech-carousel>
+        <div class="tech-grid" data-tech-track aria-label="技术列表">
+          <article class="tech-card">
+            <img class="tech-card__image" loading="lazy" src="../assets/product-sensenova-gradient-01.jpg" alt="" decoding="async" />
+            <div class="tech-copy">
+              <h3>生成式 AI</h3>
+              <p>坚持原生多模态融合技术路线，赋能信息图、图文交错生成、视频创作、数字人生成等应用。</p>
+              <a class="tech-button" href="https://www.sensenova.cn/" target="_blank" rel="noopener">了解更多</a>
+            </div>
+          </article>
+
+          <article class="tech-card">
+            <img class="tech-card__image" loading="lazy" src="../assets/product-infra-gradient-02.jpg" alt="" decoding="async" />
+            <div class="tech-copy">
+              <h3>算力基础设施</h3>
+              <p>商汤大装置始终保持着开放的态度，用 AI 为开发者和伙伴赋能。</p>
+              <a class="tech-button" href="https://www.sensecore.cn/about" target="_blank" rel="noopener">了解更多</a>
+            </div>
+          </article>
+
+          <article class="tech-card">
+            <img class="tech-card__image" loading="lazy" src="../assets/product-city-gradient-03.jpg" alt="" decoding="async" />
+            <div class="tech-copy">
+              <h3>计算机视觉</h3>
+              <p>IDC 发布《中国 AI 软件市场半年度追踪，2025 H2》报告，商汤科技连续 10 年位蝉联中国视觉 AI 市场份额榜首。</p>
+              <a class="tech-button" href="https://www.sensefoundry.cn/shop/" target="_blank" rel="noopener">了解更多</a>
+            </div>
+          </article>
+
+          <article class="tech-card">
+            <img class="tech-card__image" loading="lazy" src="../assets/product-city-gradient-03.jpg" alt="" decoding="async" />
+            <div class="tech-copy">
+              <h3>原创研究</h3>
+              <p>探索智能边界，引领 AI 范式革新。专注原创技术的研究与突破，以坚实的学术根基与前瞻性视野，不断打破未知边界，将前沿科学转化为赋能百业的生产力。</p>
+              <a class="tech-button" href="/cn/research/">了解更多</a>
+            </div>
+          </article>
+        </div>
+        </div>
+      </section>
+
+      <footer class="footer-band section" id="about">
+        <img src="../assets/logo-frame10.png" alt="商汤 SenseTime" />
+        <p>坚持原创，让 AI 引领人类进步</p>
+        <div class="footer-line"></div>
+        <p class="legal">沪 ICP 备 19044592 号-3 | 沪公网安备 31010402009327 号 © 2014-2026 SenseTime. All Rights Reserved. 上海商汤智能科技有限公司<br />上海商汤智能科技有限公司是商汤集团旗下子公司</p>
+      </footer>
+    </main>
+
+    <div class="toast" data-toast></div>
+<script src="../app.js?v=20260721180408"></script>
+  </body>
+</html>

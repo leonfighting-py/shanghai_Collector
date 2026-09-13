@@ -1,0 +1,29 @@
+{"ts":"2026-07-20T23:40:00+08:00","phase":"scout","action":"briefing","status":"completed","detail":"分析研究对象商汤科技 00020.HK，识别 4 个核心研究维度","output":"briefing.json"}
+{"ts":"2026-07-20T23:40:05+08:00","phase":"scout","action":"format_proposal","status":"completed","detail":"生成报告格式提案 (research_report)","output":"format_proposal.json"}
+{"ts":"2026-07-20T23:40:10+08:00","phase":"plan","action":"strategy","status":"completed","detail":"确定 by_topic + by_entity + by_risk 混合策略","output":"plan.json"}
+{"ts":"2026-07-20T23:40:15+08:00","phase":"plan","action":"dimensions","status":"completed","detail":"规划 d1~d5 共 5 个研究维度，wave 1","output":"plan.json"}
+{"ts":"2026-07-20T23:41:00+08:00","phase":"research","action":"d1","status":"completed","detail":"基本面与商业化：HKEX 年报、东方财富 API","output":"sub_reports/d1.evidence.json"}
+{"ts":"2026-07-20T23:43:00+08:00","phase":"research","action":"d2","status":"completed","detail":"产品矩阵与采购价值：SenseNova 平台、新闻稿","output":"sub_reports/d2.evidence.json"}
+{"ts":"2026-07-20T23:45:00+08:00","phase":"research","action":"d3","status":"completed","detail":"竞争格局与替代方案：IDC、Frost & Sullivan","output":"sub_reports/d3.evidence.json"}
+{"ts":"2026-07-20T23:47:00+08:00","phase":"research","action":"d4","status":"completed","detail":"财务与投资价值：估值、现金流、地缘政治","output":"sub_reports/d4.evidence.json"}
+{"ts":"2026-07-20T23:50:00+08:00","phase":"research","action":"d5_supplement","status":"completed","detail":"2025 年度业绩补充：官方新闻稿","output":"sub_reports/d5.evidence.json"}
+{"ts":"2026-07-20T23:52:00+08:00","phase":"research","action":"citations","status":"completed","detail":"生成 citations.json (初始 6 来源)","output":"citations.json"}
+{"ts":"2026-07-20T23:55:00+08:00","phase":"review","action":"sub_report_review","status":"completed","detail":"审查 d1~d5 evidence，发现 6 个问题","issues_found":6}
+{"ts":"2026-07-20T23:58:00+08:00","phase":"outline","action":"structure","status":"completed","detail":"生成 11 个 content_unit 大纲","output":"outline.json"}
+{"ts":"2026-07-21T00:00:00+08:00","phase":"writer","action":"draft","status":"completed","detail":"生成 report.md 初版","output":"report.md"}
+{"ts":"2026-07-21T00:05:00+08:00","phase":"stitcher","action":"merge","status":"completed","detail":"合并 d1~d5 → 完整 report.md","output":"report.md"}
+{"ts":"2026-07-21T00:10:00+08:00","phase":"render","action":"html","status":"completed","detail":"生成 report.html (单文件 HTML)","output":"report.html"}
+{"ts":"2026-07-22T23:40:00+08:00","phase":"data_correction","action":"verify_hkex","status":"completed","detail":"从 SenseTime 官网快照提取 HKEX PDF 链接","output":"4 份年报 PDF (HTTP 200)"}
+{"ts":"2026-07-22T23:42:00+08:00","phase":"data_correction","action":"extract_financials","status":"completed","detail":"pypdf 提取 2021-2024 年报财务数据","detail_found":"营收 47.00→38.09→34.06→37.72 亿 RMB"}
+{"ts":"2026-07-22T23:45:00+08:00","phase":"data_correction","action":"fix_d1","status":"completed","detail":"修正 d1.evidence.json：币种、增长率、现金","output":"sub_reports/d1.evidence.json"}
+{"ts":"2026-07-22T23:46:00+08:00","phase":"data_correction","action":"fix_d4","status":"completed","detail":"修正 d4.evidence.json：现金储备、来源 URL","output":"sub_reports/d4.evidence.json"}
+{"ts":"2026-07-22T23:47:00+08:00","phase":"data_correction","action":"fix_d5","status":"completed","detail":"完善 d5.evidence.json：来源验证信息","output":"sub_reports/d5.evidence.json"}
+{"ts":"2026-07-22T23:48:00+08:00","phase":"data_correction","action":"fix_citations","status":"completed","detail":"citations.json 6→9 来源，添加 verified 字段","output":"citations.json"}
+{"ts":"2026-07-22T23:49:00+08:00","phase":"data_correction","action":"fix_outline","status":"completed","detail":"修正 outline.json 格式错误的 claim ID","output":"outline.json"}
+{"ts":"2026-07-22T23:50:00+08:00","phase":"data_correction","action":"fix_report_md","status":"completed","detail":"修正 report.md 12 处财务数据","output":"report.md"}
+{"ts":"2026-07-22T23:52:00+08:00","phase":"data_correction","action":"fix_report_html","status":"completed","detail":"修正 report.html 12 处财务数据 + 图表","output":"report.html"}
+{"ts":"2026-07-24T22:10:00+08:00","phase":"v2","action":"runner_init","status":"completed","detail":"初始化 v2 Runner (run_1784902337_317b32c1)","output":"run_state.json"}
+{"ts":"2026-07-24T22:12:00+08:00","phase":"v2","action":"validate_all","status":"completed","detail":"运行全部 Validator (plan=PASS, outline=FAIL due to v1 content_units)","output":"validator_results.json"}
+{"ts":"2026-07-24T22:13:00+08:00","phase":"v2","action":"report_v2","status":"completed","detail":"SenseNova 生成管理层决策型 report_v2.md","output":"report_v2.md"}
+{"ts":"2026-07-24T22:14:00+08:00","phase":"v2","action":"html_v2","status":"completed","detail":"开发管理层决策型 report_v2.html","output":"report_v2.html"}
+{"ts":"2026-07-24T22:15:00+08:00","phase":"v2","action":"delivery","status":"completed","detail":"生成全部交付文件","output":"v2/"}

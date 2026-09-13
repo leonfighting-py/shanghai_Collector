@@ -1,0 +1,44 @@
+[
+  {
+    "source": "baidu_news_2025_interim",
+    "url": "https://news.baidu.com/ns?word=%E5%95%86%E6%B1%A1+2025%E4%B8%AD%E6%9C%9F%E6%8A%A5+%E8%90%A5%E6%94%B6+%E5%86%8D%E7%86%8F%E5%88%A9%E6%B6%A6&tn=news&from=news&ie=utf-8&ct=1",
+    "file": "/Users/yljj0528/Desktop/vibe coding/News_collector/deep-research-reports/2026-07-20-sensetime-36f0/source_cache/retry_fetch/baidu_news_2025_interim.html",
+    "size": 1488,
+    "curl_exit": 0
+  },
+  {
+    "source": "baidu_news_finance",
+    "url": "https://news.baidu.com/ns?word=%E5%95%86%E6%B1%A1+2024%E5%B9%B4%E6%8A%A5+%E8%90%A5%E6%94%B6+%E5%86%8D%E7%86%8F%E5%88%A9%E6%B6%A6&tn=news&from=news&ie=utf-8&ct=1",
+    "file": "/Users/yljj0528/Desktop/vibe coding/News_collector/deep-research-reports/2026-07-20-sensetime-36f0/source_cache/retry_fetch/baidu_news_finance.html",
+    "size": 1488,
+    "curl_exit": 0
+  },
+  {
+    "source": "36kr_search_sensetime",
+    "url": "https://36kr.com/search/articles/%E5%95%86%E6%B1%A1",
+    "file": "/Users/yljj0528/Desktop/vibe coding/News_collector/deep-research-reports/2026-07-20-sensetime-36f0/source_cache/retry_fetch/36kr_search_sensetime.html",
+    "size": 33332,
+    "curl_exit": 0
+  },
+  {
+    "source": "cls_search_sensetime",
+    "url": "https://www.cls.cn/searchPage?keyword=%E5%95%86%E6%B1%A1&type=all",
+    "file": "/Users/yljj0528/Desktop/vibe coding/News_collector/deep-research-reports/2026-07-20-sensetime-36f0/source_cache/retry_fetch/cls_search_sensetime.html",
+    "size": 50434,
+    "curl_exit": 0
+  },
+  {
+    "source": "sensetime_ir_reports",
+    "url": "https://ir.sensetime.com/investors/reports",
+    "file": "/Users/yljj0528/Desktop/vibe coding/News_collector/deep-research-reports/2026-07-20-sensetime-36f0/source_cache/retry_fetch/sensetime_ir_reports.html",
+    "size": 0,
+    "curl_exit": 6
+  },
+  {
+    "source": "sensetime_official",
+    "url": "https://www.sensetime.com/",
+    "file": "/Users/yljj0528/Desktop/vibe coding/News_collector/deep-research-reports/2026-07-20-sensetime-36f0/source_cache/retry_fetch/sensetime_official.html",
+    "size": 29329,
+    "curl_exit": 0
+  }
+]

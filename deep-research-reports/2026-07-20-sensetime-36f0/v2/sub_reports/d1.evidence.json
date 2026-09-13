@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.2",
+  "mode": "initial",
+  "dimension_id": "d1",
+  "upstream_usage": [],
+  "headline": "商汤科技2024年营收约37.72亿元人民币（同比+10.8%），净亏损约43.07亿元（同比收窄33.7%），生成式AI业务占比升至63.7%，现金储备约127.5亿元。",
+  "key_findings": [
+    {
+      "finding": "商汤科技2024年营收约37.72亿元人民币（同比+10.8%），较2021年47.00亿元下降19.8%，但2024年增速较2023年（-10.6%）大幅改善。",
+      "claim_ids": ["d1.c2"]
+    },
+    {
+      "finding": "商汤2024年净亏损约43.07亿元人民币，同比收窄33.7%（2023年亏损约64.95亿元），亏损绝对规模仍大。",
+      "claim_ids": ["d1.c4"]
+    },
+    {
+      "finding": "商汤2024年末现金储备（现金+定期存款）约127.5亿元人民币（约141亿港元），现金及现金等价物约88.88亿元，较2023年末的124.9亿元下降。",
+      "claim_ids": ["d1.c5"]
+    },
+    {
+      "finding": "生成式AI业务收入约24.04亿元，同比+103.1%，占比从2023年34.8%升至63.7%；传统CV业务收入约11.12亿元，同比-39.5%，占比降至29.5%。",
+      "claim_ids": ["d1.c7", "d1.c8"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "d1.c1",
+      "text": "商汤科技（00020.HK）为港股上市公司，股票代码0020（港币柜台）/ 80020（人民币柜台），2021年12月30日在香港联交所主板上市，发行价4.08-4.68港元，为当时港股最大AI IPO。2025年公司更名为SenseTime Research Limited。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "company_profile",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Stock Codes: 0020 (HKD Counter) and 80020 (RMB Counter)",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c2",
+      "text": "商汤科技2024全年营收约37.72亿元人民币（同比增长10.8%），2023全年营收约34.06亿元（同比下降10.6%），2022全年营收约38.09亿元（同比下降19.0%），2021全年营收约47.00亿元（同比增长36.4%）。营收从2021年峰值47.00亿元降至2023年34.06亿元，2024年出现止跌回升。数据口径：人民币，来源为港交所经审计年报。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "revenue_trend",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Revenue: 2024 RMB 3,772,101,000 (10.8% YoY); 2023 RMB 3,405,842,000 (-10.6%); 2022 RMB 3,808,510,000 (-19.0%); 2021 RMB 4,700,263,000 (+36.4%). Source: HKEX annual results announcements, pages 1 of each.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c3",
+      "text": "商汤科技2024年收入结构已发生根本变化：生成式AI业务收入约24.04亿元（占比63.7%，同比+103.1%），计算机视觉（CV）业务收入约11.12亿元（占比29.5%，同比-39.5%），智能汽车业务收入约2.56亿元（占比6.8%，同比-33.2%）。AI大模型与生成式AI业务不再是早期阶段，已成为主要收入来源。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "revenue_structure",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Generative AI revenue increased by 103.1% to RMB2,404.0 million in 2024 (63.7% of total). Computer Vision revenue decreased by 39.5% to RMB1,111.9 million (29.5%). Smart Auto revenue decreased by 33.2% to RMB256.2 million (6.8%).",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c4",
+      "text": "商汤科技2024全年净亏损约43.07亿元人民币（2023年净亏损约64.95亿元），亏损同比收窄33.7%。亏损主要来源：研发费用约41.32亿元（同比+19.2%）、销售费用约6.55亿元（同比-20.0%）、行政费用约14.64亿元。毛利率42.9%（2023年44.1%），较2023年略有下降。亏损绝对规模仍大，2024年EBITDA为亏损31.43亿元。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "profit_loss",
+      "answers_key_question": "kq3",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Loss for the year 2024: (4,306,584,000) RMB, vs 2023: (6,494,670,000) RMB, -33.7% YoY. R&D expenses 2024: 4,131,884,000 RMB. Gross margin 2024: 42.9%. EBITDA 2024: (3,143,053,000) RMB.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c5",
+      "text": "商汤科技2024年末现金及现金等价物约88.88亿元人民币，定期存款约29.71亿元，合计现金储备约127.52亿元（约141亿港元）。较2023年末合计124.9亿元基本持平。按2024年净亏损约43亿元计算，现金储备理论上可支撑约3年。经营现金流净额为净流出39.27亿元（2023年净流出32.34亿元）。2024年新增银行借款约14.49亿元（总额59.22亿元）。短期流动性风险存在但可控，长期取决于AI商业化进展。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "cash_position",
+      "answers_key_question": "kq4",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Cash and cash equivalents at end of 2024: RMB 8,888.0 million. Term deposits: RMB 2,970.5 million. Total cash reserves: RMB 12,752.2 million. Net cash used in operating activities 2024: (3,926.7) million. Total borrowings at end of 2024: RMB 5,921.8 million.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c6",
+      "text": "商汤科技2024年研发费用约41.32亿元（约占营收110%），较2023年34.66亿元增长19.2%。SenseCore大装置算力2024年运营算力达23,000 Petaflops（2023年为12,000 Petaflops）。上海临港AIDC获中国信通院颁发全国首个5A级智能计算中心认证。AI人才规模持续扩大。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "rd_intensity",
+      "answers_key_question": "kq5",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Research and development expenses 2024: RMB 4,131,884,000 (19.2% YoY increase). SenseCore operational computing power reached 23,000 Petaflops in 2024. Shanghai Lingang AIDC awarded nation's first 5A-rated intelligent computing center certification.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c7",
+      "text": "商汤生成式AI业务2024年实现跨越式增长：GenAI收入约24.04亿元（+103.1%），连续两年保持三位数增长，占集团营收比例从2023年34.8%升至63.7%，已成为集团主要收入来源。从传统项目制视觉AI向AIaaS转型取得实质性进展，但项目制收入仍占一定比例。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "genai_transition",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Generative AI revenue exceeded RMB2,404.0 million, a year-on-year increase of 103.1%, with Generative AI maintaining triple-digit growth for two consecutive years. The proportion of Generative AI in Group revenue further increased from 34.8% in 2023 to 63.7% in 2024.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c8",
+      "text": "商汤客户结构以政府和行业大客户为主，B2B/B2G占比较高。2024年应收账款回收约46.23亿元（同比+19.0%），但应收账款账龄结构有所恶化，超过2年的应收账款占比增加。2024-2025年公司持续组织调整（\"1+X\"战略），将部分业务（边缘AI芯片、智能驾驶）独立运营。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "customer_structure",
+      "answers_key_question": "kq7",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "Collection of trade receivables amounted to RMB4,623 million, up 19.0% YoY. Aging of gross trade receivables has worsened as of December 31, 2024, compared to 2023. 1+X organizational restructuring completed.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2024_annual_pdf/2025032600615.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c9",
+      "text": "商汤科技00020.HK实时股价约1.360港元（2026年7月21日），总市值约574.1亿港元，市净率PB约1.15。股价较2021年上市时4.08-4.68港元区间大幅下跌约66-71%。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "stock_performance",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "eastmoney_stock_2026",
+          "snippet": "f44=1360 (price in cents), f57=00020, f58=商汤-W, f116=57414563356.08 (market cap HKD)",
+          "quote_type": "numeric",
+          "snapshot_ref": "source_cache/ee3ae7be4ced7178ce0930f506467b7e1500ee6a72fc0bf9cc1b185ae19eb9c7/5a1ff5757dadff61dab15c83671c5d226c8d28c045c0e48186118154257d6d0b.md"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "sensetime_annual_2024",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0326/2025032600615.pdf",
+      "title": "SenseTime Group Inc. Annual Results Announcement for Year Ended December 31, 2024（港交所披露易）",
+      "quality": "primary",
+      "published_at": "2025-03-26",
+      "verified": true,
+      "verification_note": "58页PDF，HTTP 200，已从港交所披露易实际下载并提取全文"
+    },
+    {
+      "id": "eastmoney_stock_2026",
+      "url": "https://push2.eastmoney.com/api/qt/stock/get?secid=116.00020",
+      "title": "商汤科技 00020.HK 实时股价（东方财富 API）",
+      "quality": "primary",
+      "published_at": "2026-07-21"
+    }
+  ],
+  "writing_context": [
+    {
+      "id": "d1.w1",
+      "kind": "data_correction",
+      "text": "原始报告中2024年财务数据（57.32亿港元/5.1%增长/42.18亿港元亏损）存在严重错误。已用港交所实际年报PDF修正：2024年营收37.72亿元人民币/同比+10.8%/净亏损43.07亿元/同比收窄33.7%。所有财务数据以人民币为法定报告币种，必要时标注港元换算。",
+      "source_ids": ["sensetime_annual_2024"],
+      "applies_to": ["kq2", "kq3", "kq4", "kq5"],
+      "use": "所有财务数字以HKEX年报原文为准，不再引用训练知识库。"
+    },
+    {
+      "id": "d1.w2",
+      "kind": "resolved",
+      "text": "2025年度业绩数据已通过商汤官方新闻稿（2026-03-25）获取，在d5中补充。2025年经审计年报预计于2026年3月发布，届时需更新。",
+      "source_ids": [],
+      "applies_to": ["kq2", "kq3"],
+      "use": "2025年数据标注为新闻稿口径（未经审计），以港交所经审计年报为准。"
+    }
+  ]
+}

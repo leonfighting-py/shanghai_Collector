@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.2",
+  "content_unit_id": "u2",
+  "claims": [
+    {
+      "id": "d2.c1",
+      "text": "日日新（SenseNova）大模型平台是商汤面向企业提供核心AI能力的产品矩阵，包含多个系列：文本大模型（SenseNova-LLM系列）、多模态大模型（SenseNova-VL系列，支持图文理解与生成）、视觉大模型（针对工业质检、医疗影像等垂直场景），以及Agent框架。最新版本在C-Eval、CMMLU等中文评测榜单上处于国内前列，与阿里通义千问、百度文心等头部模型同属第一梯队，但纯文本能力略逊于GPT-4/Claude等国际顶级模型。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "sensenova_capability",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "sensetime_products_2026",
+          "snippet": "1. 日日新 SenseNova 大模型平台\n   - 文本大模型 (SenseNova-LLM系列)\n   - 多模态大模型 (SenseNova-VL系列，支持图文理解与生成)\n   - 视觉大模型 (工业质检、医疗影像等垂直场景)\n   - Agent框架",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/11cdc7eb0ecac365c2aa0c30ed94e9fb7adbc9974579b9c2e17f4b7b60b08f65/031ece4c83ef71a6dac3515ab567761e5f161ba165a077e232a84b093746d18c.md"
+        }
+      ]
+    },
+    {
+      "id": "d2.c2",
+      "text": "小浣熊（Xuanxiong）是商汤面向办公场景推出的AI Agent产品，定位为智能办公助手。核心能力包括：文档理解与生成、数据分析与报表、PPT制作、知识问答、流程自动化等。与纯消费端AI助手的主要差异在于面向企业工作流的定制化能力——支持接入企业内部知识库、私有化部署、与办公软件（如WPS、飞书等）的集成。但产品成熟度、企业客户渗透率和生态完整性仍不及飞书智能伙伴、WPS AI等已深度绑定办公生态的竞品。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "xuanxiong_product",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_products_2026",
+          "snippet": "2. 小浣熊 Xuanxiong\n   - 面向办公场景的AI Agent\n   - 核心能力: 文档理解与生成、数据分析与报表、PPT制作、知识问答、流程自动化\n   - 支持接入企业内部知识库、私有化部署、与办公软件集成",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/11cdc7eb0ecac365c2aa0c30ed94e9fb7adbc9974579b9c2e17f4b7b60b08f65/031ece4c83ef71a6dac3515ab567761e5f161ba165a077e232a84b093746d18c.md"
+        }
+      ]
+    },
+    {
+      "id": "d2.c5",
+      "text": "商汤企业交付模式提供多种部署选项：公有云API（通过SenseNova平台按调用量付费）、私有化部署（本地化部署，满足数据主权和合规要求）、混合部署（核心模型本地、部分服务云端）。对数据主权的支持程度较高——支持全私有化部署，数据不出企业边界。但私有化部署的实施复杂度、周期和成本高于云厂商方案，且需要商汤本地化团队支持，服务覆盖范围受限于商汤的区域服务能力。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "deployment_options",
+      "answers_key_question": "kq5",
+      "evidence": [
+        {
+          "source_id": "sensetime_products_2026",
+          "snippet": "部署模式:\n- 公有云API (SenseNova平台，按调用量付费)\n- 私有化部署 (本地化部署，数据不出企业边界)\n- 混合部署 (核心模型本地、部分服务云端)",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/11cdc7eb0ecac365c2aa0c30ed94e9fb7adbc9974579b9c2e17f4b7b60b08f65/031ece4c83ef71a6dac3515ab567761e5f161ba165a077e232a84b093746d18c.md"
+        }
+      ]
+    },
+    {
+      "id": "d2.c6",
+      "text": "商汤企业定价模式包括：按Token计费（API调用）、按调用量包月/包年、项目制定制（私有化部署）、订阅制（部分SaaS产品）。公开定价信息有限，缺乏与竞品（如OpenAI API、阿里通义、百度文心）的直接可比定价数据。总体来看，商汤定价透明度低于云厂商，企业TCO受私有化部署实施成本影响较大。SLA与服务支持文档不公开，难以直接评估。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "pricing_tco",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "sensetime_products_2026",
+          "snippet": "定价模式:\n- 按Token计费 (API调用)\n- 按调用量包月/包年\n- 项目制定制 (私有化部署)\n- 订阅制 (部分SaaS产品)\n- 公开定价信息有限",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/11cdc7eb0ecac365c2aa0c30ed94e9fb7adbc9974579b9c2e17f4b7b60b08f65/031ece4c83ef71a6dac3515ab567761e5f161ba165a077e232a84b093746d18c.md"
+        }
+      ]
+    },
+    {
+      "id": "d2.c7",
+      "text": "第三方评测和客户反馈显示：商汤产品在中文场景适配上具有优势（C-Eval等中文榜单表现良好），视觉多模态能力是差异化亮点。但在可用性、稳定性和响应速度方面，与GPT-4/Claude等国际模型存在差距。开发者社区反馈模型能力持续提升但迭代节奏不如字节豆包、DeepSeek等竞品快。缺乏大规模独立客户案例和第三方满意度调查数据。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "third_party_review",
+      "answers_key_question": "kq7",
+      "evidence": [
+        {
+          "source_id": "sensetime_products_2026",
+          "snippet": "第三方评测:\n- 中文评测 (C-Eval、CMMLU): 国内第一梯队\n- 通用能力 (MMLU、AGIEval): 略逊于阿里通义和百度文心\n- 视觉多模态: 国内领先，差异化优势",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/11cdc7eb0ecac365c2aa0c30ed94e9fb7adbc9974579b9c2e17f4b7b60b08f65/031ece4c83ef71a6dac3515ab567761e5f161ba165a077e232a84b093746d18c.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c3",
+      "text": "各竞品在企业服务能力上的差异化优势明显：阿里通义依托阿里云企业服务生态，具备完整的云计算、数据中台和行业解决方案；百度文心依托百度智能云，在本地化和政企市场有深厚积累；字节豆包依托飞书办公生态和内容流量，在企业办公场景渗透率高；DeepSeek以开源和技术效率著称，适合技术型企业自部署；智谱GLM在行业大模型（医疗、法律）有深度。商汤在企业服务上的核心劣势在于：缺乏深度绑定的办公/云生态，企业客户渗透率较低，渠道覆盖和服务能力不及云厂商。",
+      "kind": "factual",
+      "polarity": "refute",
+      "topic_tag": "competitor_advantage",
+      "answers_key_question": "kq3",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "第一梯队 (综合实力领先):\n- 阿里通义千问: 依托阿里云企业服务生态，完整的云计算和行业解决方案\n- 百度文心一言: 依托百度智能云，在政企市场有深厚积累\n- 字节豆包: 依托飞书办公生态和内容流量，企业办公场景渗透率高\n- DeepSeek: 以开源和技术效率著称，极低定价策略冲击市场",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c6",
+      "text": "综合评估：商汤在不同场景下的相对身位为——纯文本通用能力：落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑；多模态/视觉：国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距；行业垂直（工业质检、医疗影像）：差异化优势明显，是商汤的核心护城河；办公AI Agent：落后于飞书、WPS等深度绑定生态的竞品。商汤的差异化定位是视觉+AI全栈，但在纯文本大模型和企业服务生态上处于追赶身位。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "overall_position",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "商汤相对身位:\n- 纯文本通用能力: 落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑\n- 多模态/视觉: 国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距\n- 行业垂直 (工业质检、医疗影像): 差异化优势明显，核心护城河\n- 办公AI Agent: 落后于飞书、WPS等深度绑定生态的竞品",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    }
+  ]
+}

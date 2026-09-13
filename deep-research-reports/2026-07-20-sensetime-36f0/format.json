@@ -1,0 +1,14 @@
+{
+  "container": "markdown",
+  "selected_format": {
+    "id": "research_report",
+    "name": "公司深度研究报告",
+    "defining_features": ["结论前置", "决策导向", "叙事主体", "对比表格", "证据缺口标注", "采购与投资双结论"],
+    "structure_preference": "结论前置、决策导向、叙事主体、辅以对比表格",
+    "organization_decision": {
+      "opening_summary": true,
+      "toc": true
+    }
+  },
+  "confirmed_by_user": true
+}

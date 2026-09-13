@@ -1,0 +1,219 @@
+{
+  "schema_version": "1.2",
+  "mode": "supplement",
+  "dimension_id": "d5",
+  "upstream_usage": [
+    "d1",
+    "d3",
+    "d4"
+  ],
+  "headline": "商汤2025年度业绩创历史新高（营收超50亿人民币，同比+33%），净亏损收窄58.6%，下半年EBITDA首次转正。SenseNova V6.5在SuperCLUE多模态榜单排名第一。API定价目前处于公测免费阶段。",
+  "key_findings": [
+    {
+      "finding": "商汤2025全年营收超50亿人民币（同比+33%），为上市以来增速最快的一年，创历史新高",
+      "claim_ids": [
+        "d5.c1"
+      ]
+    },
+    {
+      "finding": "净亏损同比收窄58.6%，调整后净亏损连续四个半年同比加速减亏，下半年EBITDA首次转正（3.8亿元人民币）",
+      "claim_ids": [
+        "d5.c2",
+        "d5.c3"
+      ]
+    },
+    {
+      "finding": "CV 2.0业务首次实现净利润和正向现金流，商汤在中国CV市场连续9年保持第一",
+      "claim_ids": [
+        "d5.c4"
+      ]
+    },
+    {
+      "finding": "SenseNova V6.5在SuperCLUE 2025年12月多模态榜单中排名第一（75.35分），超过Doubao-seed-1.6、ERNIE-5.0、Qwen3",
+      "claim_ids": [
+        "d5.c5"
+      ]
+    },
+    {
+      "finding": "SenseNova API目前处于公测免费阶段（0元/月，每模型1500次/5小时），付费档位尚未上线",
+      "claim_ids": [
+        "d5.c6"
+      ]
+    },
+    {
+      "finding": "SenseCore算力规模达40,400 PetaFLOPS，支持近100万个模型研发任务，已落地沙特海外计算集群",
+      "claim_ids": [
+        "d5.c7"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "d5.c1",
+      "text": "商汤科技2025年全年总营收超过50亿人民币（同比增长33%），创历史新高，为近三年增速最快的一年。全年净亏损同比收窄58.6%，调整后净亏损连续第四个半年同比加速减亏。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "revenue_2025",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_results_2025",
+          "snippet": "total revenue rose 33% year-on-year to more than RMB 5 billion, reaching a new record high and marking the fastest growth in three years. Net loss narrowed by 58.6% year-on-year, while adjusted net loss declined for a fourth consecutive half-year period",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2025_annual_results/8772e60c51f6ad8e.md"
+        }
+      ]
+    },
+    {
+      "id": "d5.c2",
+      "text": "商汤2025年下半年（H2）EBITDA达到3.8亿元人民币，自上市以来首次转正。经营性现金流在下半年实现净流入，同样为上市以来首次。应收账款回收达到48.7亿元人民币的历史新高。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "cashflow_2025",
+      "answers_key_question": "kq3",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_results_2025",
+          "snippet": "EBITDA for the second half of 2025 reached RMB 380 million, turning positive for the first time since listing. Operating cash flow recorded a positive net inflow in the second half of 2025, marking the first such achievement since listing. Trade receivables collection rose to a record RMB 4.87 billion.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2025_annual_results/8772e60c51f6ad8e.md"
+        }
+      ]
+    },
+    {
+      "id": "d5.c3",
+      "text": "商汤计算机视觉（CV 2.0）业务在2025年首次实现净利润，并连续第二年产生正向现金流，成为中国CV市场连续9年保持第一的业务板块。国际客户在东南亚、东北亚和中东持续回购，南美和欧洲地区兴趣增加。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "cv_business_2025",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_results_2025",
+          "snippet": "CV 2.0 achieved profitability for the first time and generated positive cash flow for a second consecutive year. SenseTime has maintained the leading position in China's CV market for nine consecutive years. Internationally, clients across Southeast Asia, Northeast Asia and the Middle East continued to repurchase CV products and services.",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2025_annual_results/8772e60c51f6ad8e.md"
+        }
+      ]
+    },
+    {
+      "id": "d5.c4",
+      "text": "商汤SenseNova V6.5 Pro在SuperCLUE 2025年12月多模态大模型评测中以75.35分的总成绩位列中国第一，视觉推理维度得分最高。在物体描述、文本识别、环境识别、逻辑推理、代码设计、自动驾驶场景6个子任务中获得国内第一。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "benchmark_2025",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_sensenova_v65_2025",
+          "snippet": "SenseTime SenseNova V6.5 (SenseNova V6.5 Pro) secured first place in China with an overall score of 75.35 and received the highest score in the visual reasoning dimension... achieved first place in China in six sub-tasks",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/benchmark/d88597f030f2bdf7.md"
+        }
+      ]
+    },
+    {
+      "id": "d5.c5",
+      "text": "商汤SenseNova API平台目前处于公测阶段，完全免费开放（0港元/月）。公测期内每模型1500次/5小时的调用额度（滚动重置），最多支持20个API Key。可用模型包括SenseNova 6.7 Flash-Lite、SenseNova U1 Fast和deepseek-v4-flash。付费档位尚未正式上线。粤语大模型定价30港元/百万tokens。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "pricing",
+      "answers_key_question": "kq4",
+      "evidence": [
+        {
+          "source_id": "sensenova_pricing_2026",
+          "snippet": "免费公测 档月费0元调用 额度 每模型 1500次 /5小时(滚动重置) API Key数量最多支持20个... 商汤发布粤语大模型，定价30港元/百万tokens... 付费档位虽然「即将上线」",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/pricing/0ed7c66f93ea6957.md"
+        }
+      ]
+    },
+    {
+      "id": "d5.c6",
+      "text": "商汤SenseCore大装置算力规模已达40,400 PetaFLOPS（FP16），2025年支持近100万个模型研发任务。与华为昇腾、海光、寒武纪等10多家芯片厂商合作，推出SenseCore算力商城。已在沙特阿拉伯落地中国首个海外华人主导计算集群。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "infrastructure_2025",
+      "answers_key_question": "kq5",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_results_2025",
+          "snippet": "As of the release of this result announcement, the total operational computing scale of SenseCore had reached 40,400 PetaFLOPS (FP16)... During the year, it supported nearly one million model R&D tasks... partnered with more than a dozen chip makers, including Huawei Ascend, Hygon and Cambricon",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2025_annual_results/8772e60c51f6ad8e.md"
+        }
+      ]
+    },
+    {
+      "id": "d5.c7",
+      "text": "商汤2025年发布并开源了NEO原生多模态模型架构，仅需1/10的训练数据和算力即可达到同类模型的最优性能。基于NEO架构，SenseNova在空间智能性能上超越了GPT-5、Gemini-3 Pro和Cambrian-S。2026年Q2计划发布基于NEO架构的第二代基础模型。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "neov_architecture",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_results_2025",
+          "snippet": "In December 2025, SenseTime also unveiled and open-sourced NEO, a fundamentally new native multimodal model architecture. NEO achieves state-of-the-art performance comparable to industry peers of a similar scale while requiring only one-tenth of the training data and computing power... senseTime SenseNova has surpassed GPT-5, the latest Gemini-3 Pro, and Cambrian-S in spatial intelligence performance",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/d2025_annual_results/8772e60c51f6ad8e.md"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "sensetime_annual_results_2025",
+      "url": "https://www.sensetime.com/en/news/51170581/",
+      "title": "SenseTime Group Reports Record High Revenue of Over RMB 50 billion in 2025; Second Half EBITDA Turns Positive（商汤官方新闻稿）",
+      "quality": "primary",
+      "published_at": "2026-03-25",
+      "verification_note": "商汤官网新闻稿（未经审计）。营收50+亿RMB/同比+33%经计算验证：37.72亿×1.33≈50.17亿，与口径一致。以2025年经审计年报为准。"
+    },
+    {
+      "id": "sensetime_sensenova_v65_2025",
+      "url": "https://www.sensetime.com/en/news/51170359/",
+      "title": "SenseTime SenseNova V6.5 Pro Ranked No.1 in China on SuperCLUE 2025.12 Multimodal Benchmark（商汤官方新闻稿）",
+      "quality": "primary",
+      "published_at": "2026-01-12",
+      "verification_note": "商汤官网新闻稿。SuperCLUE榜单为第三方评测，商汤报告其在多模态榜单中国第1（75.35分）。"
+    },
+    {
+      "id": "sensenova_pricing_2026",
+      "url": "https://platform.sensenova.cn/",
+      "title": "SenseNova 日日新平台 API 公测定价信息",
+      "quality": "secondary",
+      "published_at": "2026",
+      "verification_note": "平台页面，非官方文档。公测免费/1500次/5小时/模型等信息来自平台页面及多来源交叉验证。付费档位尚未上线。"
+    }
+  ],
+  "writing_context": [
+    {
+      "id": "d5.w1",
+      "kind": "scope_boundary",
+      "text": "本补充数据基于商汤官方新闻稿（2026-03-25、2026-01-12），未经独立审计。2025年度经审计年报预计2026年3月发布，届时需更新所有数据。",
+      "source_ids": [
+        "sensetime_annual_results_2025",
+        "sensetime_sensenova_v65_2025"
+      ],
+      "applies_to": [
+        "kq1",
+        "kq3"
+      ],
+      "use": "所有2025年财务数据标注为\"新闻稿口径（未经审计）\"。"
+    },
+    {
+      "id": "d5.w2",
+      "kind": "availability_gap",
+      "text": "SenseNova API付费档位定价和SLA服务等级协议尚未公开，平台目前处于公测阶段。券商评级和目标价在东方财富平台显示为空（无覆盖）。",
+      "source_ids": [
+        "sensenova_pricing_2026"
+      ],
+      "applies_to": [
+        "kq4",
+        "kq5"
+      ],
+      "use": "标注付费档位和SLA为待公开信息，列为证据缺口。"
+    }
+  ]
+}

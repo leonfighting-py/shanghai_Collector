@@ -1,0 +1,473 @@
+{
+  "recommended_mode": "normal",
+  "mode_rationale": "四维结构清晰、无强对抗争议；但财务/产品时效高，需补研核验，不升 heavy。",
+  "user_confirmations_needed": {
+    "blocking": [],
+    "high_value": [
+      {
+        "id": "hv_financial_period",
+        "question": "财务分析以哪一期为准：2024 年报、2025 中报，还是含 2026 前瞻指引？",
+        "uncertainty_type": "time_range",
+        "why_it_matters": "影响基本面结论与是否进入观察名单的时点判断",
+        "impact_on_plan": "决定财务子维度取数窗口与可引用性",
+        "options": [
+          { "id": "opt_2024fy", "label": "以 2024 全年年报为锚", "planning_implication": "数据最确定，但时效偏旧" },
+          { "id": "opt_2025mid", "label": "以 2025 中报为锚", "planning_implication": "兼顾时效与可验证性" },
+          { "id": "opt_2026fw", "label": "含 2026 前瞻指引", "planning_implication": "需依赖管理层预测，可靠性较低" }
+        ],
+        "default_if_unanswered": {
+          "option_id": "opt_2025mid",
+          "rationale": "兼顾时效与可验证性，行业惯用口径",
+          "confidence": "medium"
+        }
+      },
+      {
+        "id": "hv_purchase_role",
+        "question": "管理层角色是采购决策者还是投资决策者？两者权重如何？",
+        "uncertainty_type": "audience",
+        "why_it_matters": "决定企业采购价值与投资观察维度的篇幅比例",
+        "impact_on_plan": "影响第二、第四维度的深度分配",
+        "options": [
+          { "id": "opt_both", "label": "两者并重，面向复合角色", "planning_implication": "四维均衡覆盖" },
+          { "id": "opt_procure", "label": "以采购合作为主", "planning_implication": "加重产品与采购价值维度" },
+          { "id": "opt_invest", "label": "以投资观察为主", "planning_implication": "加重基本面与投资风险维度" }
+        ],
+        "default_if_unanswered": {
+          "option_id": "opt_both",
+          "rationale": "原需求两问并列，默认均衡",
+          "confidence": "medium"
+        }
+      }
+    ],
+    "optional": []
+  },
+  "task_interpretation": {
+    "user_goal": "对商汤科技做公司深度研究，判断其是否适合作为 AI 产品与服务采购合作方，以及是否值得进入投资观察名单。",
+    "requested_output_inferred": "面向 ToB 企业管理层的公司深度研究报告，结论前置、决策导向。",
+    "research_type_inferred": "commercial",
+    "audience_inferred": "普通 ToB 企业管理层（采购/战略/投资决策复合视角）",
+    "time_focus": "current",
+    "explicit_constraints": [
+      "覆盖四个维度：公司基本面与商业化能力、产品与企业采购价值、竞争格局与替代方案、投资观察价值与风险",
+      "回答两个核心问题：采购合作适配性、投资观察名单价值",
+      "语言 zh-Hans，结论前置、决策导向、叙事主体、辅以对比表格"
+    ],
+    "implicit_scope_hints": [
+      "采购对象含小浣熊、日日新模型、API 及其他企业 AI 服务",
+      "投资视角为观察名单级别，非深度估值",
+      "读者为普通管理层，非技术专家"
+    ]
+  },
+  "context_entities": [
+    {
+      "name": "SenseTime 商汤科技",
+      "type": "company",
+      "explicit_or_inferred": "explicit",
+      "why_it_matters": "研究对象本体，港股上市公司 00020.HK",
+      "confidence": "high"
+    },
+    {
+      "name": "日日新 SenseNova",
+      "type": "product",
+      "explicit_or_inferred": "explicit",
+      "why_it_matters": "商汤自研大模型体系，企业 AI 服务核心载体",
+      "confidence": "high"
+    },
+    {
+      "name": "小浣熊 Xuanxiong",
+      "type": "product",
+      "explicit_or_inferred": "explicit",
+      "why_it_matters": "商汤面向消费者的 AI 助手，亦关联企业侧能力",
+      "confidence": "high"
+    },
+    {
+      "name": "SenseCore 商汤 AI 大装置",
+      "type": "technology",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "底层算力基础设施，影响模型训练与服务成本",
+      "confidence": "medium"
+    },
+    {
+      "name": "港交所 00020.HK",
+      "type": "company",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "上市主体与估值/合规数据来源",
+      "confidence": "high"
+    },
+    {
+      "name": "张钹 Xiang Bai",
+      "type": "person",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "创始人及核心技术人员，影响技术路线与治理",
+      "confidence": "high"
+    },
+    {
+      "name": "百度文心、阿里通义千问、腾讯混元、华为盘古",
+      "type": "product",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "国内大模型直接竞争者，构成替代方案",
+      "confidence": "high"
+    },
+    {
+      "name": "OpenAI GPT / Claude",
+      "type": "product",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "国际标杆，企业采购的替代与能力参照",
+      "confidence": "high"
+    },
+    {
+      "name": "智谱 AI、月之暗面、DeepSeek",
+      "type": "company",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "新兴国内 AI 公司，构成差异化替代",
+      "confidence": "medium"
+    },
+    {
+      "name": "中国 AI 算力与数据监管政策",
+      "type": "policy",
+      "explicit_or_inferred": "inferred",
+      "why_it_matters": "影响合规成本、数据获取与海外扩张",
+      "confidence": "medium"
+    }
+  ],
+  "terminology": [
+    {
+      "term": "日日新 / SenseNova",
+      "aliases": ["商量"],
+      "note": "商汤大模型品牌，含多版本（如 6.0、视觉多模态）"
+    },
+    {
+      "term": "SenseCore 大装置",
+      "aliases": [],
+      "note": "商汤自研 AI 算力基础设施，与训练成本强相关"
+    },
+    {
+      "term": "港股 00020",
+      "aliases": ["00020.HK", "SenseTime"],
+      "note": "2021 年港交所上市，非 A 股主体"
+    }
+  ],
+  "subdomain_partitions": {
+    "partition_basis": "by_stakeholder",
+    "subdomains": [
+      {
+        "name": "公司基本面与商业化能力",
+        "scope_hint": "财务、上市、盈利能力、现金流、研发投入"
+      },
+      {
+        "name": "产品与企业采购价值",
+        "scope_hint": "日日新、小浣熊、API、解决方案的行业适配"
+      },
+      {
+        "name": "竞争格局与替代方案",
+        "scope_hint": "国内外大模型厂商横向比较与替代风险"
+      },
+      {
+        "name": "投资观察价值与风险",
+        "scope_hint": "估值、上市地位、政策与地缘风险、退出路径"
+      }
+    ]
+  },
+  "knowledge_topology": {
+    "consensus": [
+      {
+        "fact": "商汤为中国 AI 龙头企业之一，视觉 AI 起家，近年转向大模型。",
+        "source_hint": "港交所公告、行业研报、公司官网"
+      },
+      {
+        "fact": "商汤长期处于亏损状态，持续高额研发投入是行业普遍现象。",
+        "source_hint": "历年年报财务摘要"
+      },
+      {
+        "fact": "日日新大模型已迭代至多版本，覆盖多模态与行业应用。",
+        "source_hint": "公司发布、产品页"
+      }
+    ],
+    "disputes": [
+      {
+        "issue": "商汤亏损是否可持续、何时能实现盈利，市场分歧明显。",
+        "positions_exist": ["看多：技术壁垒与政府订单支撑长期回报", "看空：烧钱模式难持续、估值回落"],
+        "representative_sources": ["券商研报多空观点、财经媒体评论"]
+      },
+      {
+        "issue": "商汤在纯大模型赛道相对百度/阿里/华为是否处于落后身位。",
+        "positions_exist": ["商汤视觉+AI 全栈仍具差异", "头部互联网厂商资源与生态更强"],
+        "representative_sources": ["行业对比榜单、第三方评测"]
+      }
+    ],
+    "blanks": [
+      {
+        "blank": "2025 全年及 2026 年最新季度财务数据（收入、净利润、现金流）",
+        "blank_nature": "too_recent"
+      },
+      {
+        "blank": "日日新最新模型在权威榜单（如 C-Eval、MMLU）的最新排名",
+        "blank_nature": "too_recent"
+      },
+      {
+        "blank": "商汤企业客户结构与付费转化率的非公开数据",
+        "blank_nature": "proprietary"
+      }
+    ]
+  },
+  "information_landscape": {
+    "primary_source_categories": [
+      "港交所披露易（公司公告、年报、中报）",
+      "商汤科技官网与产品页",
+      "监管备案与招股说明书"
+    ],
+    "secondary_source_categories": [
+      "券商与投行研报",
+      "财经媒体（财新、36氪、TechCrunch）",
+      "行业研究机构（IDC、艾瑞、Omdia）"
+    ],
+    "data_source_categories": [
+      "第三方模型评测榜单（Hugging Face、AI 指数）",
+      "港股行情与估值数据",
+      "招聘与人才流动数据"
+    ],
+    "expert_or_industry_sources": [
+      "AI 行业分析师与 KOL 公开评论",
+      "企业客户案例与公开采购公告"
+    ],
+    "weak_or_risky_sources": [
+      "自媒体与营销软文",
+      "公司 PR 通稿（需交叉验证）",
+      "未注明来源的第三方数据聚合站"
+    ],
+    "high_value_urls": [
+      {
+        "url": "https://www.sensetime.com",
+        "category": "official",
+        "why": "公司官方信息、产品矩阵、新闻"
+      },
+      {
+        "url": "https://www1.hkexnews.hk",
+        "category": "data",
+        "why": "港交所 00020 公告、年报、财务文件"
+      },
+      {
+        "url": "https://www.reuters.com/technology/artificial-intelligence/",
+        "category": "news",
+        "why": "国际媒体对商汤的独立报道"
+      },
+      {
+        "url": "https://papers.ssrn.com",
+        "category": "academic",
+        "why": "商汤相关学术论文与技术研究"
+      },
+      {
+        "url": "https://huggingface.co/spaces",
+        "category": "data",
+        "why": "模型评测与社区对比"
+      }
+    ],
+    "search_terms": [
+      { "term": "SenseTime 00020 annual results revenue", "language": "en", "use_case": "财务数据核验" },
+      { "term": "商汤科技 2025 年报 营收 净利润", "language": "zh", "use_case": "中文财务口径" },
+      { "term": "SenseNova model benchmark C-Eval MMLU", "language": "en", "use_case": "模型能力评估" },
+      { "term": "商汤 日日新 企业客户 案例", "language": "zh", "use_case": "采购价值佐证" },
+      { "term": "SenseTime vs Baidu Alibaba AI market share China", "language": "en", "use_case": "竞争格局" },
+      { "term": "商汤科技 估值 投资机构 评级", "language": "zh", "use_case": "投资观察" }
+    ],
+    "time_sensitivity": {
+      "rate": "fast_changing",
+      "recommended_window": "数据尽量取 2025-2026 区间；财务以最近一期经审计为准",
+      "reason": "大模型赛道技术迭代与市场格局快速演变"
+    },
+    "access_barriers": [
+      {
+        "barrier": "paywall",
+        "affected_sources": "券商研报、IDC/艾瑞付费报告",
+        "workaround_hint": "引用摘要与公开媒体转述，标注二手来源"
+      },
+      {
+        "barrier": "language",
+        "affected_sources": "部分中文研报无英文，国际媒体少",
+        "workaround_hint": "中英文双轨检索"
+      },
+      {
+        "barrier": "proprietary",
+        "affected_sources": "商汤企业客户名单与付费转化率",
+        "workaround_hint": "用公开案例与行业渗透率推断"
+      }
+    ]
+  },
+  "critical_unknowns": [
+    {
+      "unknown": "商汤 2025 全年及 2026 最新季度营收、净利润、现金流与亏损收窄趋势",
+      "why_it_matters": "直接决定商业化能力与投资价值判断",
+      "evidence_needed": "港交所公告或经审计年报/中报原文",
+      "can_be_resolved_by_research": true,
+      "importance": "high"
+    },
+    {
+      "unknown": "日日新大模型在权威第三方榜单的最新排名与相对差距",
+      "why_it_matters": "影响产品采购价值的技术可信度",
+      "evidence_needed": "C-Eval、MMLU、AGIEval 等最新榜单",
+      "can_be_resolved_by_research": true,
+      "importance": "high"
+    },
+    {
+      "unknown": "商汤企业客户的真实规模、续约率与付费意愿",
+      "why_it_matters": "采购合作适配性的核心实证",
+      "evidence_needed": "公开客户案例、行业渗透率、第三方调研",
+      "can_be_resolved_by_research": true,
+      "importance": "high"
+    },
+    {
+      "unknown": "商汤当前港股市值、市盈率、与同业估值倍数对比",
+      "why_it_matters": "投资观察名单的定量基础",
+      "evidence_needed": "港股行情与券商估值报告",
+      "can_be_resolved_by_research": true,
+      "importance": "medium"
+    },
+    {
+      "unknown": "中美地缘与出口管制对商汤算力与海外业务的实际影响程度",
+      "why_it_matters": "构成投资与采购的双重风险",
+      "evidence_needed": "政策文件、财报风险提示、媒体调查",
+      "can_be_resolved_by_research": true,
+      "importance": "medium"
+    }
+  ],
+  "candidate_lenses": [
+    {
+      "lens": "企业采购方视角：作为甲方评估供应商",
+      "useful_for": "判断 API/模型/服务是否可采购、TCO 与服务 SLA",
+      "may_miss": "忽略公司长期商业可持续性",
+      "binding_strength": "suggestive"
+    },
+    {
+      "lens": "投资决策者视角：评估进入观察名单",
+      "useful_for": "判断估值、盈利路径与风险收益比",
+      "may_miss": "忽略短期产品可用性细节",
+      "binding_strength": "suggestive"
+    },
+    {
+      "lens": "竞争对标视角：与国内外同行横向比较",
+      "useful_for": "识别替代方案与差异化优势",
+      "may_miss": "忽略商汤独特的视觉 AI 全栈",
+      "binding_strength": "suggestive"
+    },
+    {
+      "lens": "监管与地缘风险视角：政策与合规",
+      "useful_for": "评估合规成本与海外扩张风险",
+      "may_miss": "忽略产品本身的技术与商业价值",
+      "binding_strength": "suggestive"
+    }
+  ],
+  "coverage_boundary": {
+    "adjacent_fields_not_explored": [
+      "商汤在自动驾驶、智慧城市等垂直行业的细分产品深度",
+      "商汤海外业务（东南亚、中东等）的本地化进展",
+      "商汤人才与核心技术团队的稳定性"
+    ],
+    "opposing_perspectives_not_searched": [
+      "看空商汤的做空报告与批评性深度调查",
+      "客户流失或负面采购体验的公开案例"
+    ],
+    "second_order_effects_not_explored": [
+      "商汤商业化进度对中国 AI 产业整体融资气候的影响",
+      "大模型价格战对商汤定价权的冲击"
+    ],
+    "alternative_paths_not_explored": [
+      "是否应转向仅采购国际模型（GPT/Claude）而非商汤",
+      "自建 vs 采购企业 AI 能力的成本对比"
+    ],
+    "scan_scope": {
+      "zoom_level": "domain",
+      "scanned_angles": ["公司基本面与财务", "产品矩阵与企业服务", "竞争格局", "投资与风险"],
+      "unscanned_angles": ["垂直行业深度案例", "海外市场", "技术团队稳定性"]
+    },
+    "lists_known_partial": {
+      "entities": { "more_likely_in": ["商汤垂直行业产品", "海外子公司"] },
+      "subdomains": { "alternative_partitions_exist": ["by_value_chain", "by_technology"] },
+      "terminology": { "jargon_pockets_not_covered": ["AI 大装置技术细节", "模型版本代号"] },
+      "unknowns": { "research_will_surface_more": true },
+      "disputes": { "more_likely_in": ["券商多空研报", "做空报告"] },
+      "risks": { "more_likely_in": ["监管政策变动", "价格战"] }
+    }
+  },
+  "hypotheses_to_test": [
+    {
+      "claim": "商汤适合作为 AI 产品与服务的辅助或试点合作方，但不宜作为唯一供应商。",
+      "basis": "视觉 AI 全栈与技术积累，但纯大模型身位与头部互联网厂商有差距",
+      "confidence": "medium",
+      "disconfirming_evidence": "若日日新企业渗透率与续约率高、且有标杆级客户，则合作适配性显著上升"
+    },
+    {
+      "claim": "商汤具备进入投资观察名单的价值，但应标注为高波动、高政策风险标的。",
+      "basis": "港股流动性、AI 龙头地位；但持续亏损与地缘风险压制估值",
+      "confidence": "medium",
+      "disconfirming_evidence": "若 2025-2026 实现盈利或现金流显著改善，则风险评级应下调"
+    },
+    {
+      "claim": "商汤在中国 AI 大模型赛道处于第二梯队前段，差异化在于视觉+AI 全栈。",
+      "basis": "相对百度/阿里/华为的资源劣势，但视觉 AI 护城河较深",
+      "confidence": "medium",
+      "disconfirming_evidence": "若最新榜单显示商汤模型能力显著超越同行，则竞争定位需上修"
+    }
+  ],
+  "risk_flags": [
+    {
+      "risk": "时效性",
+      "why_it_matters": "财务与模型数据更新快，过时结论会误导决策",
+      "mitigation": "取最近经审计数据，标注数据时点",
+      "severity": "high"
+    },
+    {
+      "risk": "来源偏见",
+      "why_it_matters": "公司 PR 与部分软文夸大产品能力",
+      "mitigation": "交叉验证，区分官方与独立来源",
+      "severity": "medium"
+    },
+    {
+      "risk": "数据过时",
+      "why_it_matters": "模型榜单与市场份额半年即变化",
+      "mitigation": "优先最新榜单，标注发布时间",
+      "severity": "high"
+    },
+    {
+      "risk": "地区差异",
+      "why_it_matters": "中美市场对商汤定位与合规要求不同",
+      "mitigation": "区分国内外市场结论",
+      "severity": "medium"
+    },
+    {
+      "risk": "法规不确定",
+      "why_it_matters": "出口管制与数据政策影响业务与估值",
+      "mitigation": "跟踪政策动态，标注不确定性",
+      "severity": "high"
+    },
+    {
+      "risk": "营销话术",
+      "why_it_matters": "AI 产品宣传常超出实际可用能力",
+      "mitigation": "以第三方评测与客户案例为准",
+      "severity": "medium"
+    },
+    {
+      "risk": "缺一手证据",
+      "why_it_matters": "企业付费数据多为非公开",
+      "mitigation": "用公开案例与渗透率推断，标注缺口",
+      "severity": "medium"
+    },
+    {
+      "risk": "benchmark不可比",
+      "why_it_matters": "不同榜单评测口径差异大",
+      "mitigation": "同榜单横向对比，避免跨榜单混比",
+      "severity": "medium"
+    },
+    {
+      "risk": "口径不一致",
+      "why_it_matters": "营收分类（软件/硬件/服务）口径需统一",
+      "mitigation": "统一采用年报口径并说明",
+      "severity": "low"
+    },
+    {
+      "risk": "幸存者偏差",
+      "why_it_matters": "公开案例多为成功案例，流失客户不可见",
+      "mitigation": "寻找负面与中性案例平衡",
+      "severity": "low"
+    }
+  ]
+}

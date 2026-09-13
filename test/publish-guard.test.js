@@ -6,6 +6,7 @@ import {
   getPublishGuardConfig,
   publishGuardFailure,
 } from "../src/lib/publish-guard.js";
+import { applyCategoryDropProtection } from "../src/lib/collect-job.js";
 
 function events(n) {
   return Array.from({ length: n }, (_, i) => ({ title: `活动${i}` }));
@@ -56,4 +57,61 @@ test("env config defaults to enabled at 0.6 ratio", () => {
 
   const tuned = getPublishGuardConfig({ PUBLISH_GUARD_RATIO: "0.8" });
   assert.equal(tuned.ratio, 0.8);
+});
+
+function catEvents(category, n, suffix = "") {
+  return Array.from({ length: n }, (_, i) => ({ title: `${category}${i}${suffix}`, category }));
+}
+
+test("category drop protection keeps previous data when a category collapses", () => {
+  const previous = [...catEvents("高校讲座", 11), ...catEvents("演出音乐", 50)];
+  // 本次讲座源集体挂掉：讲座只剩 2 条，演出正常 → 讲座应用旧数据顶替
+  const next = [...catEvents("高校讲座", 2, "新"), ...catEvents("演出音乐", 48, "新")];
+  const { events: merged, protectedCategories } = applyCategoryDropProtection(next, previous);
+  assert.deepEqual(protectedCategories, ["高校讲座"]);
+  const lectures = merged.filter((e) => e.category === "高校讲座");
+  assert.equal(lectures.length, 11);
+  assert.ok(lectures.every((e) => !e.title.includes("新")), "讲座应为旧数据");
+  const shows = merged.filter((e) => e.category === "演出音乐");
+  assert.equal(shows.length, 48);
+  assert.ok(shows.every((e) => e.title.includes("新")), "演出应为本次新数据");
+});
+
+test("category drop protection is a no-op for normal fluctuations", () => {
+  const previous = [...catEvents("高校讲座", 11), ...catEvents("演出音乐", 50)];
+  const next = [...catEvents("高校讲座", 8, "新"), ...catEvents("演出音乐", 48, "新")];
+  const { events: merged, protectedCategories } = applyCategoryDropProtection(next, previous);
+  assert.deepEqual(protectedCategories, []);
+  assert.equal(merged, next);
+  assert.equal(merged.filter((e) => e.category === "高校讲座").length, 8);
+});
+
+test("category drop protection ignores categories below minimum threshold", () => {
+  // 上次讲座仅 4 条（< 下限 5），本次归零也不保护
+  const previous = [...catEvents("高校讲座", 4), ...catEvents("演出音乐", 50)];
+  const next = [...catEvents("演出音乐", 48, "新")];
+  const { events: merged, protectedCategories } = applyCategoryDropProtection(next, previous);
+  assert.deepEqual(protectedCategories, []);
+  assert.equal(merged.filter((e) => e.category === "高校讲座").length, 0);
+});
+
+test("category drop protection handles multiple collapsing categories", () => {
+  const previous = [
+    ...catEvents("高校讲座", 10),
+    ...catEvents("展览", 20),
+    ...catEvents("演出音乐", 50),
+  ];
+  const next = [...catEvents("演出音乐", 48, "新")];
+  const { events: merged, protectedCategories } = applyCategoryDropProtection(next, previous);
+  assert.deepEqual(protectedCategories.sort(), ["展览", "高校讲座"]);
+  assert.equal(merged.filter((e) => e.category === "高校讲座").length, 10);
+  assert.equal(merged.filter((e) => e.category === "展览").length, 20);
+  assert.equal(merged.filter((e) => e.category === "演出音乐").length, 48);
+});
+
+test("category drop protection returns new events when no previous data", () => {
+  const next = [...catEvents("高校讲座", 5), ...catEvents("演出音乐", 40)];
+  const { events: merged, protectedCategories } = applyCategoryDropProtection(next, []);
+  assert.deepEqual(protectedCategories, []);
+  assert.equal(merged, next);
 });
