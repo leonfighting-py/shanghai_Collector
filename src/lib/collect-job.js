@@ -2,6 +2,7 @@ import { collectEventsFromSources, SOURCE_SEEDS } from "./collector.js";
 import { filterEventCategories, getCategoryFilterConfig } from "./category-filter.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
 import { backfillEventImages } from "./image-backfill.js";
+import { isRelevantPerformance } from "./parsers/shared.js";
 import {
   evaluatePublishGuard,
   getPublishGuardConfig,
@@ -49,16 +50,24 @@ export async function runCollectJob() {
     result.events === previousEvents
       ? { events: enrichment.events, reclassifiedCount: 0, rejectedCount: 0, failures: [], enabled: false }
       : await filterEventCategories(enrichment.events);
+  // 安全网：LLM 富集可能将英文体育标题翻译成中文（如 "Swim Championships" → "游泳锦标赛"），
+  // 采集阶段的正则只覆盖原始标题；此处对富集后的最终标题再过滤一次。
+  const publishableEvents =
+    result.events === previousEvents
+      ? categoryFilter.events
+      : categoryFilter.events.filter(
+          (event) => event.category !== "演出音乐" || isRelevantPerformance(event),
+        );
   const rawResult = await insertRawEvents(result.rawEvents || result.events, { runId: run.id });
 
   // 发布守门：新数据量相对已发布数据暴跌时拒绝覆盖，保留旧数据
   const guardConfig = getPublishGuardConfig();
   const guard = result.events !== previousEvents
-    ? evaluatePublishGuard(previousEvents, categoryFilter.events, guardConfig)
+    ? evaluatePublishGuard(previousEvents, publishableEvents, guardConfig)
     : { allowed: true, reason: null, previousCount: previousEvents.length, newCount: previousEvents.length };
 
   const publishResult = result.events !== previousEvents && guard.allowed
-      ? await publishEvents(categoryFilter.events, {
+      ? await publishEvents(publishableEvents, {
           rawEventIds: rawResult.rawEventIds,
           dedupeProvider: dedupeProvider(),
         })
@@ -81,7 +90,7 @@ export async function runCollectJob() {
 
   return {
     ...result,
-    events: guard.allowed ? categoryFilter.events : previousEvents,
+    events: guard.allowed ? publishableEvents : previousEvents,
     publish_guard: {
       allowed: guard.allowed,
       reason: guard.reason,

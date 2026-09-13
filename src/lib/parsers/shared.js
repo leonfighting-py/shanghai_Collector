@@ -138,15 +138,18 @@ export function stripTags(html) {
 
 /**
  * 综合票务平台（格瓦拉/票牛）首页是全国性的，混入体育赛事与非上海活动。
+ * 英文聚合源（AllEvents / SmartShanghai / Eventbrite）的原始标题为英文，
+ * 经 LLM 富集后才翻译成中文，因此正则须同时覆盖中英文体育关键词。
+ *
  * 本项目定位为上海本地活动聚合，演出音乐分类需排除：
- *  1. 体育赛事（网球/篮球/赛车/马拉松/电竞等标题特征词）
+ *  1. 体育赛事（网球/篮球/赛车/马拉松/游泳/电竞等中英文标题特征词）
  *  2. 明确在其他城市举办的活动（场馆含其他主要城市名）
  */
 const SPORTS_TITLE_RE =
-  /公开赛|锦标赛|耐力赛|洲际杯|汽车联赛|CTCC|F1大奖赛|马拉松|网球|篮球赛|足球赛|ATP\d|WTA|拳击赛|击剑赛|体操赛|电竞(?:联赛|大赛|比赛)/;
+  /公开赛|锦标赛|耐力赛|总决赛|金杯|洲际杯|汽车联赛|CTCC|F1大奖赛|马拉松|网球|游泳|篮球赛|足球赛|ATP\d|WTA|拳击赛|击剑赛|体操赛|电竞(?:联赛|大赛|比赛)|swim(?:ming)?|tennis|basketball|football|soccer|badminton|volleyball|boxing|fencing|gymnastics|triathlon|championships?|tournament/i;
 
 const NON_SHANGHAI_CITY_RE =
-  /(?:广州|深圳|成都|杭州|南京|武汉|西安|重庆|天津|长沙|青岛|大连|厦门|哈尔滨|沈阳|长春|济南|郑州|福州|昆明|贵阳|南昌|合肥|太原|石家庄|兰州|海口|南宁|拉萨|乌鲁木齐|呼和浩特)/;
+  /(?:北京|广州|深圳|成都|杭州|南京|武汉|西安|重庆|天津|长沙|青岛|大连|厦门|哈尔滨|沈阳|长春|济南|郑州|福州|昆明|贵阳|南昌|合肥|太原|石家庄|兰州|海口|南宁|拉萨|乌鲁木齐|呼和浩特|beijing|guangzhou|shenzhen|chengdu|hangzhou|nanjing)/i;
 
 export function isRelevantPerformance(event) {
   if (SPORTS_TITLE_RE.test(event.title || "")) return false;

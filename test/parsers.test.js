@@ -214,9 +214,21 @@ test("isRelevantPerformance filters sports titles and non-Shanghai venues", () =
   assert.equal(isRelevantPerformance({ title: "某演唱会", venue: "深圳湾体育中心" }), false);
   assert.equal(isRelevantPerformance({ title: "某演出", venue: "成都城市音乐厅" }), false);
 
+  // 英文体育标题（AllEvents / SmartShanghai 等英文源的原始标题）
+  assert.equal(isRelevantPerformance({ title: "Fast & Furious Swim Championships", venue: "Shanghai Oriental Sports Center" }), false);
+  assert.equal(isRelevantPerformance({ title: "Shanghai Tennis Open 2026", venue: "Qizhong Forest Sports City Arena" }), false);
+  assert.equal(isRelevantPerformance({ title: "City Basketball Tournament", venue: "Shanghai Stadium" }), false);
+  assert.equal(isRelevantPerformance({ title: "Intercontinental Cup Gymnastics", venue: "Shanghai" }), false);
+  // 新增中文体育关键词
+  assert.equal(isRelevantPerformance({ title: "2026比利简金杯深圳总决赛上海站", venue: "上海" }), false);
+  assert.equal(isRelevantPerformance({ title: "全国游泳锦标赛上海站", venue: "上海东方体育中心" }), false);
+  // 英文非上海城市
+  assert.equal(isRelevantPerformance({ title: "Music Festival", venue: "Beijing National Stadium" }), false);
+
   assert.equal(isRelevantPerformance({ title: "李荣浩黑马世界巡回演唱会", venue: "上海体育场" }), true);
   assert.equal(isRelevantPerformance({ title: "音乐剧《狂炎奏鸣曲》共舞台热演", venue: "上海共舞台" }), true);
   assert.equal(isRelevantPerformance({ title: "潘玮柏MADLOVEULTRA巡回演唱会", venue: "上海虹口足球场" }), true);
   assert.equal(isRelevantPerformance({ title: "沉浸式剧场《9号秘事》", venue: "上海大剧院" }), true);
   assert.equal(isRelevantPerformance({ title: "林肯爵士乐Shenel Johns四重奏演出", venue: "林肯爵士乐上海中心" }), true);
+  assert.equal(isRelevantPerformance({ title: "CHIIKAWA DAYS Exhibition", venue: "Shanghai" }), true);
 });
