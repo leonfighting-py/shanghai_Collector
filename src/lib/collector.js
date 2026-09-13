@@ -6,6 +6,7 @@ import {
 } from "./events.js";
 import { defaultFetchHtml } from "./fetch-html.js";
 import { PARSERS } from "./parsers/index.js";
+import { isRelevantPerformance } from "./parsers/shared.js";
 
 export { defaultFetchHtml } from "./fetch-html.js";
 export { parseJsonLdEvents } from "./parsers/json-ld.js";
@@ -445,7 +446,9 @@ export async function collectEventsFromSources({
   }
 
   const events = mergeDuplicateEvents(
-    filterPublishableEvents(collected).filter((event) => isInDateRange(event, startDate, endDate)),
+    filterPublishableEvents(collected)
+      .filter((event) => isInDateRange(event, startDate, endDate))
+      .filter((event) => event.category !== "演出音乐" || isRelevantPerformance(event)),
   );
 
   if (events.length === 0 && previousEvents.length > 0) {
