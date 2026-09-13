@@ -1,5 +1,5 @@
 import { CATEGORIES, COLLECTION_WINDOW_DAYS, toShanghaiDayWindow } from "./events.js";
-import { getDisplayTopPicks } from "./recommendations.js";
+import { getDisplayTopPicks, sortCampusLectures } from "./recommendations.js";
 
 export const HOME_SECTION_PREVIEW_LIMIT = 4;
 
@@ -19,7 +19,10 @@ export function buildHomeViewModel(
     featuredEvents: getDisplayTopPicks(events, featuredLimit, now),
     categorySections: CATEGORIES.map((category) => {
       const inCategory = events.filter((event) => event.category === category);
-      const categoryEvents = getDisplayTopPicks(inCategory, inCategory.length, now);
+      const categoryEvents =
+        category === "高校讲座"
+          ? sortCampusLectures(inCategory, now)
+          : getDisplayTopPicks(inCategory, inCategory.length, now);
 
       return {
         title: category,

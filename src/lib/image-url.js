@@ -33,3 +33,16 @@ export function optimizedImageUrl(url, { width = 1200, quality = 75 } = {}) {
 export function isUsableImage(url) {
   return typeof url === "string" && /^https?:\/\//i.test(url.trim());
 }
+
+// 部分图床有防盗链白名单（需带 Referer），部分图床反而需要 no-referrer 绕过防盗链。
+// 按域名选择最合适的 referrer 策略：
+//  - huodongxing CDN：白名单制，不带 Referer 返回 403 → 用 strict-origin-when-cross-origin
+//  - 其他（微信/公众号等）：防盗链基于 Referer 黑名单，不带更安全 → 用 no-referrer
+const REFERER_REQUIRED_HOSTS = [/huodongxing\.com\//];
+
+export function pickReferrerPolicy(url) {
+  if (typeof url !== "string") return "no-referrer";
+  return REFERER_REQUIRED_HOSTS.some((pattern) => pattern.test(url))
+    ? "strict-origin-when-cross-origin"
+    : "no-referrer";
+}

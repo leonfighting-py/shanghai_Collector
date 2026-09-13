@@ -80,6 +80,31 @@ function rankEvents(events, now) {
     .sort((left, right) => right.recommendation_score - left.recommendation_score);
 }
 
+/**
+ * 高校讲座专用排序：按时间维度而非评分排列，方便用户快速锁定近期讲座。
+ *
+ * 规则：
+ *  1. 当天及未来（未发生）排在前面，按 start_time 升序（由近到远）。
+ *  2. 当天之前（已发生）排在后面，按 start_time 降序（由近到远）。
+ *
+ * 例：今天 9/13 → [9/13, 9/14, 9/15, ...] | [..., 9/12, 9/11, 9/10]
+ */
+export function sortCampusLectures(events, now = new Date()) {
+  const today = toShanghaiDate(now);
+  const upcoming = [];
+  const past = [];
+  for (const event of events) {
+    if (toShanghaiDate(event.start_time) >= today) {
+      upcoming.push(event);
+    } else {
+      past.push(event);
+    }
+  }
+  upcoming.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+  past.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+  return [...upcoming, ...past];
+}
+
 export function getHeroEvent(events, now = new Date()) {
   return getTopPicks(events, 1, now)[0] || null;
 }

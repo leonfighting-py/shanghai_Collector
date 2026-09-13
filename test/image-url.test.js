@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { isUsableImage, optimizedImageUrl } from "../src/lib/image-url.js";
+import { isUsableImage, optimizedImageUrl, pickReferrerPolicy } from "../src/lib/image-url.js";
 
 test("optimizedImageUrl compresses pipi.cn via imageMogr2 and strips old query", () => {
   assert.equal(
@@ -57,4 +57,13 @@ test("isUsableImage accepts absolute http(s) only", () => {
   assert.equal(isUsableImage("/art/x.jpg"), false);
   assert.equal(isUsableImage(undefined), false);
   assert.equal(isUsableImage("  "), false);
+});
+
+test("pickReferrerPolicy sends origin referer for huodongxing CDN", () => {
+  assert.equal(
+    pickReferrerPolicy("https://cdn.huodongxing.com/logo/202609/123/456_v2small.jpg"),
+    "strict-origin-when-cross-origin",
+  );
+  assert.equal(pickReferrerPolicy("https://cdn-ip.allevents.in/s/img.jpg"), "no-referrer");
+  assert.equal(pickReferrerPolicy("not a url"), "no-referrer");
 });

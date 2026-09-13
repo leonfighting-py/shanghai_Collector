@@ -8,6 +8,7 @@ import {
   getTonightEvents,
   getTopPicks,
   getWeekendEvents,
+  sortCampusLectures,
 } from "../src/lib/recommendations.js";
 
 const events = [
@@ -77,6 +78,33 @@ test("weekend/tonight classification is independent of runtime timezone", () => 
   const saturdayEarlyMorning = event("周六凌晨活动", "2026-05-23T01:00:00+08:00", "演出音乐", "上海音乐厅");
   assert.equal(getTonightEvents([saturdayEarlyMorning], "2026-05-22T20:00:00+08:00").length, 0);
   assert.equal(getWeekendEvents([saturdayEarlyMorning]).length, 1);
+});
+
+test("sortCampusLectures orders upcoming ascending then past descending", () => {
+  const lectures = [
+    event("远期讲座", "2026-09-16T14:00:00+08:00", "高校讲座", "上交"),
+    event("昨天讲座", "2026-09-12T10:00:00+08:00", "高校讲座", "复旦"),
+    event("后天讲座", "2026-09-15T14:00:00+08:00", "高校讲座", "同济"),
+    event("前天讲座", "2026-09-11T10:00:00+08:00", "高校讲座", "华师大"),
+    event("今天讲座", "2026-09-13T15:00:00+08:00", "高校讲座", "上财"),
+    event("明天讲座", "2026-09-14T14:00:00+08:00", "高校讲座", "华东理工"),
+    event("大前天讲座", "2026-09-10T10:00:00+08:00", "高校讲座", "上大"),
+  ];
+
+  const sorted = sortCampusLectures(lectures, "2026-09-13T08:00:00+08:00");
+
+  assert.deepEqual(
+    sorted.map((e) => e.title),
+    [
+      "今天讲座",
+      "明天讲座",
+      "后天讲座",
+      "远期讲座",
+      "昨天讲座",
+      "前天讲座",
+      "大前天讲座",
+    ],
+  );
 });
 
 function event(title, start_time, category, venue) {

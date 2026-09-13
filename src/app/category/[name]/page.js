@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CategoryEventCard } from "../../components/CategoryEventCard.js";
 import { CATEGORIES, toShanghaiDate, toShanghaiDayWindow } from "../../../lib/events.js";
 import { getCategoryEyebrow } from "../../../lib/home-view-model.js";
-import { getDisplayTopPicks } from "../../../lib/recommendations.js";
+import { getDisplayTopPicks, sortCampusLectures } from "../../../lib/recommendations.js";
 import { listEvents } from "../../../lib/repository.js";
 
 export default async function CategoryPage({ params, searchParams }) {
@@ -28,7 +28,10 @@ export default async function CategoryPage({ params, searchParams }) {
   const anchor = query?.week || toShanghaiDate(new Date());
   const range = toShanghaiDayWindow(anchor);
   const rawEvents = await listEvents({ week: anchor, category });
-  const events = getDisplayTopPicks(rawEvents, rawEvents.length, anchor);
+  const events =
+    category === "高校讲座"
+      ? sortCampusLectures(rawEvents, anchor)
+      : getDisplayTopPicks(rawEvents, rawEvents.length, anchor);
   const eyebrow = getCategoryEyebrow(category);
 
   return (

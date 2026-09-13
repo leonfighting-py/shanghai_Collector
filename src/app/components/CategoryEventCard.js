@@ -1,7 +1,7 @@
 "use client";
 
 import { safeExternalUrl } from "../../lib/events.js";
-import { isUsableImage, optimizedImageUrl } from "../../lib/image-url.js";
+import { isUsableImage, optimizedImageUrl, pickReferrerPolicy } from "../../lib/image-url.js";
 import { useFavorites } from "./useFavorites.js";
 
 export function CategoryEventCard({ event }) {
@@ -20,7 +20,7 @@ export function CategoryEventCard({ event }) {
       {image ? (
         <span className="card-cover">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={optimizedImageUrl(image, { width: 600 })} alt="" loading="lazy" referrerPolicy="no-referrer" />
+          <img src={optimizedImageUrl(image, { width: 600 })} alt="" loading="lazy" referrerPolicy={pickReferrerPolicy(image)} />
         </span>
       ) : (
         <span className={`card-cover card-cover--fallback cover-${fallbackVariant(event)}`} aria-hidden="true">

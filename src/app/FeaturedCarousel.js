@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { CAROUSEL_INTERVAL_MS, nextCarouselIndex } from "../lib/carousel.js";
 import { safeExternalUrl } from "../lib/events.js";
-import { isUsableImage, optimizedImageUrl } from "../lib/image-url.js";
+import { isUsableImage, optimizedImageUrl, pickReferrerPolicy } from "../lib/image-url.js";
 
 export function FeaturedCarousel({ events }) {
   // 只展示有真实封面的事件；无图事件在分类网格里已有渐变兜底，featured 走纯图片位
@@ -56,7 +56,7 @@ export function FeaturedCarousel({ events }) {
       >
         <span className="featured-cover-scrim" aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="featured-cover-img" src={optimizedImageUrl(activeEvent.image_url)} alt="" loading="eager" referrerPolicy="no-referrer" />
+        <img className="featured-cover-img" src={optimizedImageUrl(activeEvent.image_url)} alt="" loading="eager" referrerPolicy={pickReferrerPolicy(activeEvent.image_url)} />
         <span className="featured-slide-content">
           <span className="cover-kicker">{activeEvent.category}</span>
           <h2>{activeEvent.title}</h2>
