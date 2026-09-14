@@ -107,6 +107,38 @@ test("sortCampusLectures orders upcoming ascending then past descending", () => 
   );
 });
 
+test("getDisplayTopPicks with preferImages puts image events first", () => {
+  const exhibitions = [
+    { ...event("无图展览B", "2026-05-24T10:00:00+08:00", "展览", "民生美术馆") },
+    { ...event("有图展览A", "2026-05-23T10:00:00+08:00", "展览", "外滩美术馆"), image_url: "https://example.com/a.jpg" },
+    { ...event("无图展览D", "2026-05-26T10:00:00+08:00", "展览", "余德耀美术馆") },
+    { ...event("有图展览C", "2026-05-25T10:00:00+08:00", "展览", "龙美术馆"), image_url: "https://example.com/c.jpg" },
+  ];
+
+  const picks = getDisplayTopPicks(exhibitions, 4, "2026-05-22T12:00:00+08:00", {
+    preferImages: true,
+  });
+  const hasImgFlags = picks.map((e) => Boolean(e.image_url));
+  assert.deepEqual(hasImgFlags, [true, true, false, false]);
+});
+
+test("sortCampusLectures prioritizes AI-related lectures to the front", () => {
+  const lectures = [
+    event("今天普通讲座", "2026-09-13T15:00:00+08:00", "高校讲座", "上财"),
+    event("明天普通讲座", "2026-09-14T14:00:00+08:00", "高校讲座", "华东理工"),
+    { ...event("昨天AI讲座", "2026-09-12T10:00:00+08:00", "高校讲座", "复旦"), summary: "探讨大模型与机器学习" },
+    event("远期普通讲座", "2026-09-16T14:00:00+08:00", "高校讲座", "上交"),
+  ];
+
+  const sorted = sortCampusLectures(lectures, "2026-09-13T08:00:00+08:00");
+
+  assert.equal(sorted[0].title, "昨天AI讲座");
+  assert.deepEqual(
+    sorted.slice(1).map((e) => e.title),
+    ["今天普通讲座", "明天普通讲座", "远期普通讲座"],
+  );
+});
+
 function event(title, start_time, category, venue) {
   return {
     title,

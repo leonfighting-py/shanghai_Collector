@@ -22,7 +22,9 @@ export function buildHomeViewModel(
       const categoryEvents =
         category === "高校讲座"
           ? sortCampusLectures(inCategory, now)
-          : getDisplayTopPicks(inCategory, inCategory.length, now);
+          : getDisplayTopPicks(inCategory, inCategory.length, now, {
+              preferImages: category === "展览",
+            });
 
       return {
         title: category,

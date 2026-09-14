@@ -1,5 +1,6 @@
 import { CATEGORIES, toShanghaiDate } from "./events.js";
 import { hasCjkText } from "./locale.js";
+import { isUsableImage } from "./image-url.js";
 
 const CHINESE_TITLE_BOOST = 28;
 
@@ -67,8 +68,18 @@ export function getTopPicks(events, limit = 12, now = new Date()) {
   return rankEvents(events, now).slice(0, limit);
 }
 
-export function getDisplayTopPicks(events, limit = 12, now = new Date()) {
+export function getDisplayTopPicks(
+  events,
+  limit = 12,
+  now = new Date(),
+  { preferImages = false } = {},
+) {
   const ranked = rankEvents(events, now);
+  if (preferImages) {
+    const withImages = ranked.filter((event) => isUsableImage(event.image_url));
+    const withoutImages = ranked.filter((event) => !isUsableImage(event.image_url));
+    return [...withImages, ...withoutImages].slice(0, limit);
+  }
   const chinese = ranked.filter((event) => hasCjkText(event.title));
   const other = ranked.filter((event) => !hasCjkText(event.title));
   return [...chinese, ...other].slice(0, limit);
@@ -84,11 +95,22 @@ function rankEvents(events, now) {
  * 高校讲座专用排序：按时间维度而非评分排列，方便用户快速锁定近期讲座。
  *
  * 规则：
- *  1. 当天及未来（未发生）排在前面，按 start_time 升序（由近到远）。
- *  2. 当天之前（已发生）排在后面，按 start_time 降序（由近到远）。
+ *  1. AI 相关讲座优先提到最前（首页讲座栏直接展示），其余按时间排。
+ *  2. 当天及未来（未发生）排在前面，按 start_time 升序（由近到远）。
+ *  3. 当天之前（已发生）排在后面，按 start_time 降序（由近到远）。
  *
- * 例：今天 9/13 → [9/13, 9/14, 9/15, ...] | [..., 9/12, 9/11, 9/10]
+ * 例：今天 9/13 → [AI讲座, 9/13, 9/14, 9/15, ...] | [..., 9/12, 9/11, 9/10]
  */
+const AI_LECTURE_KEYWORDS =
+  /AI|人工智能|大模型|机器学习|深度学习|LLM|GPT|大语言模型|生成式|神经网络|Tensor|数据挖掘/i;
+
+function isAiRelatedLecture(event) {
+  return (
+    AI_LECTURE_KEYWORDS.test(event.title || "") ||
+    AI_LECTURE_KEYWORDS.test(event.summary || "")
+  );
+}
+
 export function sortCampusLectures(events, now = new Date()) {
   const today = toShanghaiDate(now);
   const upcoming = [];
@@ -102,7 +124,11 @@ export function sortCampusLectures(events, now = new Date()) {
   }
   upcoming.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
   past.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
-  return [...upcoming, ...past];
+
+  const timeSorted = [...upcoming, ...past];
+  const aiLectures = timeSorted.filter(isAiRelatedLecture);
+  const rest = timeSorted.filter((event) => !isAiRelatedLecture(event));
+  return [...aiLectures, ...rest];
 }
 
 export function getHeroEvent(events, now = new Date()) {
