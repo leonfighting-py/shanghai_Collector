@@ -1,0 +1,38 @@
+name: Deploy
+
+# 推送到 main 时自动构建并部署前端到 Cloudflare Workers。
+# 也支持在 Actions 页面手动触发（workflow_dispatch）。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一时刻只允许一个部署任务；新的 push 会取消正在跑的旧部署，避免堆积。
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      # opennextjs-cloudflare deploy 会先跑 Next.js 构建，再打包成 Worker 并部署。
+      # wrangler 通过下面两个环境变量鉴权（无需浏览器登录）。
+      - name: Build & deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run deploy:cloudflare
