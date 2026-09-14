@@ -14,8 +14,7 @@ import { listEvents } from "../lib/repository.js";
 // Media configuration — override via env vars in .env / .dev.vars
 // ---------------------------------------------------------------------------
 const HERO_VIDEO_URL =
-  process.env.NEXT_PUBLIC_HERO_VIDEO_URL ||
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4";
+  process.env.NEXT_PUBLIC_HERO_VIDEO_URL || "/media/shanghai-radar-loop.mp4?v=2";
 
 // Shanghai sunset skyline photo (Xie Jian / Unsplash)
 // Replace with your own: NEXT_PUBLIC_CONTENT_BG_IMAGE
@@ -44,6 +43,7 @@ export default async function Home({ searchParams }) {
 
       {/* ---- CONTENT — city photo background with frosted glass ---- */}
       <div
+        id="city-discoveries"
         className="content-bg"
         style={{ backgroundImage: `url(${CONTENT_BG_IMAGE})` }}
       >

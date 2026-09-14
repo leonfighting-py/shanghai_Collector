@@ -1001,3 +1001,84 @@ a {
 }
 
 
+
+/* Shanghai editorial cover: local artwork with ambient motion. */
+.shanghai-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 760px;
+  height: 100svh;
+  overflow: hidden;
+  background: #0b3039;
+  color: #fff5e8;
+}
+.shanghai-scene, .shanghai-scrim { position: absolute; inset: 0; pointer-events: none; }
+.shanghai-scene { animation: shanghai-breathe 28s ease-in-out infinite alternate; }
+.shanghai-scene[data-media="video"] { animation: none; }
+.shanghai-hero .hero-video { object-position: 58% 45%; }
+.shanghai-art { object-fit: cover; object-position: 58% 45%; }
+.shanghai-scrim {
+  background: linear-gradient(90deg, rgba(3, 23, 30, .65), transparent 65%),
+    linear-gradient(0deg, rgba(3, 23, 30, .92), transparent 65%, rgba(3, 23, 30, .22));
+}
+.shanghai-waterlight {
+  position: absolute;
+  inset: 70% -5% -5%;
+  background: repeating-linear-gradient(177deg, transparent 0 13px, rgba(255, 193, 125, .24) 14px, transparent 16px 30px);
+  mask-image: radial-gradient(ellipse at 72% 40%, #000, transparent 65%);
+  animation: shanghai-water 7s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+.shanghai-hero-content { position: relative; height: 100%; min-height: inherit; padding: 116px 64px 88px; display: flex; flex-direction: column; }
+.shanghai-edition { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .18em; color: #e4e4d5; }
+.shanghai-edition > span:first-child { display: flex; align-items: center; gap: 10px; }
+.shanghai-edition i { width: 6px; height: 6px; border-radius: 50%; background: #ffc489; box-shadow: 0 0 14px #ffc489; animation: shanghai-signal 3s ease-in-out infinite; }
+.shanghai-intro { margin-top: auto; padding-top: 180px; }
+.shanghai-kicker { font-size: 12px; letter-spacing: .24em; margin-bottom: 20px; color: #ffd0a2; }
+.shanghai-intro h1 { font-size: clamp(48px, 5.4vw, 80px); font-weight: 500; line-height: 1.15; letter-spacing: -.045em; margin: 0 0 22px; }
+.shanghai-intro h1 > span { display: block; }
+.shanghai-title-dot { color: #ffb97c; }
+.shanghai-description { color: #d3dedb; font-size: 14px; line-height: 1.95; letter-spacing: .04em; margin: 0 0 28px; }
+.shanghai-explore { display: inline-flex; align-items: center; gap: 42px; padding: 15px 23px; border: 1px solid #f5c599; border-radius: 4px; background: #f5c599; color: #14333a; font-size: 13px; font-weight: 600; transition: background .2s, transform .2s; }
+.shanghai-explore:hover { background: #ffe0ba; transform: translateY(-2px); }
+.shanghai-explore span { font-size: 21px; line-height: 1; }
+.shanghai-caption { position: absolute; bottom: 88px; right: 64px; display: flex; align-items: center; gap: 18px; }
+.shanghai-caption p { font-size: 10px; letter-spacing: .22em; color: #ffc993; margin: 0 0 8px; }
+.shanghai-caption span { font-size: 11px; letter-spacing: .1em; color: #c6d2cb; }
+.shanghai-radar { position: relative; width: 64px; height: 64px; border: 1px solid #ffd1a340; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0 10px, #ffd1a326 11px 12px); }
+.shanghai-radar::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 65%, #ffd1a34d 99%, transparent); animation: shanghai-sweep 12s linear infinite; }
+.shanghai-radar i, .shanghai-radar b { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #ffc993; left: 20px; top: 17px; animation: shanghai-signal 4s ease-in-out infinite; }
+.shanghai-radar b { left: 42px; top: 36px; animation-delay: -2s; }
+.shanghai-motion-control { position: absolute; z-index: 2; bottom: 28px; right: 64px; display: flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid #dbe7df45; border-radius: 4px; background: #09232c80; color: #dbe7df; font-size: 10px; cursor: pointer; }
+.shanghai-explore:focus-visible, .shanghai-motion-control:focus-visible { outline: 2px solid #fff5e8; outline-offset: 5px; }
+.shanghai-hero[data-motion="paused"] *, .shanghai-hero[data-motion="paused"] *::before { animation-play-state: paused !important; }
+#city-discoveries { scroll-margin-top: 90px; }
+@keyframes shanghai-breathe { from { transform: scale(1); } to { transform: scale(1.035); } }
+@keyframes shanghai-water { from { transform: translate(-12px, 0); opacity: .2; } to { transform: translate(12px, 6px); opacity: .65; } }
+@keyframes shanghai-signal { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes shanghai-sweep { to { transform: rotate(360deg); } }
+@media (min-width: 1600px) { .shanghai-hero-content { padding-left: 6vw; padding-right: 6vw; } .shanghai-caption, .shanghai-motion-control { right: 6vw; } }
+@media (max-width: 767px) {
+  .shanghai-hero { min-height: 740px; max-height: 1000px; }
+  .shanghai-hero-content { padding: 96px 24px 120px; }
+  .shanghai-art { object-position: 57% center; }
+  .shanghai-hero .hero-video { object-position: 57% center; }
+  .shanghai-scrim { background: linear-gradient(0deg, #03171ef5, #03171e5c 48%, transparent 76%, #03171e33); }
+  .shanghai-edition { font-size: 9px; letter-spacing: .12em; }
+  .shanghai-coordinates { display: none; }
+  .shanghai-intro { padding-top: 220px; }
+  .shanghai-intro h1 { font-size: clamp(44px, 12vw, 64px); margin-bottom: 16px; }
+  .shanghai-kicker { margin-bottom: 15px; }
+  .shanghai-description { font-size: 13px; margin-bottom: 23px; }
+  .shanghai-caption { bottom: 35px; left: 24px; right: auto; gap: 12px; }
+  .shanghai-radar { width: 38px; height: 38px; }
+  .shanghai-radar i { left: 13px; top: 11px; }
+  .shanghai-radar b { left: 26px; top: 22px; }
+  .shanghai-caption p { font-size: 8px; letter-spacing: .16em; margin-bottom: 6px; }
+  .shanghai-caption span { font-size: 9px; letter-spacing: .02em; }
+  .shanghai-motion-control { right: 24px; bottom: 35px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shanghai-hero *, .shanghai-hero *::before { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
