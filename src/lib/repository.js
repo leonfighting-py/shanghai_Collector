@@ -1,4 +1,4 @@
-import { runQuery, runTransaction } from "./db-pool.js";
+import { getDatabaseConfig, runQuery, runTransaction } from "./db-pool.js";
 import { dedupeEvents } from "./dedupe.js";
 import { isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
 import { SAMPLE_EVENTS } from "./sample-events.js";
@@ -210,7 +210,7 @@ export async function insertRawEvents(events, { runId = null } = {}) {
 export async function listEvents({ week, category, search } = {}) {
   const { startDate, endDate } = toShanghaiDayWindow(week || new Date());
 
-  if (!process.env.DATABASE_URL) {
+  if (!getDatabaseConfig()) {
     return applyFilters(SAMPLE_EVENTS, { startDate, endDate, category, search });
   }
 
