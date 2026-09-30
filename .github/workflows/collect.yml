@@ -22,14 +22,34 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-          registry-url: https://registry.npmmirror.com
-          mirror: https://cdn.npmmirror.com/binaries/node
+      # 境内 runner 直连 nodejs.org 极慢，setup-node 也常超时；
+      # 改为自适配：优先用系统已装的 node 24，缺失则从 npmmirror 下载解压。
+      - name: Ensure Node 24 (npmmirror fallback)
+        run: |
+          set -e
+          NEED_INSTALL=0
+          if command -v node >/dev/null 2>&1; then
+            MAJOR=$(node -p 'process.versions.node.split(".")[0]')
+            echo "系统 node 主版本: $MAJOR"
+            [ "$MAJOR" = "24" ] || NEED_INSTALL=1
+          else
+            NEED_INSTALL=1
+          fi
+          if [ "$NEED_INSTALL" = "1" ]; then
+            ARCH=$(uname -m); [ "$ARCH" = "x86_64" ] && ARCH=x64 || [ "$ARCH" = "aarch64" ] && ARCH=arm64
+            echo "从 npmmirror 下载 node 24 ($ARCH)..."
+            curl -fsSL --retry 3 -o /tmp/node24.tgz \
+              "https://registry.npmmirror.com/-/binary/node/latest-v24.x/node-latest-linux-${ARCH}.tar.gz"
+            mkdir -p "$HOME/node24"
+            tar -xzf /tmp/node24.tgz --strip-components=1 -C "$HOME/node24"
+            echo "$HOME/node24/bin" >> "$GITHUB_PATH"
+          fi
+          node -v
 
-      - run: npm ci
+      - name: npm ci (npmmirror)
+        run: |
+          npm config set registry https://registry.npmmirror.com
+          npm ci
 
       - name: Run collector
         env:
