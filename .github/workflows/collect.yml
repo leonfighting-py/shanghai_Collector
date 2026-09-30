@@ -12,12 +12,21 @@ jobs:
     runs-on: [self-hosted, china]
     timeout-minutes: 20
     steps:
+      # 境内 runner 无法直连 github.com 的 git/npm，统一走境内镜像重写：
+      # - git: insteadOf 把 https://github.com/ 前缀替换为 gh-proxy 镜像
+      # - npm: 设置 npmmirror 源（setup-node 和 npm ci 都会用到）
+      - name: Configure mirrors for china runner
+        run: |
+          git config --global url."https://gh-proxy.com/https://github.com/".insteadOf "https://github.com/"
+          npm config set registry https://registry.npmmirror.com
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: npm
+          registry-url: https://registry.npmmirror.com
 
       - run: npm ci
 
