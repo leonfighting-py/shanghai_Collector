@@ -1,20 +1,17 @@
-name: Collect Events
+name: Source Health Report
 
 on:
   schedule:
-    - cron: "0 1 */2 * *"
+    # 每周一 10:00（北京时间）推送信源体检报告
+    - cron: "0 2 * * 1"
   workflow_dispatch:
 
 jobs:
-  collect:
-    # 跑在腾讯云 self-hosted runner 上，避免美国 IP 被境内 .edu.cn/.cn 站点屏蔽。
-    # runner 注册时需带 --labels china；若 runner 离线，job 会排队等待（最长 6h 超时）。
+  health:
+    # 与采集一致，跑在腾讯云 self-hosted runner 上，避免境内 .edu.cn/.cn 站点被美国 IP 屏蔽而误报失败。
     runs-on: [self-hosted, china]
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      # 境内 runner 无法直连 github.com 的 git/npm，统一走境内镜像重写：
-      # - git: insteadOf 把 https://github.com/ 前缀替换为 gh-proxy 镜像
-      # - npm: 设置 npmmirror 源（setup-node 和 npm ci 都会用到）
       - name: Configure mirrors for china runner
         run: |
           git config --global url."https://gh-proxy.com/https://github.com/".insteadOf "https://github.com/"
@@ -22,8 +19,6 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      # 境内 runner 直连 nodejs.org 极慢，setup-node 也常超时；
-      # 改为自适配：优先用系统已装的 node 24，缺失则从 npmmirror 下载解压。
       - name: Ensure Node 24 (npmmirror fallback)
         run: |
           set -e
@@ -51,19 +46,10 @@ jobs:
           npm config set registry https://registry.npmmirror.com
           npm ci
 
-      - name: Run collector
+      - name: Run source health check
         env:
+          # 用于读取 collection_runs 历史趋势；缺失时仅输出实时探活结果
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          LLM_ENRICHMENT_ENABLED: ${{ vars.LLM_ENRICHMENT_ENABLED || 'false' }}
-          LLM_ENRICHMENT_SOURCES: ${{ vars.LLM_ENRICHMENT_SOURCES || 'all' }}
-          LLM_CATEGORY_FILTER_ENABLED: ${{ vars.LLM_CATEGORY_FILTER_ENABLED || '' }}
-          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
-          SILICONFLOW_BASE_URL: ${{ vars.SILICONFLOW_BASE_URL || 'https://api.siliconflow.cn/v1' }}
-          SILICONFLOW_MODEL: ${{ vars.SILICONFLOW_MODEL || 'Qwen/Qwen3.5-35B-A3B' }}
-          SILICONFLOW_ENABLE_THINKING: ${{ vars.SILICONFLOW_ENABLE_THINKING || 'false' }}
-          WECHAT_EXPORTER_PARSE_CONTENT: "false"
-          # 告警：连续失败源 / 分类召回塌方 / 发布守门拦截时推送到飞书群
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
-          ALERT_CONSECUTIVE_FAILURES: ${{ vars.ALERT_CONSECUTIVE_FAILURES || '2' }}
-        run: node scripts/collect-local.js
+        run: node scripts/source-health-check.js

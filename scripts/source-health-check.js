@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { getAlertConfig, sendFeishuText, shanghaiTime } from "../src/lib/alerting.js";
 import { SOURCE_SEEDS, classifyFailure as classifyLegacyKind } from "../src/lib/collector.js";
 import { defaultFetchHtml } from "../src/lib/fetch-html.js";
 import { filterPublishableEvents, toShanghaiDayWindow } from "../src/lib/events.js";
@@ -141,6 +142,47 @@ if (historyRuns.length > 0) {
 }
 
 writeFileSync(join(reportDir, "source-health-report.json"), JSON.stringify({ sources: results, history: historySummary }, null, 2), "utf8");
+
+// 定期体检推送：把摘要（不含全量明细表）推到飞书，未配置 webhook 时静默跳过。
+const alertConfig = getAlertConfig();
+if (alertConfig.enabled) {
+  const healthLines = [
+    `【信源体检报告】${shanghaiTime(now)}`,
+    `源总数 ${results.length}｜fetch 成功 ${okSources}｜僵尸源 ${zombieSources.length}｜失败源 ${failedSources.length}`,
+    `原始召回 ${totalRaw}｜可发布 ${totalPublishable}`,
+  ];
+  if (failedSources.length > 0) {
+    healthLines.push("", `失败源（${failedSources.length}）：`);
+    for (const item of failedSources.slice(0, 15)) {
+      healthLines.push(`· ${item.source}（${item.category}）｜${item.error ? item.error.slice(0, 60) : ""}`);
+    }
+  }
+  if (zombieSources.length > 0) {
+    healthLines.push("", `僵尸源·可访问但解析 0 条（${zombieSources.length}）：`);
+    for (const item of zombieSources.slice(0, 15)) {
+      healthLines.push(`· ${item.source}（${item.category}）`);
+    }
+  }
+  if (historySummary) {
+    healthLines.push("", `最近 ${historySummary.runs} 次采集：成功 ${historySummary.successRuns} / 部分失败 ${historySummary.partialRuns}`);
+    if (historySummary.failingSources.length > 0) {
+      healthLines.push("历史失败次数最多的源：");
+      for (const item of historySummary.failingSources.slice(0, 10)) {
+        healthLines.push(`· ${item.source}｜${item.failedRuns}/${item.totalRuns} 次`);
+      }
+    }
+  }
+  healthLines.push("", "→ 僵尸源需修解析规则，失败源需补源或降级");
+  try {
+    const sent = await sendFeishuText(healthLines.join("\n"), {
+      webhookUrl: alertConfig.webhookUrl,
+      secret: alertConfig.secret,
+    });
+    console.log(`[alert] ${sent.sent ? "体检报告已推送" : `未推送（${sent.reason}）`}`);
+  } catch (error) {
+    console.log(`[alert] 推送失败：${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
 console.log(report);
 console.log(`\n报告已写入: ${reportPath}`);

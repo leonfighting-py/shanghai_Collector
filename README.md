@@ -198,6 +198,8 @@ curl http://localhost:8787/api/events
 
 **源健康巡检**：`node scripts/source-health-check.js` 输出体检报告，含实时探活（逐源 fetch + parse）与最近 10 次 `collection_runs` 的历史失败趋势（发现持续/间歇故障源），写入 `scripts/source-health-report.{md,json}`。
 
+**信源告警**：配置 `FEISHU_WEBHOOK_URL` 后，每次采集结束会把"需要人介入"的信号推到飞书群——同一信源连续失败 `ALERT_CONSECUTIVE_FAILURES`（默认 2）次、分类召回塌方、发布守门拦截；偶发单次超时不报，避免告警疲劳。另由 `.github/workflows/health.yml` 每周一推送一次体检报告。未配置 webhook 时全部静默跳过。
+
 ## 第一版边界
 
 * 只抓公开网页，登录、验证码、强反爬页面先跳过并记录失败

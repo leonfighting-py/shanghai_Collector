@@ -1,7 +1,10 @@
 import { appendFileSync } from "node:fs";
 
+import { getAlertConfig, notifyCollectAlert } from "../src/lib/alerting.js";
 import { runCollectJob } from "../src/lib/collect-job.js";
 import { shouldFailCollectProcess } from "../src/lib/collect-result.js";
+import { SOURCE_SEEDS } from "../src/lib/collector.js";
+import { listRecentCollectionRuns } from "../src/lib/repository.js";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
@@ -28,6 +31,17 @@ if (process.env.GITHUB_STEP_SUMMARY) {
     "",
   ].join("\n");
   appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+}
+
+// 告警：只推需要人介入的信号（连续失败源 / 分类塌方 / 守门拦截）。
+// 本次运行已在上面 finishCollectionRun 落库，因此历史 runs 的第一条就是本次。
+// 推送失败不影响采集结果，仅打印原因。
+const alertConfig = getAlertConfig();
+if (alertConfig.enabled) {
+  const runs = await listRecentCollectionRuns({ limit: alertConfig.historyLimit });
+  const categoryBySource = new Map(SOURCE_SEEDS.map((source) => [source.name, source.category]));
+  const alertResult = await notifyCollectAlert({ result, runs, categoryBySource });
+  console.log(`[alert] ${alertResult.sent ? "已推送告警" : `未推送（${alertResult.reason}）`}`);
 }
 
 console.log(JSON.stringify(result, null, 2));
