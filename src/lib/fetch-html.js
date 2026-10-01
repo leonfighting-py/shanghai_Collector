@@ -25,8 +25,55 @@ function headersFor(url) {
   return SITE_HEADERS[host] || SITE_HEADERS[Object.keys(SITE_HEADERS).find((key) => host.endsWith(key))] || DEFAULT_HEADERS;
 }
 
+// 间歇性故障重试：网络抖动 / 临时 503 / Cloudflare 间歇 403 / 429 限流 都值得重试；
+// 4xx（除 429）通常是稳定拒绝（被封禁/页面消失），重试无意义反而拖慢采集。
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+const DEFAULT_RETRY_COUNT = 2;
+const DEFAULT_RETRY_BASE_MS = 600;
+
+function isRetryableError(error, status) {
+  if (error instanceof TypeError) return true; // Node fetch 网络/连接错误
+  if (status && RETRYABLE_STATUS.has(status)) return true;
+  return false;
+}
+
+export async function fetchWithRetry(url, { retries = DEFAULT_RETRY_COUNT, baseDelayMs = DEFAULT_RETRY_BASE_MS, fetchImpl = fetch, sleepImpl = sleep, ...options } = {}) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    let response;
+    let status;
+    try {
+      response = await fetchImpl(url, options);
+      status = response.status;
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries && isRetryableError(error)) {
+        await sleepImpl(baseDelayMs * 2 ** attempt + jitter());
+        continue;
+      }
+      throw error;
+    }
+    if (response.ok || !isRetryableError(null, status) || attempt === retries) {
+      return response;
+    }
+    await response.text().catch(() => {});
+    lastError = new Error(`HTTP ${status}`);
+    await sleepImpl(baseDelayMs * 2 ** attempt + jitter());
+  }
+  throw lastError;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function jitter() {
+  return Math.floor(Math.random() * 150);
+}
+
 export async function defaultFetchHtml(url) {
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
+    retries: DEFAULT_RETRY_COUNT,
     headers: headersFor(url),
     signal: AbortSignal.timeout(12_000),
     next: { revalidate: 3600 },
@@ -36,7 +83,8 @@ export async function defaultFetchHtml(url) {
 }
 
 export async function defaultFetchJson(url) {
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
+    retries: DEFAULT_RETRY_COUNT,
     headers: headersFor(url),
     signal: AbortSignal.timeout(12_000),
   });

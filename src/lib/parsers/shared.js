@@ -42,6 +42,7 @@ export function buildEvent({ title, start_time, end_time, venue, signup_url, ima
     source_name: source.name,
     source_url: url,
     image_url: image,
+    source_tier: source.tier || "T2",
   };
 }
 

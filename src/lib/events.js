@@ -1,6 +1,11 @@
 export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
 export const COLLECTION_WINDOW_DAYS = 14;
 
+const TIER_RANK = { T1: 2, T2: 1 };
+export function tierRank(tier) {
+  return TIER_RANK[tier] || 0;
+}
+
 const SHANGHAI_OFFSET = 8 * 60 * 60 * 1000;
 
 export function normalizeText(value = "") {
@@ -136,9 +141,17 @@ export function mergeDuplicateEvents(events) {
     }
 
     current.sources = mergeSources(current.sources, normalizeSources(event));
-    if (!current.end_time && event.end_time) current.end_time = event.end_time;
-    if (!current.summary && event.summary) current.summary = event.summary;
-    if (!current.image_url && event.image_url) current.image_url = event.image_url;
+
+    // 一手源（T1）字段优先于聚合器（T2）：场馆/高校官网的时间、摘要、封面比聚合器更权威
+    if (tierRank(event.source_tier) > tierRank(current.source_tier)) {
+      if (event.end_time) current.end_time = event.end_time;
+      if (event.summary) current.summary = event.summary;
+      if (event.image_url) current.image_url = event.image_url;
+    } else {
+      if (!current.end_time && event.end_time) current.end_time = event.end_time;
+      if (!current.summary && event.summary) current.summary = event.summary;
+      if (!current.image_url && event.image_url) current.image_url = event.image_url;
+    }
   }
 
   return [...merged.values()].sort(
@@ -152,6 +165,7 @@ function normalizeSources(event) {
     {
       name: event.source_name,
       url: event.source_url || event.signup_url,
+      tier: event.source_tier,
     },
   ]);
 }
@@ -165,7 +179,9 @@ function mergeSources(left, right) {
     const key = `${source.name}|${source.url}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    sources.push({ name: source.name, url: source.url });
+    sources.push(
+      source.tier ? { name: source.name, url: source.url, tier: source.tier } : { name: source.name, url: source.url },
+    );
   }
 
   return sources;

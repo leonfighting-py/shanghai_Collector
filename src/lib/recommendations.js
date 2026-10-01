@@ -40,6 +40,8 @@ export function scoreEvent(event, now = new Date()) {
   const title = event.title || "";
 
   score += Math.min(sourceCount, 4) * 8;
+  // 一手源（场馆/高校官网）比聚合器更权威，温和加权让同分时一手源靠前
+  if (Array.isArray(event.sources) && event.sources.some((s) => s?.tier === "T1")) score += 12;
   score += categoryBoost(event.category);
   score += event.venue && event.venue !== "上海" ? 12 : 0;
   score += event.signup_url ? 6 : 0;
