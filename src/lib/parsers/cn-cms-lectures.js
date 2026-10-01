@@ -80,8 +80,126 @@ function parseCnDateTime(raw) {
   return `${date[1]}-${date[2].padStart(2, "0")}-${date[3].padStart(2, "0")}T${hour.padStart(2, "0")}:${minute}:00+08:00`;
 }
 
-export async function parseCnCmsLectures(html, source, { fetchHtml = defaultFetchHtml } = {}) {
+// 上述 TEMPLATES 只覆盖已探明的模板；大量高校院系站用同一 CMS 的不同皮肤，
+// 逐个硬编正则不可持续。这里补一个通用「<li> 条目块」扫描器兜底：
+// 只要某个 <li> 内同时出现「链接 + 标题 + 日期」就认为是一条列表项。
+const GENERIC_LI_RE = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
+// 排除导航/页脚/友情链接等噪声块
+const LI_NOISE_RE =
+  /(navbar|footbar|quicklink|friendlink|copyright|版权所有|友情链接|返回顶部|分享到|扫码|官方微博|微信公众号)/i;
+
+function extractGenericLi(html) {
   const items = [];
+  for (const match of html.matchAll(GENERIC_LI_RE)) {
+    const block = match[1] || "";
+    if (LI_NOISE_RE.test(block)) continue;
+
+    const iso = block.match(/(20\d{2})[-/年](\d{1,2})[-/月](\d{1,2})/);
+    const splitDate = block.match(/<span>\s*(\d{1,2})\s*<\/span>[\s\S]{0,60}?<p[^>]*>\s*(20\d{2})-(\d{1,2})\s*<\/p>/);
+    let normalizedDate = "";
+    if (iso) {
+      normalizedDate = `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
+    } else if (splitDate) {
+      // 分组：1=日 2=年 3=月
+      normalizedDate = `${splitDate[2]}-${splitDate[3].padStart(2, "0")}-${splitDate[1].padStart(2, "0")}`;
+    } else {
+      continue;
+    }
+
+    const anchor = block.match(/<a\b[^>]*href=["']([^"']+)["'][^>]*>/i);
+    if (!anchor) continue;
+    const href = anchor[1];
+
+    const title = (
+      anchor[0].match(/title=["']([^"']*)["']/i)?.[1] ||
+      stripTags(block.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i)?.[1] || "") ||
+      stripTags(block.match(/<a\b[^>]*>([\s\S]*?)<\/a>/i)?.[1] || "")
+    ).trim();
+    // 标题过短、纯日期串或纯噪声，说明该块不是列表项载体
+    if (title.length < 6 || /^20\d{2}[-/年]\d{1,2}/.test(title)) continue;
+
+    const inlineTime =
+      block.match(/时\s*间[：:]\s*([^<\s][^<]{2,40})/)?.[1] ||
+      block.match(/((?:20\d{2}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日)[^<]{0,18})/)?.[1] ||
+      "";
+    const inlineVenue = block.match(/地\s*点[：:]\s*([^<\s][^<]{1,40})/)?.[1] || "";
+
+    items.push({
+      href,
+      title,
+      date: normalizedDate,
+      inlineTime: inlineTime.trim(),
+      inlineVenue: inlineVenue.trim(),
+      image: null,
+    });
+  }
+  return items;
+}
+
+// 第三层兜底：<tr> / <div> 布局的站点（如复旦哲学学院、华理化学学院、上财经济学院）
+// 既没有 <li> 也没有已知 class，改从「锚点 + 邻近日期」入手：
+// 取每个带标题的链接，在其前后一段窗口里找日期，且中间不能夹另一个链接（防止张冠李戴）。
+const ANCHOR_RE = /<a\b[^>]*?>[\s\S]*?<\/a>/gi;
+const WINDOW_DATE_RE = /(20\d{2})[-/年](\d{1,2})[-/月](\d{1,2})/g;
+const SKIP_HREF_RE = /^(#|javascript:|mailto:)|(\.(css|js|png|jpe?g|gif|svg|ico|pdf|doc|xls)$)/i;
+
+function stripSameHrefAnchors(text, href) {
+  // 同一条目里常有两个指向同一详情页的链接（缩略图 + 标题），
+  // 它们不构成「下一个条目」，擦除后再判断窗口里是否夹了别的链接。
+  return text.replace(/<a\b[^>]*href=["']([^"']+)["'][\s\S]*?<\/a>/gi, (raw, linkHref) =>
+    linkHref === href ? " " : raw,
+  );
+}
+
+function dateFromWindow(before, after) {
+  const afterDates = [...after.matchAll(WINDOW_DATE_RE)];
+  if (afterDates.length) {
+    const first = afterDates[0];
+    if (!/<a\b/i.test(after.slice(0, first.index))) return first;
+  }
+  const beforeDates = [...before.matchAll(WINDOW_DATE_RE)];
+  if (beforeDates.length) {
+    const last = beforeDates[beforeDates.length - 1];
+    if (!/<a\b/i.test(before.slice(last.index + last[0].length))) return last;
+  }
+  return null;
+}
+
+function extractGenericAnchor(html, { enabled = true } = {}) {
+  if (!enabled) return [];
+  const flat = html.replace(/\s+/g, " ");
+  const items = [];
+  for (const match of flat.matchAll(ANCHOR_RE)) {
+    const raw = match[0];
+    const href = raw.match(/href=["']([^"']+)["']/i)?.[1];
+    if (!href || SKIP_HREF_RE.test(href.trim())) continue;
+    const inner = stripTags(raw.replace(/^<a\b[^>]*>/i, "").replace(/<\/a>\s*$/i, ""));
+    const title = (raw.match(/title=["']([^"']*)["']/i)?.[1] || inner).trim();
+    if (title.length < 6 || title.length > 120) continue;
+    if (/^20\d{2}[-/年]\d{1,2}/.test(title)) continue;
+
+    const start = match.index;
+    const end = start + raw.length;
+    const before = stripSameHrefAnchors(flat.slice(Math.max(0, start - 400), start), href);
+    const after = stripSameHrefAnchors(flat.slice(end, end + 500), href);
+    const date = dateFromWindow(before, after);
+    if (!date) continue;
+
+    items.push({
+      href,
+      title,
+      date: `${date[1]}-${date[2].padStart(2, "0")}-${date[3].padStart(2, "0")}`,
+      inlineTime: "",
+      inlineVenue: "",
+      image: null,
+    });
+  }
+  return items;
+}
+
+export async function parseCnCmsLectures(html, source, { fetchHtml = defaultFetchHtml, anchorScan = true } = {}) {
+  // 三层依次降级：已探明模板 → <li> 通用块 → 锚点+邻近日期；命中结果按优先级保留
+  const templateItems = [];
 
   for (const template of TEMPLATES) {
     for (const match of html.matchAll(template.re)) {
@@ -100,9 +218,19 @@ export async function parseCnCmsLectures(html, source, { fetchHtml = defaultFetc
       const title = stripTags(match[g.title] || "").trim();
       if (!href || !title || !date) continue;
       const image = g.image ? absoluteUrl(source.url, match[g.image]) : null;
-      items.push({ href, title, date: date.trim(), inlineTime: inlineTime.trim(), inlineVenue: inlineVenue.trim(), image });
+      templateItems.push({ href, title, date: date.trim(), inlineTime: inlineTime.trim(), inlineVenue: inlineVenue.trim(), image });
     }
   }
+
+  const genericItems = extractGenericLi(html).map((item) => ({
+    ...item,
+    href: absoluteUrl(source.url, item.href),
+  }));
+  const anchorItems = extractGenericAnchor(html, { enabled: anchorScan }).map((item) => ({
+    ...item,
+    href: absoluteUrl(source.url, item.href),
+  }));
+  const items = [...templateItems, ...genericItems, ...anchorItems];
 
   const deduped = uniqueBy(items, (item) => item.href).slice(0, MAX_ITEMS);
 

@@ -61,6 +61,7 @@ import { parseTongjiSeeEvents } from "./tongji-see.js";
 import { parseSnhmEvents } from "./snhm.js";
 import { parseSufeEvents } from "./sufe.js";
 import { parseSuzhouMuseum } from "./szmuseum.js";
+import { parseShanghaiConcerts } from "./shanghai-concerts.js";
 import { parseWechatOfficialAccounts } from "./wechat.js";
 import { parseWestbundEvents } from "./westbund.js";
 import { parseWestBundMuseum } from "./westbundmuseum.js";
@@ -81,6 +82,7 @@ export const PARSERS = {
   shanghaiMuseum: parseShanghaiMuseum,
   shanghaiOnline: parseShanghaiOnline,
   shcstheatre: parseShcstheatre,
+  shanghaiConcerts: parseShanghaiConcerts,
   shlab: parseShlabEvents,
   shqyg: parseShqyg,
   showstart: parseShowstart,
