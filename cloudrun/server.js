@@ -24,7 +24,17 @@ function toPublicEvent(event) {
   for (const field of PUBLIC_FIELDS) {
     if (event[field] !== undefined) publicEvent[field] = event[field];
   }
+  // 封面图只接受绝对 http(s)。
+  // 采集到的部分图是相对路径（高校源的 /_upload/...、../../images/...），
+  // Web 端由 src/lib/image-url.js 的 isUsableImage() 在前端过滤，
+  // 小程序侧没有这层逻辑且 <image> 必然加载失败，所以在服务端统一置空，
+  // 前端走无图样式，避免裂图闪烁（这是与 Web DTO 的有意差异）。
+  if (!isUsableImageUrl(publicEvent.image_url)) publicEvent.image_url = null;
   return publicEvent;
+}
+
+function isUsableImageUrl(url) {
+  return typeof url === "string" && /^https?:\/\//i.test(url.trim());
 }
 
 function databaseSsl(connectionString) {

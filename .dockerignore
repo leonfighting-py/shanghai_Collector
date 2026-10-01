@@ -1,0 +1,21 @@
+# 微信云托管构建上下文 = 仓库根目录（Dockerfile 需要 COPY src/lib/*），
+# 这里排除一切与镜像无关的重目录，否则会把 2.5 万文件的 node_modules / .next 全量上传。
+node_modules
+cloudrun/node_modules
+.next
+.open-next
+.wrangler
+.worktrees
+.git
+.github
+.trae
+.workbuddy
+deep-research-reports
+docs
+test
+scripts
+public
+miniprogram
+.env
+.dev.vars
+*.log

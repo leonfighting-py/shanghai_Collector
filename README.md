@@ -137,10 +137,15 @@ npm run dev       # 打开 http://localhost:3000 查看真实数据
 
 ### 1. 部署云托管服务（cloudrun/）
 
-1. [微信云托管控制台](https://cloud.weixin.qq.com/cloudrun) 创建服务，名称 `events-api`，上传方式选「代码库 / 本地代码」
-2. 构建配置：**构建目录填仓库根目录**，Dockerfile 路径填 `cloudrun/Dockerfile`（服务复用主工程的 `src/lib/events.js` / `src/lib/dedupe.js`）
+1. [微信云托管控制台](https://cloud.weixin.qq.com/cloudrun) 创建服务，名称 `events-api`
+2. 上传方式二选一：
+   - **绑定 GitHub 仓库**：选仓库 + 分支 `main`，端口 `80`。云托管只查找**仓库根目录**的 `Dockerfile`（根目录已放了一份，与 `cloudrun/Dockerfile` 内容一致），构建目录保持默认（仓库根），无需额外配置
+   - **本地代码上传**：把仓库根目录打包上传，或新建版本时在高级设置里把 Dockerfile 路径填 `cloudrun/Dockerfile`
 3. 环境变量：`DATABASE_URL` = Supabase **Transaction pooler（6543）** 连接串
 4. 部署后用控制台「服务设置 - 公网访问」的默认域名验证：`curl https://<默认域名>/api/events`
+
+> 服务复用主工程的 `src/lib/events.js` / `src/lib/dedupe.js`（纯函数），因此**构建目录必须是仓库根目录**，不能填 `cloudrun`。
+> 根目录的 `.dockerignore` 已排除 `node_modules`、`.next` 等，构建上下文约 1 MB（不加会到 1.8 GB）。
 
 本地验证（无需部署）：
 
@@ -154,8 +159,8 @@ curl http://localhost:8787/api/events
 
 1. 微信开发者工具导入 `miniprogram/` 目录，填入自己的 AppID（个人主体即可）
 2. 在 `miniprogram/utils/config.js` 填写：
-   - `CLOUD_ENV`：云托管控制台「全局设置 - 环境信息」的环境 ID
-   - `SERVICE`：服务名（默认 `events-api`）
+   - `CLOUD_ENV`：云托管控制台「全局设置 - 环境信息」的环境 ID（当前已填 `prod-d2gcdfycq884b1e6b`）
+   - `SERVICE`：服务名（默认 `events-api`，必须与控制台服务名逐字一致）
 3. 编译预览即可（`callContainer` 不受合法域名校验限制）
 
 ### 3. 报名链接跳转说明
