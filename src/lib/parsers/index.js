@@ -16,9 +16,15 @@ import {
   parseFudanShmcLectures,
   parseFudanSpfduLectures,
 } from "./university-lectures.js";
+import { parseCnCmsLectures } from "./cn-cms-lectures.js";
 import { parseFosunFoundation } from "./fosun.js";
 import { parseFotografiska } from "./fotografiska.js";
+import { parseGdgShanghai } from "./gdg-shanghai.js";
 import { parseGewara } from "./gewara.js";
+import { parseIicShanghai } from "./iic-shanghai.js";
+import { parseJiadingLibraryLectures } from "./jiading-library.js";
+import { parsePowerlongMuseum } from "./powerlong-museum.js";
+import { parseShlibActivity } from "./shlib-activity.js";
 import { parseHuodongBa } from "./huodongba.js";
 import { parseHuodongxing } from "./huodongxing.js";
 import { parseIMuseumShanghai } from "./imuseum.js";
@@ -42,10 +48,12 @@ import {
   parseUccaEdge,
 } from "./listing.js";
 import { parseShcstheatre } from "./shcstheatre.js";
+import { parseShlabEvents } from "./shlab.js";
 import { parseShowstart } from "./showstart.js";
 import { parseShanghaiMuseum } from "./shmuseum.js";
 import { parseShanghaiOnline } from "./shonline.js";
 import { parseShqyg } from "./shqyg.js";
+import { parseSiiCalendar } from "./sii-calendar.js";
 import { parseSmartShanghai } from "./smartshanghai.js";
 import { parseTeamlab } from "./teamlab.js";
 import { parseTimeoutShanghai } from "./timeout.js";
@@ -73,8 +81,10 @@ export const PARSERS = {
   shanghaiMuseum: parseShanghaiMuseum,
   shanghaiOnline: parseShanghaiOnline,
   shcstheatre: parseShcstheatre,
+  shlab: parseShlabEvents,
   shqyg: parseShqyg,
   showstart: parseShowstart,
+  siiCalendar: parseSiiCalendar,
   douban: parseDoubanShanghai,
   ecnuLectures: parseEcnuLectures,
   fudanChemistry: parseFudanChemistry,
@@ -89,7 +99,13 @@ export const PARSERS = {
   fotografiska: parseFotografiska,
   fotografiskaZh: parseFotografiskaZh,
   fosun: parseFosunFoundation,
+  gdgShanghai: parseGdgShanghai,
   gewara: parseGewara,
+  cnCmsLectures: parseCnCmsLectures,
+  shlibActivity: parseShlibActivity,
+  jiadingLibrary: parseJiadingLibraryLectures,
+  powerlong: parsePowerlongMuseum,
+  iicShanghai: parseIicShanghai,
   rockbund: parseRockbundArtMuseum,
   teamlab: parseTeamlab,
   timeoutShanghai: parseTimeoutShanghai,
