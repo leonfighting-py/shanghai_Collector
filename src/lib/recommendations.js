@@ -19,8 +19,8 @@ const KEYWORD_WEIGHTS = [
 
 const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
 
-// 有封面图的活动显著加权：视觉密度是首页第一印象
-const COVER_IMAGE_BOOST = 40;
+// 有封面图的活动加权：视觉密度是首页第一印象，但权重不宜过大，避免没图的好内容沉底
+const COVER_IMAGE_BOOST = 20;
 
 /** 上海时区的小时数（0-23），避免运行时本地时区（如 UTC）导致"今晚/周末"判断错误 */
 function shanghaiHour(value) {
@@ -43,7 +43,8 @@ export function scoreEvent(event, now = new Date()) {
   // 一手源（场馆/高校官网）比聚合器更权威，温和加权让同分时一手源靠前
   if (Array.isArray(event.sources) && event.sources.some((s) => s?.tier === "T1")) score += 12;
   score += categoryBoost(event.category);
-  score += event.venue && event.venue !== "上海" ? 12 : 0;
+  // venue 已是发布必填字段，对所有事件均匀加分无区分度；原先的 !== "上海" 条件
+  // 反而会让外地活动多拿分（上游已由 isShanghaiRelevantEvent 兜底，此处不再奖励）。
   score += event.signup_url ? 6 : 0;
   score += event.image_url ? COVER_IMAGE_BOOST : 0;
   score += day === 0 || day === 6 ? 10 : 0;

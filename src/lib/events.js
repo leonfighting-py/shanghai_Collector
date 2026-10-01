@@ -86,6 +86,77 @@ const NEWS_TITLE_PATTERNS = [
   /跳转到主要内容/,
 ];
 
+// 内容守门：聚合平台（Eventbrite / AllEvents 等）上混入的成人向、夜店拉客、
+// 擦边导览类条目，与本项目的面向公众的活动定位不符，一律不予发布。
+// 背景：2026-10 实测发现同一发布者在 Eventbrite 上海频道大量灌入
+// 「BDSM Tour」「Pub Crawl」类条目，既有源（Eventbrite Shanghai 等）已被污染。
+const OFF_TOPIC_TITLE_RE =
+  /\b(bdsm|dominatrix|mistress|domme|femdom|fetish|kink|kinky|submissive|dominant\s*&\s*sub|es?cort|swinger|orgy|strip\s*club|lap\s*dance|eproctophilia|e-?stim)\b|pub\s*crawl|bar\s*hopping|nightlife\s*tour|脱衣舞|夜店/i;
+
+export function isOffTopicEvent(event) {
+  if (OFF_TOPIC_TITLE_RE.test(event?.title || "")) return true;
+  if (OFF_TOPIC_TITLE_RE.test(event?.venue || "")) return true;
+  return false;
+}
+
+// 上海地域过滤：聚合器（Eventbrite / 活动行等）的地域标记不严，外地活动常混入。
+// 发布前用规则兜底——提取 venue + title + summary，先剔除与外地重名的上海地名
+// （南京路 / 苏州河 / 江苏路 等），再判定：出现外地省市且不含任何上海标记 → 非上海。
+// 保守策略：只要文本里出现任何上海标记就一律保留，宁可放过也不误杀本地活动。
+const SHANGHAI_MARKERS = [
+  "上海", "沪", "申城", "魔都",
+  "浦东", "徐汇", "静安", "黄浦", "长宁", "虹口", "杨浦",
+  "闵行", "宝山", "嘉定", "松江", "青浦", "奉贤", "金山", "崇明", "普陀",
+  "世博", "大宁", "大虹桥", "陆家嘴", "外滩", "新天地", "迪士尼",
+];
+
+const NON_SHANGHAI_REGIONS = [
+  "北京", "天津", "重庆",
+  "广东", "广州", "深圳", "东莞", "佛山", "珠海",
+  "山东", "济南", "青岛", "烟台", "潍坊", "临沂",
+  "浙江", "杭州", "宁波", "温州", "绍兴", "嘉兴",
+  "江苏", "南京", "苏州", "无锡", "常州", "南通", "扬州", "徐州",
+  "四川", "成都", "绵阳",
+  "湖北", "武汉",
+  "湖南", "长沙",
+  "福建", "福州", "厦门", "泉州",
+  "陕西", "西安",
+  "辽宁", "沈阳", "大连",
+  "河南", "郑州", "洛阳",
+  "安徽", "合肥",
+  "河北", "石家庄", "唐山",
+  "山西", "太原",
+  "江西", "南昌",
+  "广西", "南宁",
+  "黑龙江", "哈尔滨",
+  "吉林", "长春",
+  "云南", "昆明",
+  "贵州", "贵阳",
+  "甘肃", "兰州",
+  "青海", "西宁",
+  "海口", "三亚",
+  "新疆", "乌鲁木齐",
+  "西藏", "拉萨",
+  "内蒙古", "呼和浩特",
+  "宁夏", "银川",
+  "香港", "澳门", "台湾", "台北",
+];
+
+// 上海含外地词的地名（路名 / 地标）：判定前从文本里剔除，避免被误判为外地活动。
+const SHANGHAI_PLACE_OVERRIDE = [
+  /南京[东西]?路/g, /南苏州路/g, /苏州河/g, /江苏路/g,
+  /威海路/g, /中山公园/g, /中山医院/g, /中山北路/g, /中山南路/g,
+];
+
+export function isShanghaiRelevantEvent(event) {
+  const raw = `${event?.venue || ""} ${event?.title || ""} ${event?.summary || ""}`;
+  if (SHANGHAI_MARKERS.some((marker) => raw.includes(marker)) || /shanghai/i.test(raw)) {
+    return true;
+  }
+  const cleaned = SHANGHAI_PLACE_OVERRIDE.reduce((text, pattern) => text.replace(pattern, ""), raw);
+  return !NON_SHANGHAI_REGIONS.some((region) => cleaned.includes(region));
+}
+
 export function isEventLikeTitle(title = "") {
   const text = String(title).trim();
   if (text.length < 6 || text.length > 120) return false;
@@ -103,6 +174,8 @@ export function isPublishableEvent(event) {
   return Boolean(
     event?.title?.trim() &&
       isEventLikeTitle(event.title) &&
+      !isOffTopicEvent(event) &&
+      isShanghaiRelevantEvent(event) &&
       event?.start_time &&
       event?.venue?.trim() &&
       event?.category &&

@@ -7,6 +7,7 @@ import {
   filterPublishableEvents,
   isEventLikeTitle,
   isInDateRange,
+  isShanghaiRelevantEvent,
   mergeDuplicateEvents,
   safeExternalUrl,
   toShanghaiDayWindow,
@@ -131,4 +132,50 @@ test("keeps recent ongoing exhibitions visible after their opening date", () => 
     ),
     true,
   );
+});
+
+test("isShanghaiRelevantEvent filters out non-Shanghai regions", () => {
+  assert.equal(isShanghaiRelevantEvent({ venue: "济南大明湖", title: "山东非遗展" }), false);
+  assert.equal(isShanghaiRelevantEvent({ venue: "北京国家体育场", title: "某演唱会" }), false);
+  assert.equal(isShanghaiRelevantEvent({ venue: "深圳湾体育中心", title: "某演出" }), false);
+  assert.equal(isShanghaiRelevantEvent({ venue: "广州大剧院", title: "歌剧" }), false);
+});
+
+test("isShanghaiRelevantEvent keeps Shanghai events", () => {
+  assert.equal(isShanghaiRelevantEvent({ venue: "上海大剧院", title: "新年音乐会" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "浦东美术馆", title: "特展" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "陆家嘴", title: "金融论坛" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "Blue Note Shanghai", title: "Jazz Night" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "中华艺术宫", title: "常设展" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "大宁公园", title: "郁金香展" }), true);
+});
+
+test("isShanghaiRelevantEvent keeps dual-city and override-name events", () => {
+  assert.equal(isShanghaiRelevantEvent({ venue: "上海博物馆", title: "上海-山东双城展" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "南京东路第一百货", title: "周末市集" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "苏州河畔艺术中心", title: "当代艺术展" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "江苏路某空间", title: "读书会" }), true);
+});
+
+test("isShanghaiRelevantEvent keeps events without any region hint", () => {
+  assert.equal(isShanghaiRelevantEvent({ venue: "JZ Club", title: "爵士现场" }), true);
+  assert.equal(isShanghaiRelevantEvent({ venue: "某空间", title: "某活动", summary: "地点在徐汇区" }), true);
+});
+
+test("filterPublishableEvents drops non-Shanghai events", () => {
+  const base = {
+    title: "周末文创市集",
+    start_time: "2026-05-23T18:00:00+08:00",
+    category: "线下活动",
+    signup_url: "https://example.com",
+    source_name: "Example",
+    source_url: "https://example.com",
+  };
+  const events = filterPublishableEvents([
+    { ...base, venue: "上海大剧院" },
+    { ...base, venue: "济南大明湖", title: "山东民俗展演" },
+  ]);
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].venue, "上海大剧院");
 });
