@@ -1,5 +1,6 @@
 const DEFAULT_BASE_URL = "https://api.siliconflow.cn/v1";
 const DEFAULT_MODEL = "Qwen/Qwen3.5-35B-A3B";
+const DEFAULT_BUDGET_MAX_CALLS = 1000;
 
 export function getSiliconFlowConfig(env = process.env) {
   const apiKey = env.SILICONFLOW_API_KEY?.trim();
@@ -16,6 +17,42 @@ export function getSiliconFlowConfig(env = process.env) {
   };
 }
 
+// LLM 调用预算熔断：单次采集周期内限制总调用次数，防止批次爆炸或误开开关烧掉意外 token。
+// 软熔断设计——超阈值后 createChatCompletion 抛带 code 的 Error，上层（enrich/classify/llm-extract）
+// 已对每个 batch try/catch，会把失败记入 failures 并跳过该批次，采集继续，已抓数据照常发布。
+export function getLlmBudgetConfig(env = process.env) {
+  const raw = Number(env.LLM_BUDGET_MAX_CALLS);
+  return {
+    enabled: env.LLM_BUDGET_ENABLED !== "false",
+    maxCalls: Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_BUDGET_MAX_CALLS,
+  };
+}
+
+let budgetState = { used: 0, cap: DEFAULT_BUDGET_MAX_CALLS, enabled: true };
+
+// 采集主流程（runCollectJob）在开始时调用，重置计数并按当前环境变量刷新上限。
+export function resetLlmBudget(env = process.env) {
+  const config = getLlmBudgetConfig(env);
+  budgetState = { used: 0, cap: config.maxCalls, enabled: config.enabled };
+  return getLlmBudgetUsage();
+}
+
+export function getLlmBudgetUsage() {
+  return { used: budgetState.used, cap: budgetState.cap, enabled: budgetState.enabled };
+}
+
+function tickLlmBudget() {
+  if (!budgetState.enabled) return;
+  if (budgetState.used >= budgetState.cap) {
+    const error = new Error(
+      `LLM 预算已用尽（已用 ${budgetState.used} / 上限 ${budgetState.cap} 次调用）`,
+    );
+    error.code = "LLM_BUDGET_EXCEEDED";
+    throw error;
+  }
+  budgetState.used += 1;
+}
+
 export async function createChatCompletion(
   { messages, responseFormat = "json_object", temperature = 0.2, maxTokens = 2048 },
   { config = getSiliconFlowConfig(), fetchImpl = fetch } = {},
@@ -23,6 +60,8 @@ export async function createChatCompletion(
   if (!config.enabled) {
     throw new Error("缺少 SILICONFLOW_API_KEY");
   }
+
+  tickLlmBudget();
 
   const body = {
     model: config.model,

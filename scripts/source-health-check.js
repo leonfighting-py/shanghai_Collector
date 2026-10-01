@@ -3,9 +3,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { SOURCE_SEEDS } from "../src/lib/collector.js";
+import { SOURCE_SEEDS, classifyFailure as classifyLegacyKind } from "../src/lib/collector.js";
 import { defaultFetchHtml } from "../src/lib/fetch-html.js";
 import { filterPublishableEvents, toShanghaiDayWindow } from "../src/lib/events.js";
+import { listRecentCollectionRuns } from "../src/lib/repository.js";
 
 const CONCURRENCY = 5;
 const SOURCE_TIMEOUT_MS = 60_000;
@@ -87,8 +88,59 @@ const report = lines.join("\n");
 const reportDir = fileURLToPath(new URL(".", import.meta.url));
 const reportPath = join(reportDir, "source-health-report.md");
 mkdirSync(reportDir, { recursive: true });
-writeFileSync(reportPath, report, "utf8");
-writeFileSync(join(reportDir, "source-health-report.json"), JSON.stringify(results, null, 2), "utf8");
+
+// 历史失败趋势（基于 collection_runs，需要 DATABASE_URL）：与上面的实时探活互补。
+// 实时探活回答"现在挂没挂"，历史趋势回答"最近谁一直挂"——发现间歇性/持续性故障源。
+let historySummary = null;
+const historyRuns = await listRecentCollectionRuns({ limit: 10 });
+if (historyRuns.length > 0) {
+  const failCounts = new Map();
+  const kindCounts = new Map();
+  for (const run of historyRuns) {
+    const seenSources = new Set();
+    for (const f of run.failures) {
+      const name = f?.source ?? "未知";
+      if (!seenSources.has(name)) {
+        seenSources.add(name);
+        failCounts.set(name, (failCounts.get(name) || 0) + 1);
+      }
+      const kind = f?.kind ?? classifyLegacyKind(f?.message);
+      kindCounts.set(kind, (kindCounts.get(kind) || 0) + 1);
+    }
+  }
+  const successRuns = historyRuns.filter((r) => r.status === "success").length;
+  const ranked = [...failCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const kindRanked = [...kindCounts.entries()].sort((a, b) => b[1] - a[1]);
+  historySummary = {
+    runs: historyRuns.length,
+    successRuns,
+    partialRuns: historyRuns.length - successRuns,
+    failingSources: ranked.map(([name, count]) => ({ source: name, failedRuns: count, totalRuns: historyRuns.length })),
+    failureKinds: kindRanked.map(([kind, count]) => ({ kind, count })),
+  };
+  const historyLines = ["", `## 最近 ${historyRuns.length} 次采集趋势（基于 collection_runs）`, ""];
+  historyLines.push(`- 成功 ${successRuns} / 部分失败 ${historyRuns.length - successRuns}`);
+  if (kindRanked.length > 0) {
+    historyLines.push("", "失败类型分布：", "");
+    for (const [kind, count] of kindRanked) {
+      historyLines.push(`- ${kind}：${count}`);
+    }
+  }
+  if (ranked.length === 0) {
+    historyLines.push("- 无失败记录");
+  } else {
+    historyLines.push("", "| 源 | 失败次数 / 总次数 |", "|---|---|");
+    for (const [name, count] of ranked.slice(0, 15)) {
+      const flag = count >= Math.ceil(historyRuns.length * 0.6) ? "🔴" : count >= 2 ? "🟡" : "·";
+      historyLines.push(`| ${name} | ${flag} ${count} / ${historyRuns.length} |`);
+    }
+  }
+  writeFileSync(reportPath, `${report}\n${historyLines.join("\n")}\n`, "utf8");
+} else {
+  writeFileSync(reportPath, `${report}\n`, "utf8");
+}
+
+writeFileSync(join(reportDir, "source-health-report.json"), JSON.stringify({ sources: results, history: historySummary }, null, 2), "utf8");
 
 console.log(report);
 console.log(`\n报告已写入: ${reportPath}`);

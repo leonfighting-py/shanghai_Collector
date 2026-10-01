@@ -19,6 +19,8 @@ npm run dev
 | `DATABASE_URL` | 线上必须 | Supabase Postgres 连接串（见下方） |
 | `COLLECT_SECRET` | 建议 | 保护 `/api/collect`、`/api/cleanup` 手动调用（未配置时接口直接拒绝） |
 | `LLM_EXTRACT_ENABLED` | 否 | 通用 LLM 抽取（`parser: llmExtract` 的源），需配合 `SILICONFLOW_API_KEY` |
+| `LLM_BUDGET_MAX_CALLS` | 否 | 单次采集周期 LLM 调用次数上限，默认 1000；超额软熔断（后续批次跳过并记入 failures，采集不中断，已抓数据照常发布）。可用 `LLM_BUDGET_ENABLED=false` 关闭 |
+| `NEXT_PUBLIC_SITE_URL` | 否 | 站点基址，用于 RSS / sitemap / llms.txt 生成绝对链接，默认 `https://news.leoncoooolest.com` |
 
 **不需要** Supabase 的 Project URL、anon key、JWT secret。本项目用 `pg` 直连 Postgres。
 
@@ -37,6 +39,9 @@ npm run dev
 
 - `GET /`：活动首页，默认展示未来 14 天
 - `GET /api/events?week=YYYY-MM-DD&category=演出音乐&search=爵士`：查询活动（`week` 为窗口起始日）
+- `GET /feed.xml?category=展览`：RSS 2.0 订阅源（可按分类过滤）
+- `GET /sitemap.xml`、`GET /robots.txt`：搜索引擎收录
+- `GET /llms.txt`：面向 AI agent 的纯文本站点说明（分类、API 用法、字段）
 
 采集与清理只通过 GitHub Actions 调用本地脚本（`npm run collect` / `npm run cleanup`），Worker 上不暴露任何管理接口。
 
@@ -125,6 +130,16 @@ npm run dev       # 打开 http://localhost:3000 查看真实数据
 * `raw_events`：原始召回候选
 
 * `events`：去重后发布的活动
+
+## 信源分级与 LLM 配置
+
+**信源分级 T1/T2**：`SOURCE_SEEDS` 通过 `resolveSourceTier()` 自动分级——T1 为一手源（场馆官网、高校 `.edu.cn`、`.gov.cn`），T2 为聚合器（iMuseum、活动行、豆瓣等）。去重合并时 T1 的字段覆盖 T2（同一条活动优先采纳场馆信息），推荐评分对含 T1 来源的活动温和加权。
+
+**提示词外置**：LLM 抽取的系统提示词放在 [`src/lib/parsers/prompts/llm-extract.md`](src/lib/parsers/prompts/llm-extract.md)，便于非工程同事审阅调优；运行时由 `llm-extract.js` 懒加载。
+
+**预算熔断**：单次采集周期 LLM 调用受 `LLM_BUDGET_MAX_CALLS`（默认 1000）限制，超额软熔断——后续批次跳过并记入 failures，采集不中断、已抓数据照常发布。
+
+**源健康巡检**：`node scripts/source-health-check.js` 输出体检报告，含实时探活（逐源 fetch + parse）与最近 10 次 `collection_runs` 的历史失败趋势（发现持续/间歇故障源），写入 `scripts/source-health-report.{md,json}`。
 
 ## 第一版边界
 

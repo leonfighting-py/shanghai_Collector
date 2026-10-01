@@ -3,6 +3,7 @@ import { filterEventCategories, getCategoryFilterConfig } from "./category-filte
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
 import { backfillEventImages } from "./image-backfill.js";
 import { isRelevantPerformance } from "./parsers/shared.js";
+import { resetLlmBudget, getLlmBudgetUsage } from "./siliconflow.js";
 import {
   evaluatePublishGuard,
   getPublishGuardConfig,
@@ -66,6 +67,7 @@ export function applyCategoryDropProtection(newEvents, previousEvents) {
 }
 
 export async function runCollectJob() {
+  resetLlmBudget();
   const previousEvents = await listEvents();
   await upsertSourceConfigs(SOURCE_SEEDS);
   const run = await startCollectionRun({ sourceCount: SOURCE_SEEDS.length });
@@ -158,5 +160,6 @@ export async function runCollectJob() {
     run_id: run.id,
     raw_inserted: rawResult.inserted,
     published_inserted: publishResult.inserted,
+    llm_budget: getLlmBudgetUsage(),
   };
 }

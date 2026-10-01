@@ -325,6 +325,35 @@ export async function cleanupOldData(options) {
   return { dryRun: false };
 }
 
+// 源健康巡检：读取最近 N 次采集记录，供健康脚本聚合"持续失败/间歇失败"的源。
+// 与实时探活互补——实时探活回答"现在挂没挂"，历史趋势回答"谁一直挂"。
+export async function listRecentCollectionRuns({ limit = 10 } = {}) {
+  if (!process.env.DATABASE_URL) return [];
+  await ensureSchema();
+  const result = await query(
+    `
+      select id, status, source_count, raw_count, published_count, failure_count,
+             failures, started_at, finished_at, dedupe_provider
+      from collection_runs
+      order by started_at desc
+      limit $1
+    `,
+    [limit],
+  );
+  return result.rows.map((row) => ({
+    id: row.id,
+    status: row.status,
+    sourceCount: row.source_count,
+    rawCount: row.raw_count,
+    publishedCount: row.published_count,
+    failureCount: row.failure_count,
+    failures: Array.isArray(row.failures) ? row.failures : [],
+    startedAt: row.started_at ? toIso(row.started_at) : null,
+    finishedAt: row.finished_at ? toIso(row.finished_at) : null,
+    dedupeProvider: row.dedupe_provider,
+  }));
+}
+
 
 async function query(sqlText, params = []) {
   return runQuery(sqlText, params);

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { buildEvent } from "./shared.js";
 import { stripTags } from "./shared.js";
 import { createChatCompletion, getSiliconFlowConfig, parseJsonFromModelContent } from "../siliconflow.js";
@@ -5,22 +8,18 @@ import { createChatCompletion, getSiliconFlowConfig, parseJsonFromModelContent }
 // 通用 LLM 抽取 parser：新增源无需手写 parser，LLM 从正文文本抽取结构化事件。
 // 适用前提：页面有 SSR 正文（纯 JS 壳页面正文为空，抽不出任何东西）。
 // 成本控制：需显式开启 LLM_EXTRACT_ENABLED=true 且配置 SILICONFLOW_API_KEY。
+// 系统提示词外置为 markdown（prompts/llm-extract.md），便于非工程同事审阅与调优。
 
 const MAX_TEXT_CHARS = 8000;
 
-const SYSTEM_PROMPT = `你是「上海活动雷达」的信息抽取器。输入是一个网页的正文文本，请从中抽取即将举行的线下活动/演出/展览/讲座。
-
-输出要求（必须遵守）：
-1. 只返回 JSON，不要 markdown，不要解释。
-2. JSON 结构：{"items":[{"title":"...","start":"YYYY-MM-DD","end":"YYYY-MM-DD 或 null","venue":"...","url":"...","image":"..."}]}
-3. title：活动完整名称，保留展览名/艺人名，未提及城市时不要添加。
-4. start：活动开始日期（YYYY-MM-DD）。只有年月时取当月 1 日。完全没有日期的活动跳过。
-5. end：结束日期，单日活动为 null。
-6. venue：场馆/地点，没有则填「上海」。
-7. url：活动详情链接（相对路径转绝对），没有则留空字符串。
-8. image：活动封面/海报图片的绝对 URL（http/https），没有则留空字符串。
-9. 只抽取未来会发生的公开活动；跳过导航、菜单、往期回顾、招聘、新闻类内容。
-10. 没有可抽取的活动时返回 {"items":[]}。最多返回 20 条。`;
+const PROMPT_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), "prompts", "llm-extract.md");
+let cachedSystemPrompt;
+function getSystemPrompt() {
+  if (cachedSystemPrompt === undefined) {
+    cachedSystemPrompt = readFileSync(PROMPT_PATH, "utf8").trim();
+  }
+  return cachedSystemPrompt;
+}
 
 export function getLlmExtractConfig(env = process.env) {
   const silicon = getSiliconFlowConfig(env);
@@ -50,7 +49,7 @@ export async function parseWithLlmExtraction(html, source, context = {}) {
     const response = await chat(
       {
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: getSystemPrompt() },
           {
             role: "user",
             content: `来源：${source.name}（${source.url}）\n分类：${source.category}\n\n正文文本：\n${text}`,
