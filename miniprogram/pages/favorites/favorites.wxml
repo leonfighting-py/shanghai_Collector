@@ -1,0 +1,11 @@
+<view class="page">
+  <block wx:if="{{events.length}}">
+    <event-card wx:for="{{events}}" wx:key="title" event="{{item}}" bind:favoritechange="onFavoriteChange" />
+  </block>
+
+  <view wx:else class="state">
+    <view>还没有收藏的活动</view>
+    <view class="hint">在首页活动卡片上点「收藏」，即可离线查看</view>
+    <button class="btn-plain go-home" bindtap="goHome">去首页逛逛</button>
+  </view>
+</view>

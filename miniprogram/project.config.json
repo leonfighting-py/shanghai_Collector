@@ -1,0 +1,23 @@
+{
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "shanghai-weekly-events-miniprogram",
+  "libVersion": "3.4.10",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": false,
+    "coverView": true,
+    "showShadowRootInWxmlPanel": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "condition": {}
+}

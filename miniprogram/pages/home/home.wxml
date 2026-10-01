@@ -1,0 +1,42 @@
+<view class="page">
+  <view class="filter-bar">
+    <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{categories}}"
+        wx:key="*this"
+        class="chip {{item === activeCategory ? 'chip-on' : ''}}"
+        data-category="{{item}}"
+        bindtap="onSelectCategory"
+      >{{item}}</view>
+    </scroll-view>
+    <view class="search">
+      <input
+        class="search-input"
+        placeholder="搜索活动 / 场馆"
+        placeholder-class="search-ph"
+        value="{{searchKeyword}}"
+        confirm-type="search"
+        bindconfirm="onSearchConfirm"
+        bindinput="onSearchInput"
+      />
+      <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">清除</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">加载中…</view>
+
+  <view wx:elif="{{errorMsg}}" class="state">
+    <view>{{errorMsg}}</view>
+    <button class="btn-plain retry" bindtap="onRetry">重试</button>
+  </view>
+
+  <view wx:elif="{{!visibleEvents.length}}" class="state">
+    当前筛选下暂无活动，换个分类或关键词试试
+  </view>
+
+  <block wx:else>
+    <event-card wx:for="{{visibleEvents}}" wx:key="title" event="{{item}}" />
+    <view wx:if="{{visibleEvents.length < totalCount}}" class="state">上拉加载更多</view>
+    <view wx:else class="state">已展示全部（未来 14 天）</view>
+  </block>
+</view>

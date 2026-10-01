@@ -1,0 +1,82 @@
+page {
+  /* 设计 token：与 Web 端视觉语言对齐（紫主色 + 中性卡片） */
+  --bg: #f6f6f7;
+  --card: #ffffff;
+  --text: #17171a;
+  --text-2: #6e6e76;
+  --line: rgba(23, 23, 26, 0.08);
+  --brand: #4b3fe3;
+  --brand-soft: #eef0fe;
+  --danger: #e8463a;
+
+  background: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    --bg: #101013;
+    --card: #1c1c21;
+    --text: #ececf1;
+    --text-2: #9a9aa3;
+    --line: rgba(236, 236, 241, 0.1);
+    --brand: #8f85ff;
+    --brand-soft: #262047;
+  }
+}
+
+.page {
+  padding: 24rpx;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.state {
+  padding: 96rpx 32rpx;
+  text-align: center;
+  color: var(--text-2);
+  font-size: 26rpx;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: #ffffff;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  padding: 20rpx 0;
+  text-align: center;
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-plain {
+  background: transparent;
+  color: var(--brand);
+  border: 2rpx solid var(--brand);
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 16rpx 0;
+  text-align: center;
+}

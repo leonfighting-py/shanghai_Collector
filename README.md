@@ -121,6 +121,56 @@ npm run collect   # 写入 Supabase
 npm run dev       # 打开 http://localhost:3000 查看真实数据
 ```
 
+## 微信小程序（微信云托管，免域名免备案）
+
+```text
+小程序 → wx.cloud.callContainer（微信私有协议，无需服务器域名/备案）
+           ↓
+        微信云托管 cloudrun/（Node + Express 薄查询层）
+           ↓ pg 直连
+        Supabase Postgres（与 Web 端同一份数据）
+
+采集层不变：GitHub Actions → npm run collect → Supabase
+```
+
+小程序端**不需要自有域名、不需要 ICP 备案**：`callContainer` 走微信专线，`/api/events` 的参数与响应和 Web 端完全一致（14 天窗口 + 展览回看 60 天 + 讲座回看 30 天 + 规则去重 + 公开 DTO）。
+
+### 1. 部署云托管服务（cloudrun/）
+
+1. [微信云托管控制台](https://cloud.weixin.qq.com/cloudrun) 创建服务，名称 `events-api`，上传方式选「代码库 / 本地代码」
+2. 构建配置：**构建目录填仓库根目录**，Dockerfile 路径填 `cloudrun/Dockerfile`（服务复用主工程的 `src/lib/events.js` / `src/lib/dedupe.js`）
+3. 环境变量：`DATABASE_URL` = Supabase **Transaction pooler（6543）** 连接串
+4. 部署后用控制台「服务设置 - 公网访问」的默认域名验证：`curl https://<默认域名>/api/events`
+
+本地验证（无需部署）：
+
+```bash
+cd cloudrun && npm install
+PORT=8787 node --env-file=../.env server.js
+curl http://localhost:8787/api/events
+```
+
+### 2. 配置小程序（miniprogram/）
+
+1. 微信开发者工具导入 `miniprogram/` 目录，填入自己的 AppID（个人主体即可）
+2. 在 `miniprogram/utils/config.js` 填写：
+   - `CLOUD_ENV`：云托管控制台「全局设置 - 环境信息」的环境 ID
+   - `SERVICE`：服务名（默认 `events-api`）
+3. 编译预览即可（`callContainer` 不受合法域名校验限制）
+
+### 3. 报名链接跳转说明
+
+个人主体小程序无法使用 web-view（且 web-view 也只能打开自有业务域名，第三方报名页任何主体都无法内嵌），因此报名跳转策略为：
+
+- 大麦 / 活动行 / 秀动等平台小程序直达：在 `miniprogram/utils/registration.js` 的 `REGISTRY` 中补齐对应 `appId` 后自动启用
+- 其余来源：复制报名链接到剪贴板，引导用户在浏览器打开
+
+### 4. 待办（后续迭代）
+
+- [ ] 实测活动行图片在小程序 `<image>` 下的防盗链表现（已做 `binderror` 降级隐藏）
+- [ ] 补齐大麦 / 活动行 / 秀动小程序 appId，启用报名直达
+- [ ] 订阅消息：活动开始前提醒（个人主体可用一次性订阅）
+
 ## 后端数据结构
 
 * `source_configs`：采集源配置
@@ -138,6 +188,8 @@ npm run dev       # 打开 http://localhost:3000 查看真实数据
 **提示词外置**：LLM 抽取的系统提示词放在 [`src/lib/parsers/prompts/llm-extract.md`](src/lib/parsers/prompts/llm-extract.md)，便于非工程同事审阅调优；运行时由 `llm-extract.js` 懒加载。
 
 **预算熔断**：单次采集周期 LLM 调用受 `LLM_BUDGET_MAX_CALLS`（默认 1000）限制，超额软熔断——后续批次跳过并记入 failures，采集不中断、已抓数据照常发布。
+
+**内容守门**：`isOffTopicEvent()` 在 `isPublishableEvent()` 统一拦截成人向、夜店拉客、擦边导览类条目（如 `BDSM Tour` / `Pub Crawl`）。聚合平台（Eventbrite 等）常被同一发布者灌入此类 Listing，此守门对所有源生效。
 
 **源健康巡检**：`node scripts/source-health-check.js` 输出体检报告，含实时探活（逐源 fetch + parse）与最近 10 次 `collection_runs` 的历史失败趋势（发现持续/间歇故障源），写入 `scripts/source-health-report.{md,json}`。
 

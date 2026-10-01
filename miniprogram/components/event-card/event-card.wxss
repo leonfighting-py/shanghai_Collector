@@ -1,0 +1,74 @@
+.event-card {
+  position: relative;
+  margin-bottom: 24rpx;
+}
+
+.cover {
+  width: 100%;
+  height: 320rpx;
+  background: var(--brand-soft);
+}
+
+.body {
+  padding: 24rpx 140rpx 24rpx 24rpx;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.badge {
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid var(--brand);
+  color: var(--brand);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.title {
+  margin-top: 12rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.meta {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: var(--text-2);
+}
+
+.meta-line {
+  margin-top: 4rpx;
+}
+
+.venue {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.fav {
+  position: absolute;
+  right: 24rpx;
+  bottom: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid var(--line);
+  color: var(--text-2);
+  font-size: 22rpx;
+}
+
+.fav-on {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--brand-soft);
+}

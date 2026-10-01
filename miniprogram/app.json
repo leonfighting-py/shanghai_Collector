@@ -1,0 +1,29 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/detail/detail",
+    "pages/favorites/favorites"
+  ],
+  "window": {
+    "navigationBarTitleText": "沪上双周活动",
+    "navigationBarBackgroundColor": "@navBg",
+    "navigationBarTextStyle": "@navTxt",
+    "backgroundColor": "@bg",
+    "backgroundTextStyle": "@bgTxt"
+  },
+  "tabBar": {
+    "color": "@tabColor",
+    "selectedColor": "@tabSelected",
+    "backgroundColor": "@tabBg",
+    "borderStyle": "@tabBorder",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页" },
+      { "pagePath": "pages/favorites/favorites", "text": "收藏" }
+    ]
+  },
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

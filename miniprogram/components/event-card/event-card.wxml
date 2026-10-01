@@ -1,0 +1,25 @@
+<view class="card event-card" bindtap="onTap">
+  <image
+    wx:if="{{event.image_url && !imageFailed}}"
+    class="cover"
+    src="{{event.image_url}}"
+    mode="aspectFill"
+    binderror="onImageError"
+  />
+  <view class="body">
+    <view class="title-row">
+      <text class="tag">{{event.category}}</text>
+      <text wx:if="{{dateBadge}}" class="badge">{{dateBadge}}</text>
+    </view>
+    <view class="title">{{event.title}}</view>
+    <view class="meta">
+      <view class="meta-line">{{period}}</view>
+      <view class="meta-line muted venue">{{event.venue}}</view>
+    </view>
+  </view>
+  <view
+    wx:if="{{showFavorite}}"
+    class="fav {{favorited ? 'fav-on' : ''}}"
+    catchtap="onToggleFavorite"
+  >{{favorited ? "已收藏" : "收藏"}}</view>
+</view>

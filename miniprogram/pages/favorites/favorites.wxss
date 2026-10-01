@@ -1,0 +1,9 @@
+.hint {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+}
+
+.go-home {
+  width: 280rpx;
+  margin: 32rpx auto 0;
+}
