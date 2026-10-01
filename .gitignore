@@ -12,3 +12,4 @@ coverage
 # 体检脚本生成的报告产物
 scripts/source-health-report.*
 scripts/probe-*.js
+.workbuddy/
