@@ -170,6 +170,31 @@ app.get("/", (req, res) => {
   res.json({ name: "shanghai-weekly-events cloudrun service", endpoints: ["/api/events", "/api/health"] });
 });
 
+// 兜底诊断路由：任何未匹配的路径都会回显「实际收到的 path / 请求头 / 本容器标识」。
+// 用途：callContainer 报 404 时，用来区分两种完全不同的故障——
+//   a) 看到下面这段 JSON  → 请求确实到达了 events-api 容器，只是 path 不对
+//      （常见于网关保留了服务名前缀，实际 path 变成 /events-api/api/events）
+//   b) 仍是 Express 默认的 "Cannot GET /xxx" HTML → 线上跑的根本不是本文件
+//      （多半是新版本没发布为线上版本，或服务名指到了别的服务）
+// 注意：必须在所有业务路由之后注册。
+app.use((req, res) => {
+  console.warn(
+    "[404] not matched:",
+    req.method,
+    req.originalUrl,
+    "X-WX-SERVICE=" + (req.get("X-WX-SERVICE") || "-"),
+  );
+  res.status(404).json({
+    error: "not found",
+    served_by: "shanghai-weekly-events cloudrun service",
+    method: req.method,
+    path: req.path,
+    original_url: req.originalUrl,
+    received_service_header: req.get("X-WX-SERVICE") || null,
+    endpoints: ["/api/events", "/api/health"],
+  });
+});
+
 const port = Number(process.env.PORT || 80);
 app.listen(port, () => {
   console.log(`cloudrun service listening on port ${port}`);

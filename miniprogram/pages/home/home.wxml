@@ -27,6 +27,7 @@
 
   <view wx:elif="{{errorMsg}}" class="state">
     <view>{{errorMsg}}</view>
+    <view wx:if="{{errorDetail}}" class="err-detail">{{errorDetail}}</view>
     <button class="btn-plain retry" bindtap="onRetry">重试</button>
   </view>
 

@@ -12,6 +12,7 @@ Page({
     totalCount: 0,
     loading: true,
     errorMsg: "",
+    errorDetail: "",
     searchKeyword: "",
   },
 
@@ -32,7 +33,7 @@ Page({
   },
 
   load() {
-    this.setData({ loading: true, errorMsg: "" });
+    this.setData({ loading: true, errorMsg: "", errorDetail: "" });
     const params = {};
     if (this.data.activeCategory !== "全部") params.category = this.data.activeCategory;
     const keyword = this.data.searchKeyword.trim();
@@ -48,7 +49,12 @@ Page({
         this.renderMore();
       })
       .catch((err) => {
-        this.setData({ loading: false, errorMsg: err.message || "加载失败，请重试" });
+        this.setData({
+          loading: false,
+          errorMsg: err.message || "加载失败，请重试",
+          // 排查期把服务端返回体一并显示出来（线上可随时删掉这一行）
+          errorDetail: err.detail ? String(err.detail).slice(0, 160) : "",
+        });
       });
   },
 

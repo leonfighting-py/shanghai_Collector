@@ -44,7 +44,7 @@ const DEPT_LINK_RE = new RegExp(
   "gi",
 );
 const COLUMN_TEXT = /(讲座|学术活动|学术报告|报告会|活动预告|学术星空|讲坛|论坛|沙龙|学术前沿|学术动态)/;
-const COLUMN_HREF = /\/(jz|xsjz|xsbg|jzbg|xshd|xshd|jzxx|xsxx|hdyc|jzrz|whhd|xxhd|xsfw|activities|events|activity|lecture|seminar)/i;
+const COLUMN_HREF = /\/(jz|xsjz|xsbg|jzbg|xshd|xshd|jzxx|xsxx|hdyc|jzrz|whhd|xxhd|xsfw|tzgg|dtxx|hd|xwzx|kxyj|activities|events|activity|lecture|seminar)/i;
 
 function stripTags(text = "") {
   return String(text)
@@ -106,7 +106,7 @@ async function findColumns(deptUrl, school) {
     }
     return [...found.entries()]
       .sort((a, b) => b[1].score - a[1].score)
-      .slice(0, 4)
+      .slice(0, 12)
       .map(([url, meta]) => ({ school, dept: deptUrl, url, ...meta }));
   } catch {
     return [];
@@ -117,9 +117,16 @@ async function verifyColumn(column) {
   const source = { name: column.url, url: column.url, category: "高校讲座", tier: "T2" };
   try {
     const html = await defaultFetchHtml(column.url);
-    const events = await parseCnCmsLectures(html, source, { fetchHtml: defaultFetchHtml });
+    // 必须显式传 now/window，与 collectEventsFromSources 的调用方式一致；
+    // 否则解析器缺少时间基准，会算出与生产管线不一致的日期，导致窗口内条数虚高。
+    const now = new Date();
+    const { startDate, endDate, days } = toShanghaiDayWindow(now);
+    const events = await parseCnCmsLectures(html, source, {
+      fetchHtml: defaultFetchHtml,
+      now,
+      window: { startDate, endDate, days },
+    });
     const pub = filterPublishableEvents(events);
-    const { startDate, endDate } = toShanghaiDayWindow(new Date());
     const inWindow = pub.filter((event) => isInDateRange(event, startDate, endDate)).length;
     const latest = pub.map((event) => event.start_time.slice(0, 10)).sort().reverse()[0] || "-";
     return { ...column, total: pub.length, inWindow, latest };

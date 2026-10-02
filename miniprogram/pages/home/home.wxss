@@ -54,3 +54,13 @@
   width: 240rpx;
   margin: 32rpx auto 0;
 }
+
+/* 排查期展示服务端返回体，不换行过长则自动折行 */
+.err-detail {
+  margin-top: 16rpx;
+  padding: 0 32rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: var(--text-2);
+  word-break: break-all;
+}
