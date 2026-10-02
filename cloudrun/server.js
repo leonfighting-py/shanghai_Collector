@@ -166,35 +166,6 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// 临时诊断端点：打印容器内 DATABASE_URL 的形态与真实连接错误（不回显任何凭据）
-// 排查完成后请连同 miniprogram/utils/config.js 一起清理，不要长期留在线上。
-app.get("/api/debug", async (req, res) => {
-  const cs = process.env.DATABASE_URL || "";
-  const shape = { isSet: Boolean(cs), length: cs.length };
-  if (cs) {
-    try {
-      const u = new URL(cs);
-      shape.hostPrefix = u.hostname.slice(0, 14);
-      shape.port = u.port || "(default 5432)";
-      shape.isSharedPooler = u.hostname.includes("pooler.supabase.com");
-      shape.isDirectHost = /^db\..*\.supabase\.co$/.test(u.hostname);
-      shape.userHasProjectRefSuffix = u.username.includes(".");
-      shape.userPrefix = u.username.slice(0, 8);
-      shape.passwordLength = decodeURIComponent(u.password || "").length;
-    } catch (error) {
-      shape.parseError = error.message;
-    }
-  }
-  let probe;
-  try {
-    await pool.query("select 1");
-    probe = "ok";
-  } catch (error) {
-    probe = error.message;
-  }
-  res.json({ build: "debug-v1", env: shape, probe, node: process.version });
-});
-
 app.get("/", (req, res) => {
   res.json({ name: "shanghai-weekly-events cloudrun service", endpoints: ["/api/events", "/api/health"] });
 });

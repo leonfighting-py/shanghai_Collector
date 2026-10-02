@@ -67,9 +67,14 @@ SERVICE: "events-api",                // 必须与控制台创建的服务名逐
    - 云托管**只在仓库根目录查找 Dockerfile**，仓库根已放了一份（与 `cloudrun/Dockerfile` 内容一致），所以直接点发布即可
    - 构建目录保持默认（仓库根），**不要填 `cloudrun`**——Dockerfile 里要 `COPY src/lib/*`，改成子目录会找不到
    - 想用「指定 Dockerfile 路径」（新建版本 → 高级设置）也行，填 `cloudrun/Dockerfile`，效果等价
-3. 环境变量：`DATABASE_URL` = Supabase **Transaction pooler（6543）** 连接串。
-4. 部署完成后，**服务设置 → 公网访问**先保持开启，用于验证；验证通过后可关闭，只留 `callContainer` 内网链路更安全。
-5. 验证：
+3. 环境变量：`DATABASE_URL` = Supabase **Shared Pooler（Transaction mode, 6543）** 连接串。**不能用 `.env` 里的 5432 直连**，原因见下方。
+   - 形态：`postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-1-us-west-2.pooler.supabase.com:6543/postgres`
+   - 注意主机名和用户名**都和直连不一样**：用户名要从 `postgres` 改成 `postgres.[PROJECT-REF]`，光把端口 5432 改成 6543 是连不上的
+   - 最稳的取法是在 Supabase 控制台点 **Connect → Transaction pooler** 复制
+   - 本项目实测可用节点：`aws-1-us-west-2.pooler.supabase.com`（aws-0 各 region 都是 `tenant not found`）
+4. 环境变量改完必须**重新发布新版本**才注入容器。注意环境变量是**服务级**配置，不是版本级——同一个服务发布多少版都共享同一份，所以「换版本」解决不了环境变量问题。
+5. 部署完成后，**服务设置 → 公网访问**先保持开启，用于验证；验证通过后可关闭，只留 `callContainer` 内网链路更安全。
+6. 验证：
 
    ```bash
    curl https://<服务默认域名>/api/health   # 期望 {"status":"ok"}
@@ -99,6 +104,8 @@ SERVICE: "events-api",                // 必须与控制台创建的服务名逐
 | 现象 | 原因 |
 | ---- | ---- |
 | 发布时报 `代码仓库中没有找到Dockerfile` | 云托管只在**仓库根目录**找 Dockerfile，放子目录不认（或改用高级设置指定路径） |
+| `/api/health` 返回 `unhealthy` | 绝大多数是两种情况之一：① `DATABASE_URL` **压根没配**（云托管的环境变量是**服务级**、不是版本级，反复换版本永远解决不了，去「服务设置 → 环境变量」加，保存后重新发布）；② 配的是 5432 直连串——Supabase 的 `db.[ref].supabase.co` 是 **IPv6-only**（只有 AAAA 记录、没有 A 记录），云托管容器是 IPv4 网络必然连不上，要用 Shared Pooler（6543）且用户名带 `.[PROJECT-REF]` 后缀 |
+| 想知道容器里实际读到的连接参数是什么 | 临时加一个诊断端点回显 `process.env.DATABASE_URL` 的**形态**（host 前缀 / 端口 / 是否 shared pooler / 用户名是否带 ref 后缀）+ 真实连接错误原文，**不要回显密码**。这是定位这类问题最快的一招——比反复猜「是网络问题还是参数问题」高效得多。定位完记得删掉。附带技巧：响应耗时也是信号，**0.2–0.4s 的快速失败**说明是连接参数问题，不是网络不通（网络不通会卡几秒到几十秒） |
 | 页面提示「请先在 config.js 中配置云托管环境 ID」 | `CLOUD_ENV` 为空 |
 | `callContainer` 返回 404 / 服务不存在 | `X-WX-SERVICE` 与控制台服务名不一致 |
 | `callContainer` 报无权访问 | 云托管环境未与该 AppID 关联（换环境了 / 选错小程序） |
