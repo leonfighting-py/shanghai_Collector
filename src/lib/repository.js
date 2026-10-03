@@ -75,15 +75,27 @@ export function buildSchemaSql() {
   `;
 }
 
-export function buildCleanupSql({ eventRetentionDays = 60, runRetentionDays = 90 } = {}) {
+// 已结束活动的存储保留天数。注意这只是「存储缓冲」，不是展示口径——
+// 展示口径见 buildEventWindowWhereSql（只出「未结束」的活动）。
+export const EVENT_RETENTION_DAYS = 7;
+export const RUN_RETENTION_DAYS = 90;
+
+export function buildCleanupSql({
+  eventRetentionDays = EVENT_RETENTION_DAYS,
+  runRetentionDays = RUN_RETENTION_DAYS,
+} = {}) {
   return {
     statements: [
       {
-        sql: "delete from raw_events where start_time is not null and start_time < now() - ($1::int * interval '1 day')",
+        // raw_events 是采集中间产物，同样按「结束时间」判定，避免长期展览的原始记录被提前清掉
+        sql: "delete from raw_events where start_time is not null and coalesce(end_time, start_time) < now() - ($1::int * interval '1 day')",
         params: [eventRetentionDays],
       },
       {
-        sql: "delete from events where start_time < now() - ($1::int * interval '1 day')",
+        // 关键：判定基准是 coalesce(end_time, start_time)，不是 start_time。
+        // 长期展览（如 7 月开幕、明年才结束）按 start_time 会被误删——这类活动仍然在展，
+        // 是有效内容。按「结束时间」判定才能既清掉过期内容、又不误伤进行中的活动。
+        sql: "delete from events where coalesce(end_time, start_time) < now() - ($1::int * interval '1 day')",
         params: [eventRetentionDays],
       },
       {
@@ -373,19 +385,19 @@ function toIso(value) {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 }
 
+// 读窗口 = 「未结束」的活动。
+// 判定：以结束时间（缺省回退到开始时间）的「上海日期」 >= 今天的「上海日期」。
+//   - 单日活动当天全程保留（哪怕已经开场几小时），次日自然消失；
+//   - 跨日演出、长期展览只要还没结束就一直在，与 start_time 多早无关。
+//
+// 这里**不再**按分类做「展览回看 60 天 / 高校讲座回看 30 天」：那会让已经结束的活动
+// 继续出现在「未来两周」列表里，和产品定位冲突（也是"列表里混着一个月前的内容"的根因）。
+// 已结束的活动如何保留由 cleanupOldData 的 7 天存储缓冲统一负责，不进展示口径。
 export function buildEventWindowWhereSql(startParam, endParam) {
   return `(
-    (start_time >= ${startParam} and start_time <= ${endParam})
-    or (
-      category = '展览'
-      and start_time >= (${startParam}::timestamptz - interval '60 days')
-      and start_time <= ${endParam}
-    )
-    or (
-      category = '高校讲座'
-      and start_time >= (${startParam}::timestamptz - interval '30 days')
-      and start_time <= ${endParam}
-    )
+    start_time <= ${endParam}
+    and (coalesce(end_time, start_time) at time zone 'Asia/Shanghai')::date
+        >= (${startParam}::timestamptz at time zone 'Asia/Shanghai')::date
   )`;
 }
 

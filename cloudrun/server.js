@@ -66,21 +66,14 @@ function rowToEvent(row) {
   };
 }
 
-// 与 src/lib/repository.js 的窗口规则一致：
-// 14 天发布窗口 + 展览回看 60 天 + 高校讲座回看 30 天
+// 与 src/lib/repository.js 的 buildEventWindowWhereSql 保持一致：
+// 只出「未结束」的活动（结束日 >= 今天，按上海日期比较），不再做分类回看。
+// 改这里请同步改 src/lib/repository.js，两处必须一致，否则 Web 与小程序看到的集合不同。
 function buildEventWindowWhereSql(startParam, endParam) {
   return `(
-    (start_time >= ${startParam} and start_time <= ${endParam})
-    or (
-      category = '展览'
-      and start_time >= (${startParam}::timestamptz - interval '60 days')
-      and start_time <= ${endParam}
-    )
-    or (
-      category = '高校讲座'
-      and start_time >= (${startParam}::timestamptz - interval '30 days')
-      and start_time <= ${endParam}
-    )
+    start_time <= ${endParam}
+    and (coalesce(end_time, start_time) at time zone 'Asia/Shanghai')::date
+        >= (${startParam}::timestamptz at time zone 'Asia/Shanghai')::date
   )`;
 }
 
