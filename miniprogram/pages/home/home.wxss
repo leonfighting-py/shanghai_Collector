@@ -50,6 +50,40 @@
   padding: 8rpx;
 }
 
+/* 排序条：左侧当前结果数，右侧「推荐 / 最新」分段控件 */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24rpx;
+}
+
+.result-count {
+  color: var(--text-2);
+  font-size: 24rpx;
+}
+
+.segment {
+  display: flex;
+  padding: 4rpx;
+  border-radius: 999rpx;
+  background: var(--card);
+}
+
+.segment-item {
+  padding: 8rpx 28rpx;
+  border-radius: 999rpx;
+  color: var(--text-2);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.segment-item-on {
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+
 .retry {
   width: 240rpx;
   margin: 32rpx auto 0;

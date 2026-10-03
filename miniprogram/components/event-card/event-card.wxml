@@ -13,7 +13,7 @@
     </view>
     <view class="title">{{event.title}}</view>
     <view class="meta">
-      <view class="meta-line">{{period}}</view>
+      <view class="meta-line">{{periodShort}}</view>
       <view class="meta-line muted venue">{{event.venue}}</view>
     </view>
   </view>

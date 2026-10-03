@@ -119,18 +119,38 @@ test("computes a rolling fourteen-day Shanghai publish window by default", () =>
   assert.equal(range.days, 14);
 });
 
-test("keeps recent ongoing exhibitions visible after their opening date", () => {
+test("ongoing exhibitions stay in range only while their end_time has not passed", () => {
+  const startDate = "2026-06-19";
+  const endDate = "2026-07-02";
+
+  // 开口在窗口之前、但尚未结束 → 仍在窗口内
   assert.equal(
     isInDateRange(
-      {
-        title: "常设展",
-        category: "展览",
-        start_time: "2026-06-02T10:00:00+08:00",
-      },
-      "2026-06-19",
-      "2026-07-02",
+      { title: "常设展", category: "展览", start_time: "2026-06-02T10:00:00+08:00", end_time: "2026-09-30T18:00:00+08:00" },
+      startDate,
+      endDate,
     ),
     true,
+  );
+
+  // 没有 end_time：按 start_time 兜底，视为当日已结束 → 不在窗口内
+  assert.equal(
+    isInDateRange(
+      { title: "无结束时间的展", category: "展览", start_time: "2026-06-02T10:00:00+08:00", end_time: null },
+      startDate,
+      endDate,
+    ),
+    false,
+  );
+
+  // 结束时间已过 → 不在窗口内
+  assert.equal(
+    isInDateRange(
+      { title: "已闭幕的展", category: "展览", start_time: "2026-06-02T10:00:00+08:00", end_time: "2026-06-10T18:00:00+08:00" },
+      startDate,
+      endDate,
+    ),
+    false,
   );
 });
 

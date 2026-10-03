@@ -1,3 +1,5 @@
+import { inferEventEndTime } from "./event-duration.js";
+
 export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
 export const COLLECTION_WINDOW_DAYS = 14;
 
@@ -192,6 +194,9 @@ export function filterPublishableEvents(events) {
     return {
       ...event,
       dedupe_key: dedupeKey,
+      // 长期活动（展览 / 驻场演出）源页面常只给开始日，这里补齐约 3 个月的结束时间。
+      // 单场活动仍返回 null，由 coalesce(end_time, start_time) 兜底 —— 详见 event-duration.js
+      end_time: inferEventEndTime(event),
       sources: normalizeSources(event),
     };
   });
@@ -260,20 +265,22 @@ function mergeSources(left, right) {
   return sources;
 }
 
+// 与 repository.js 的 buildEventWindowWhereSql **必须同口径**：
+//   start_time <= endDate 且 coalesce(end_time, start_time) >= startDate。
+//
+// 为什么不能各自一套：replaceWeekEvents 会先按读窗口 delete from events，再由本函数
+// 决定把哪些采回来的活动插回去。只要发布口径比读窗口窄，落在两者差集里的行就会被
+// 「删掉且永远不再写回」—— 典型受害者是开口超过 60 天、但仍在展的长期展览
+// （旧实现的「展览回看 60 天」分支正是这么把 2026-07-08→2027-11-13 这类展览吃掉的）。
+//
+// 已结束的活动如何保留由 cleanupOldData 的 7 天存储缓冲统一负责，不进展示口径。
 export function isInDateRange(event, startDate, endDate) {
-  const eventDate = toShanghaiDate(event.start_time);
-  if (eventDate >= startDate && eventDate <= endDate) return true;
+  const start = toShanghaiDate(event.start_time);
+  if (!start) return false;
+  if (start > endDate) return false;
 
-  if (eventDate && eventDate < startDate) {
-    const start = new Date(`${startDate}T00:00:00.000Z`);
-    const opened = new Date(`${eventDate}T00:00:00.000Z`);
-    const daysSinceOpening = Math.floor((start.getTime() - opened.getTime()) / 86_400_000);
-
-    if (event.category === "展览" && daysSinceOpening <= 60) return true;
-    if (event.category === "高校讲座" && daysSinceOpening <= 30) return true;
-  }
-
-  return false;
+  const end = toShanghaiDate(event.end_time) || start;
+  return end >= startDate;
 }
 
 export function getWeekDays(startDate) {

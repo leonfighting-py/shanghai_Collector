@@ -21,6 +21,19 @@
       />
       <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">清除</text>
     </view>
+
+    <view wx:if="{{!loading && !errorMsg}}" class="sort-bar">
+      <text class="result-count">{{totalCount}} 个活动</text>
+      <view class="segment">
+        <view
+          wx:for="{{sortModes}}"
+          wx:key="key"
+          class="segment-item {{item.key === sortMode ? 'segment-item-on' : ''}}"
+          data-mode="{{item.key}}"
+          bindtap="onSelectSortMode"
+        >{{item.label}}</view>
+      </view>
+    </view>
   </view>
 
   <view wx:if="{{loading}}" class="state">加载中…</view>

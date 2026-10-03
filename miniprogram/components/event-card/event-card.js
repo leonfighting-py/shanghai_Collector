@@ -10,6 +10,7 @@ Component({
   },
   data: {
     period: "",
+    periodShort: "",
     dateBadge: "",
     favorited: false,
     imageFailed: false,
@@ -18,8 +19,10 @@ Component({
     event(event) {
       if (!event || !event.title) return;
       this.setData({
+        // 卡片用紧凑区间（"9.24–10.30"），详情页用完整区间（"9月24日 周四 19:30 至 10月30日…"）
         period: format.eventPeriod(event),
-        dateBadge: format.relativeLabel(event.start_time),
+        periodShort: format.eventRangeShort(event),
+        dateBadge: format.eventBadge(event),
         favorited: favorites.isFavorite(event),
         imageFailed: false,
       });
