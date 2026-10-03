@@ -19,7 +19,7 @@
 | # | 位置 | 状态 | 说明 |
 | - | ---- | ---- | ---- |
 | 1 | `miniprogram/project.config.json` | 已填 `wx9fbcd7833ef0590c` | 换 AppID 后才能真机预览、上传 |
-| 2 | `miniprogram/utils/config.js` | 已填 `prod-d2gcdfycq884b1e6b` | 云托管环境 ID。留空的话 `utils/api.js` 会直接 reject，页面永远显示「请配置云托管环境 ID」 |
+| 2 | `miniprogram/utils/config.js` | 已填 `events-api-d6groy01wc45330f3` | 云托管环境 ID。留空的话 `utils/api.js` 会直接 reject，页面永远显示「请配置云托管环境 ID」 |
 | 3 | `.dockerignore`（仓库根） | 已添加 | 云托管构建上下文是仓库根目录，不加会把 `node_modules`、`.next` 全量上传——实测上下文 **1818 MB → 1.1 MB** |
 | 4 | `Dockerfile`（仓库根） | 已添加 | 云托管「绑定 GitHub 仓库」只在**仓库根目录**找 Dockerfile，报 `代码仓库中没有找到Dockerfile` 就是这个原因。根目录这份与 `cloudrun/Dockerfile` 内容一致 |
 | 5 | `miniprogram/app.json` | 待办 | 一旦在 `utils/registration.js` 填了大麦/活动行/秀动的 appId，必须加 `navigateToMiniProgramAppIdList` 声明白名单，否则 `wx.navigateToMiniProgram` 直接失败 |
@@ -27,9 +27,14 @@
 `config.js` 里的两个值（均已在仓库中填好）：
 
 ```js
-CLOUD_ENV: "prod-d2gcdfycq884b1e6b",  // 云托管控制台「全局设置 - 环境信息」的环境 ID
-SERVICE: "events-api",                // 必须与控制台创建的服务名逐字一致，写错就是 404
+CLOUD_ENV: "events-api-d6groy01wc45330f3",  // 必须是属于本项目 AppID 的环境，见下方警告
+SERVICE: "events-api",                     // 必须与控制台创建的服务名逐字一致，写错就是 404
 ```
+
+> ⚠️ **环境 ID 必须是「属于本项目那个 AppID」的环境。** 曾用 `prod-d2gcdfycq884b1e6b`，那个环境
+> 属于**另一个小程序**，`callContainer` 会直接报 `INVALID_HOST`（无效主机名）。已于 2026-10-03 换掉。
+> 判断方法：开发者工具 →「云开发」→ 环境详情 → 看「**所属应用**」是不是本项目的 AppID。
+> 注意同一个微信号可以管理多个小程序，所以"都是我的微信号"**不能**排除这个问题。
 
 **改完这些代码必须 push 到 GitHub**——云托管绑定仓库是从**远端仓库**拉代码构建的，本地改了不 push 等于没改。
 
@@ -87,7 +92,7 @@ SERVICE: "events-api",                // 必须与控制台创建的服务名逐
 
 1. 装微信开发者工具（稳定版即可），用管理员微信登录。
 2. **导入项目** → 目录选仓库里的 **`miniprogram/`** → 填第 3 步拿到的 AppID → 后端服务选「不使用云服务」（云托管不需要勾选云开发）。
-3. `miniprogram/utils/config.js` 的两个值仓库里已填好（`prod-d2gcdfycq884b1e6b` + `events-api`），正常不用改。换环境时才需要动。
+3. `miniprogram/utils/config.js` 的两个值仓库里已填好（`events-api-d6groy01wc45330f3` + `events-api`），正常不用改。换环境时才需要动。
 4. `project.config.json` 的 `appid` 已填 `wx9fbcd7833ef0590c`。
 5. 点编译。首页应直接出现活动列表（14 天窗口全量，客户端分批上屏）。
 
@@ -99,6 +104,13 @@ SERVICE: "events-api",                // 必须与控制台创建的服务名逐
 4. **用户隐私保护指引**（必填，最容易漏）：小程序后台「设置 → 服务内容声明 → 用户隐私保护指引」。必须如实声明收集的信息，否则直接驳回。本项目实际涉及：① `wx.cloud` 的 `traceUser`（会关联 openid，需声明"用户身份标识"）；② 收藏数据存在**本地 Storage**（未上传服务器，可不声明为收集）。图片/内容来自第三方源，不涉及用户上传。
 5. **提交审核**：后台「版本管理 → 提交审核」，备好功能页面截图和类目。个人主体一般 1–3 天。
 6. **发布**：审核通过后点「发布」。此后数据由 GitHub Actions 每两日更新，小程序无需重新发版。
+
+> ⚠️ **上传小程序 ≠ 后端更新，两件事分开看。**
+> 小程序代码是开发者工具**从本地目录直接上传**的，**不需要先 push**；
+> 但小程序调用的 `events-api` 是云托管**从 GitHub 远端仓库**拉代码构建的。
+> 所以：改了 `miniprogram/**` → 直接上传就行；改了 `src/lib/*.js`（去重规则、活动字段）
+> → **必须 `git push` 再到云托管「发布新版本」**，否则线上跑的还是旧逻辑。
+> 排查"本地数量对、小程序里不对"时先看这一条。
 
 > **节奏建议**：真机预览随时可用且**不需要审核**，可以先用它验收；但**提审材料要按最终形态准备**（功能截图、类目说明），UI 大改就要重做一遍，所以建议 UI 定稿后再提审。
 

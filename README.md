@@ -159,7 +159,7 @@ curl http://localhost:8787/api/events
 
 1. 微信开发者工具导入 `miniprogram/` 目录，填入自己的 AppID（个人主体即可）
 2. 在 `miniprogram/utils/config.js` 填写：
-   - `CLOUD_ENV`：云托管环境 ID（控制台**右上角「环境」下拉**即可看到，当前已填 `prod-d2gcdfycq884b1e6b`）
+   - `CLOUD_ENV`：云托管环境 ID（控制台**右上角「环境」下拉**即可看到，当前已填 `events-api-d6groy01wc45330f3`；**必须属于本项目 AppID**，用别的环境会报 `INVALID_HOST`）
    - `SERVICE`：服务名（默认 `events-api`，必须与控制台服务名逐字一致）
 
 > 环境 ID 不要在别处找：微信云托管控制台没有「环境信息」板块，小程序后台（mp.weixin.qq.com）里也看不到云托管——两者是独立控制台。
