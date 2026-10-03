@@ -1,11 +1,17 @@
 <view class="card event-card" bindtap="onTap">
-  <image
-    wx:if="{{event.image_url && !imageFailed}}"
-    class="cover"
-    src="{{event.image_url}}"
-    mode="aspectFill"
-    binderror="onImageError"
-  />
+  <view class="cover-wrap">
+    <image
+      wx:if="{{event.image_url && !imageFailed}}"
+      class="cover-img"
+      src="{{event.image_url}}"
+      mode="aspectFill"
+      binderror="onImageError"
+    />
+    <!-- 无图 / 裂图兜底：无彩色渐变 + 类目水印，不留空白洞 -->
+    <view wx:else class="cover-fallback">
+      <text class="cover-fallback-text">{{event.category}}</text>
+    </view>
+  </view>
   <view class="body">
     <view class="title-row">
       <text class="tag">{{event.category}}</text>

@@ -1,8 +1,9 @@
+/* 头图槽：铺无彩色渐变，图片加载中 / 半透明时都不会露出空白 */
 .hero {
   width: 100%;
-  height: 400rpx;
-  background: var(--brand-soft);
-  border-radius: 20rpx;
+  height: 394rpx;
+  background: var(--cover-grad);
+  border-radius: 24rpx;
   margin-bottom: 24rpx;
 }
 
@@ -21,6 +22,7 @@
   font-size: 36rpx;
   font-weight: 600;
   line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 .info-row {
@@ -65,16 +67,16 @@
 }
 
 .tier {
-  padding: 2rpx 12rpx;
-  border-radius: 8rpx;
+  padding: 2rpx 14rpx;
+  border-radius: 999rpx;
   background: var(--brand-soft);
-  color: var(--brand);
+  color: var(--text-2);
   font-size: 20rpx;
 }
 
 .source-copy {
   margin-left: auto;
-  color: var(--brand);
+  color: var(--text-2);
   font-size: 24rpx;
 }
 
@@ -88,10 +90,11 @@
   flex: 1;
 }
 
+/* 已收藏 = 唯一暖色强调的浅色变体，文字仍用 --text 保证可读性 */
 .action-fav-on {
-  color: var(--brand);
-  border-color: var(--brand);
-  background: var(--brand-soft);
+  color: var(--text);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
 }
 
 .action-signup {

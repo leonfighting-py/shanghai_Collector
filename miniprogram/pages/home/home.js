@@ -27,7 +27,19 @@ Page({
   allEvents: [],
   visibleCount: 0,
 
-  onLoad() {
+  onLoad(options) {
+    // 从朋友圈 / 会话分享链接进来时带上关键词，落地即还原筛选结果
+    const shared = options && options.search ? String(options.search) : "";
+    if (shared) this.setData({ searchKeyword: shared });
+
+    // 开放分享入口（含朋友圈）。部分基础库不支持 menus 参数，失败静默忽略即可
+    if (wx.showShareMenu) {
+      wx.showShareMenu({
+        menus: ["shareAppMessage", "shareTimeline"],
+        fail: () => {},
+      });
+    }
+
     this.load();
   },
 
@@ -118,5 +130,23 @@ Page({
 
   onRetry() {
     this.load();
+  },
+
+  // 分享当前筛选结果，而不是干巴巴一个首页
+  onShareAppMessage() {
+    const category = this.data.activeCategory === "全部" ? "" : `【${this.data.activeCategory}】`;
+    const keyword = this.data.searchKeyword.trim();
+    return {
+      title: `${category}上海未来两周活动${keyword ? `｜${keyword}` : ""}`,
+      path: "/pages/home/home",
+    };
+  },
+
+  onShareTimeline() {
+    const keyword = this.data.searchKeyword.trim();
+    return {
+      title: keyword ? `上海未来两周活动｜${keyword}` : "上海未来两周活动",
+      query: keyword ? `search=${encodeURIComponent(keyword)}` : "",
+    };
   },
 });
