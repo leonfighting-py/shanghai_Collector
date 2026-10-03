@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>小程序视觉预览 · 无彩色 + 液态玻璃</title>
+<style>
+  /* ============================================================
+     这是 miniprogram/ 新视觉的「离线预览」。
+     token 与尺寸严格抄自 miniprogram/app.wxss 与各页面 wxss，
+     唯一的换算：1rpx = 0.5px（375pt 宽屏幕），所以 24rpx = 12px。
+     目的：不装微信开发者工具也能先看一眼设计对不对。
+     ============================================================ */
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+  body {
+    margin: 0;
+    padding: 32px 24px 56px;
+    background: #e9e9ec;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    color: #1d1d1f;
+  }
+
+  .doc-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .doc-sub { font-size: 13px; color: rgba(0,0,0,0.55); margin: 0 0 28px; line-height: 1.7; }
+  .doc-sub code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+  .stage { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+
+  .col > h2 {
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    color: rgba(0,0,0,0.45); margin: 0 0 10px; text-align: center;
+  }
+
+  /* 手机外框：宽 375px，模拟真机视口 */
+  .phone {
+    width: 375px;
+    height: 1480px;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 模拟导航栏 */
+  .navbar {
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 30;
+  }
+
+  /* 滚动区 */
+  .scroll { flex: 1; overflow-y: auto; position: relative; }
+  .scroll::-webkit-scrollbar { width: 0; }
+
+  /* ---------- 主题：浅色（抄自 app.wxss 的 page{}） ---------- */
+  .theme-light {
+    --bg: #f5f5f7;
+    --card: rgba(255, 255, 255, 0.72);
+    --card-border: rgba(0, 0, 0, 0.08);
+    --text: #1d1d1f;
+    --text-2: rgba(0, 0, 0, 0.55);
+    --text-muted: rgba(0, 0, 0, 0.35);
+    --line: rgba(0, 0, 0, 0.08);
+    --line-strong: rgba(0, 0, 0, 0.15);
+    --brand: #1d1d1f;
+    --on-brand: #ffffff;
+    --brand-soft: rgba(0, 0, 0, 0.06);
+    --accent: #f5b544;
+    --accent-soft: rgba(245, 181, 68, 0.18);
+    --accent-line: rgba(245, 181, 68, 0.55);
+    --cover-grad: linear-gradient(135deg, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0.02) 55%, rgba(0,0,0,0.05) 100%);
+    --bar-bg: rgba(245, 245, 247, 0.84);
+    --skeleton: rgba(0, 0, 0, 0.07);
+  }
+
+  /* ---------- 主题：深色（抄自 app.wxss 的 @media dark） ---------- */
+  .theme-dark {
+    --bg: #000000;
+    --card: rgba(255, 255, 255, 0.08);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --text: #ffffff;
+    --text-2: rgba(255, 255, 255, 0.6);
+    --text-muted: rgba(255, 255, 255, 0.3);
+    --line: rgba(255, 255, 255, 0.1);
+    --line-strong: rgba(255, 255, 255, 0.2);
+    --brand: #ffffff;
+    --on-brand: #000000;
+    --brand-soft: rgba(255, 255, 255, 0.12);
+    --accent: #f5b544;
+    --accent-soft: rgba(245, 181, 68, 0.22);
+    --accent-line: rgba(245, 181, 68, 0.6);
+    --cover-grad: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.07) 100%);
+    --bar-bg: rgba(0, 0, 0, 0.84);
+    --skeleton: rgba(255, 255, 255, 0.08);
+  }
+
+  .phone { background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+  .navbar { background: var(--bg); color: var(--text); }
+
+  .page { padding: 12px; }
+
+  /* ---------- 吸顶筛选条 ---------- */
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: -12px -12px 12px;
+    padding: 12px 12px 10px;
+    background: var(--bar-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .chips { white-space: nowrap; overflow: hidden; }
+  .chip {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-right: 8px;
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--text-2);
+    font-size: 13px;
+    border: 1px solid var(--card-border);
+  }
+  .chip-on {
+    background: var(--brand);
+    color: var(--on-brand);
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .search {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px; padding: 0 12px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    height: 36px;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  .sort-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .result-count { color: var(--text-2); font-size: 12px; }
+  .segment { display: flex; padding: 2px; border-radius: 999px; background: var(--card); border: 1px solid var(--card-border); }
+  .segment-item { padding: 4px 14px; border-radius: 999px; color: var(--text-2); font-size: 12px; }
+  .segment-item-on { background: var(--brand); color: var(--on-brand); font-weight: 600; }
+
+  /* ---------- 卡片 ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .event-card { position: relative; margin-bottom: 12px; }
+
+  /* 16:9 封面槽，padding-bottom 撑高 */
+  .cover-wrap {
+    position: relative; width: 100%; padding-bottom: 56.25%;
+    background: var(--cover-grad);
+  }
+  .cover-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  /* 用渐变假装一张照片，证明图片确实落在 16:9 槽里 */
+  .cover-photo {
+    background:
+      radial-gradient(120% 90% at 20% 15%, #b9a4d6 0%, rgba(185,164,214,0) 60%),
+      radial-gradient(120% 90% at 85% 80%, #7f8fbe 0%, rgba(127,143,190,0) 62%),
+      linear-gradient(150deg, #2b2b3a 0%, #46425c 50%, #1f1f29 100%);
+  }
+  .cover-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .cover-fallback-text { font-size: 19px; font-weight: 600; letter-spacing: 0.3em; color: var(--text-muted); }
+
+  .body { padding: 12px; }
+  .title-row { display: flex; align-items: center; gap: 6px; }
+
+  .tag {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--text-2); font-size: 11px; line-height: 1.5;
+  }
+  .badge {
+    padding: 2px 7px; border-radius: 999px;
+    background: var(--brand); color: var(--on-brand);
+    font-size: 11px; font-weight: 600; line-height: 1.5;
+  }
+  .title {
+    margin-top: 6px; font-size: 16px; font-weight: 600; line-height: 1.4;
+    letter-spacing: -0.01em;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  }
+  .meta { margin-top: 6px; padding-right: 68px; font-size: 12px; color: var(--text-2); }
+  .meta-line { margin-top: 2px; }
+  .venue { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
+
+  .fav {
+    position: absolute; right: 12px; bottom: 12px;
+    padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--line-strong); color: var(--text-2); font-size: 11px;
+  }
+  .fav-on { border-color: var(--accent-line); background: var(--accent-soft); color: var(--text); }
+
+  /* ---------- 骨架屏 ---------- */
+  @keyframes wb-shimmer { 0% { opacity: .5 } 50% { opacity: 1 } 100% { opacity: .5 } }
+  .skeleton { background: var(--skeleton); border-radius: 6px; animation: wb-shimmer 1.4s ease-in-out infinite; }
+  .skeleton-card { margin-bottom: 12px; }
+  .skeleton-cover { width: 100%; padding-bottom: 56.25%; border-radius: 0; }
+  .skeleton-body { padding: 12px; }
+  .skeleton-tag { width: 60px; height: 14px; border-radius: 999px; }
+  .skeleton-line { height: 16px; margin-top: 10px; }
+  .skeleton-line-short { width: 45%; height: 12px; margin-top: 8px; }
+
+  /* ---------- 详情页按钮（抄自 app.wxss + detail.wxss） ---------- */
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  .action-fav { flex: 1; }
+  .action-signup { flex: 2; }
+  .btn-plain {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 999px;
+    font-size: 14px; padding: 8px 0; text-align: center;
+  }
+  .btn-primary {
+    background: var(--brand); color: var(--on-brand);
+    border-radius: 999px; font-size: 15px; font-weight: 600;
+    padding: 10px 0; text-align: center;
+  }
+  .action-fav-on { color: var(--text); border-color: var(--accent-line); background: var(--accent-soft); }
+
+  /* 区块小标题 */
+  .sec-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--text-muted); text-transform: uppercase;
+    margin: 18px 4px 8px;
+  }
+  .sec-label:first-child { margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1 class="doc-title">小程序视觉预览：无彩色 + 液态玻璃</h1>
+<p class="doc-sub">
+  token 与尺寸抄自 <code>miniprogram/app.wxss</code> 与各页面 <code>wxss</code>（换算 1rpx = 0.5px）。
+  左右分别为浅色 / 深色。可滚动，筛选条在滚动时吸顶。
+</p>
+
+<div class="stage">
+
+  <!-- ================= 浅色 ================= -->
+  <div class="col">
+    <h2>浅色 · light</h2>
+    <div class="phone theme-light">
+      <div class="navbar">沪上双周活动</div>
+      <div class="scroll">
+        <div class="page">
+          <div class="filter-bar">
+            <div class="chips">
+              <span class="chip chip-on">全部</span><span class="chip">演出音乐</span><span class="chip">展览</span><span class="chip">线下活动</span><span class="chip">高校讲座</span><span class="chip">AI聚会</span>
+            </div>
+            <div class="search"><span>🔍</span><span>搜索活动 / 场馆</span></div>
+            <div class="sort-bar">
+              <span class="result-count">142 个活动</span>
+              <span class="segment"><span class="segment-item segment-item-on">推荐</span><span class="segment-item">最新</span></span>
+            </div>
+          </div>
+
+          <div class="sec-label">有图 · 进行中 · 未收藏</div>
+          <div class="card event-card">
+            <div class="cover-wrap"><div class="cover-img cover-photo"></div></div>
+            <div class="body">
+              <div class="title-row"><span class="tag">展览</span><span class="badge">进行中</span></div>
+              <div class="title">世界树之巅：美洲古代文明大展</div>
+              <div class="meta">
+                <div class="meta-line">7.9–10.30</div>
+                <div class="meta-line venue">上海博物馆东馆</div>
+              </div>
+            </div>
+            <div class="fav">收藏</div>
+          </div>
+
+          <div class="sec-label">无图 · 已收藏（唯一暖色强调）</div>
+          <div class="card event-card">
+            <div class="cover-wrap">
+              <div class="cover-fallback"><span class="cover-fallback-text">演出音乐</span></div>
+            </div>
+            <div class="body">
+              <div class="title-row"><span class="tag">演出音乐</span></div>
+              <div class="title">环境式原创音乐剧《梅尔泉》</div>
+              <div class="meta">
+                <div class="meta-line">10.6 19:30–21:30</div>
+                <div class="meta-line venue">上海大剧院 · 别克中剧场</div>
+              </div>
+            </div>
+            <div class="fav fav-on">已收藏</div>
+          </div>
+
+          <div class="sec-label">骨架屏（加载态）</div>
+          <div class="card skeleton-card">
+            <div class="skeleton skeleton-cover"></div>
+            <div class="skeleton-body">
+              <div class="skeleton skeleton-tag"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line skeleton-line-short"></div>
+            </div>
+          </div>
+
+          <div class="sec-label">详情页按钮（详情页 / 未收藏 → 已收藏）</div>
+          <div class="actions">
+            <div class="btn-plain action-fav">收藏</div>
+            <div class="btn-primary action-signup">复制报名链接</div>
+          </div>
+          <div class="actions" style="margin-top:10px">
+            <div class="btn-plain action-fav action-fav-on">已收藏</div>
+            <div class="btn-primary action-signup">去活动行报名</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 深色 ================= -->
+  <div class="col">
+    <h2>深色 · dark</h2>
+    <div class="phone theme-dark">
+      <div class="navbar">沪上双周活动</div>
+      <div class="scroll">
+        <div class="page">
+          <div class="filter-bar">
+            <div class="chips">
+              <span class="chip chip-on">全部</span><span class="chip">演出音乐</span><span class="chip">展览</span><span class="chip">线下活动</span><span class="chip">高校讲座</span><span class="chip">AI聚会</span>
+            </div>
+            <div class="search"><span>🔍</span><span>搜索活动 / 场馆</span></div>
+            <div class="sort-bar">
+              <span class="result-count">142 个活动</span>
+              <span class="segment"><span class="segment-item segment-item-on">推荐</span><span class="segment-item">最新</span></span>
+            </div>
+          </div>
+
+          <div class="sec-label">有图 · 进行中 · 未收藏</div>
+          <div class="card event-card">
+            <div class="cover-wrap"><div class="cover-img cover-photo"></div></div>
+            <div class="body">
+              <div class="title-row"><span class="tag">展览</span><span class="badge">进行中</span></div>
+              <div class="title">世界树之巅：美洲古代文明大展</div>
+              <div class="meta">
+                <div class="meta-line">7.9–10.30</div>
+                <div class="meta-line venue">上海博物馆东馆</div>
+              </div>
+            </div>
+            <div class="fav">收藏</div>
+          </div>
+
+          <div class="sec-label">无图 · 已收藏（唯一暖色强调）</div>
+          <div class="card event-card">
+            <div class="cover-wrap">
+              <div class="cover-fallback"><span class="cover-fallback-text">演出音乐</span></div>
+            </div>
+            <div class="body">
+              <div class="title-row"><span class="tag">演出音乐</span></div>
+              <div class="title">环境式原创音乐剧《梅尔泉》</div>
+              <div class="meta">
+                <div class="meta-line">10.6 19:30–21:30</div>
+                <div class="meta-line venue">上海大剧院 · 别克中剧场</div>
+              </div>
+            </div>
+            <div class="fav fav-on">已收藏</div>
+          </div>
+
+          <div class="sec-label">骨架屏（加载态）</div>
+          <div class="card skeleton-card">
+            <div class="skeleton skeleton-cover"></div>
+            <div class="skeleton-body">
+              <div class="skeleton skeleton-tag"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line skeleton-line-short"></div>
+            </div>
+          </div>
+
+          <div class="sec-label">详情页按钮（详情页 / 未收藏 → 已收藏）</div>
+          <div class="actions">
+            <div class="btn-plain action-fav">收藏</div>
+            <div class="btn-primary action-signup">复制报名链接</div>
+          </div>
+          <div class="actions" style="margin-top:10px">
+            <div class="btn-plain action-fav action-fav-on">已收藏</div>
+            <div class="btn-primary action-signup">去活动行报名</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

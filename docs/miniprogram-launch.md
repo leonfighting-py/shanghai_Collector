@@ -224,3 +224,48 @@ start_time <= endDate 且 coalesce(end_time, start_time) >= startDate
 
 卡片角标 `eventBadge`：今天/明天/后天优先；已开幕但未结束的长期活动标**「进行中」**
 （这类活动的 `start_time` 在很久以前，`relativeLabel` 返回空，不加这层用户会以为它没有时间信息）。
+
+## 9.5 视觉语言：无彩色 + 液态玻璃（2026-10-03）
+
+小程序原来用品牌紫 `#4b3fe3`（深色 `#8f85ff`），与 Web 端的视觉语言不一致。
+Web 的真源是 `src/app/styles.css`，它的 `--brand-color` **不是色相，而是「最高对比填充色」**：
+
+| token | 浅色 | 深色 |
+| --- | --- | --- |
+| `--brand-color` | `#1d1d1f` | `#fff` |
+| `--bg` | `#f5f5f7` | `#000` |
+| `--card-bg` | `rgba(255,255,255,.55)` | `rgba(0,0,0,.3)` |
+| `--card-border` | `rgba(0,0,0,.08)` | `rgba(255,255,255,.1)` |
+
+小程序已同构：`miniprogram/app.wxss` 里 `--brand` 只是「反相填充」语义，**不再是品牌紫**；
+`theme.json` 的 `tabSelected` 也一并改成 `#1d1d1f` / `#ffffff`。
+
+- **选中态 = 反相填充**（对齐 Web `.explore-chip.is-active`）：
+  `background: var(--brand); color: var(--on-brand)`。用在选中 chip、排序分段、日期角标、主按钮。
+- ⚠️ **`--on-brand` 必须跟着 `--brand` 反相**。老代码是 `color: #ffffff` 硬编码，
+  深色下 `--brand` 变白后就成**白底白字**，主按钮会直接消失。改 `--brand` 时一定要一起看 `--on-brand`。
+- **唯一暖色强调**留给收藏态（`#f5b544` 系），对齐 Web `.card-favorite.is-active`——全站唯一允许的色相。
+  文字的对比度靠 `color: var(--text)` 保住，不要用琥珀色当文字色。
+- **卡片 = 液态玻璃**：半透明底 + `backdrop-filter: blur(18px)` + 细描边 + 24rpx 圆角，对齐 Web `.glass-card`。
+- ⚠️ **深色卡片不要照抄 Web 的 `rgba(0,0,0,.3)`**。Web 的卡片是「纯黑玻璃」，靠 `.content-bg`
+  的城市照片透出层次；小程序没有照片底，纯黑玻璃会让卡片糊进纯黑背景。
+  所以深色改用 8% 半透明白 + 12% 描边——**这是有意偏离 Web 数值的一处**。
+
+其余改造：
+
+| 项 | 做法 |
+| --- | --- |
+| 卡片封面 | 16:9。用 `padding-bottom: 56.25%` 撑高，不用 `aspect-ratio`（旧 webview 不支持） |
+| 无图兜底 | 封面槽底**永远**铺无彩色渐变 `--cover-grad`，无图 / 裂图 / 加载中都显示类目水印字，不留空白洞 |
+| 加载态 | 骨架屏（`app.wxss` 的 `.skeleton*`），结构与真实卡片一致，避免「加载中…」的布局跳变 |
+| 筛选条 | 吸顶液态玻璃条，负 margin 出血抵消 `.page` 内边距，滚动时卡片从它背后穿过并被模糊 |
+| 分享 | 首页 `onShareAppMessage` / `onShareTimeline` 带上当前分类与关键词；`onLoad(options)` 读回 `search` 还原筛选 |
+
+**离线预览**：`docs/preview/miniprogram-visual.html` 是浅色/深色双列静态预览，
+不装微信开发者工具也能先看设计（token 与尺寸抄自 wxss，换算 `1rpx = 0.5px`）。
+⚠️ 改 wxss 的颜色或尺寸后要**同步改这份预览**，否则它会骗人。
+
+**未做（有意）**：tabBar 仍是纯文字。加图标需要 light/dark 两套 PNG，而 `theme.json`
+只能切 `tabColor` / `tabSelected`，**切不了 app.json 里的 `iconPath`**——深色下必然有半边图标不可见，
+且静态彩色 PNG 与这套无彩色语言也不搭。要做需先确认基础库是否支持在 `iconPath` 上写 `@变量`。
+

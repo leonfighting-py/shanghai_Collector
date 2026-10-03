@@ -98,7 +98,8 @@
   bottom: 24rpx;
   padding: 8rpx 20rpx;
   border-radius: 999rpx;
-  border: 2rpx solid var(--line);
+  /* 用 line-strong 而不是 line：line 只有 8% 黑，浅色卡片上几乎看不见描边 */
+  border: 2rpx solid var(--line-strong);
   color: var(--text-2);
   font-size: 22rpx;
 }
