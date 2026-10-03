@@ -5,6 +5,7 @@ import {
   toShanghaiDayWindow,
 } from "./events.js";
 import { defaultFetchHtml } from "./fetch-html.js";
+import { checkRobots } from "./robots.js";
 import { PARSERS } from "./parsers/index.js";
 import { isRelevantPerformance } from "./parsers/shared.js";
 
@@ -624,6 +625,376 @@ export const SOURCE_SEEDS_RAW = [
     notes: "上海AI实验室活动预告/论坛/交流会 · 列表标题 + 详情页限量取日期（2026-10 验证）",
   },
 
+  // ===== 2026-10 第六批扩展：不限领域 bulk 扩容（西交利物浦/上科大/上音/上戏/电机/海关学院等院系 + 活动行演出类标签 + 会展/图书馆/美术馆/媒体）=====
+  {
+    name: "西交利物浦大学·讲座预告",
+    url: "http://meeting.xjtu.edu.cn/lecturenotices/list/0/1",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 12/15（2026-10 验证）",
+  },
+  {
+    name: "上海市政府·赛事活动",
+    url: "https://www.shanghai.gov.cn/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·政府赛事 · 窗口内活跃 7/14（2026-10 验证）",
+  },
+  {
+    name: "上科大信息学院·活动",
+    url: "http://siais.shanghaitech.edu.cn/hd/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 5/14（2026-10 验证）",
+  },
+  {
+    name: "上科大信息学院·学术通知",
+    url: "http://siais.shanghaitech.edu.cn/tzgg_6160/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 5/14（2026-10 验证）",
+  },
+  {
+    name: "上海海洋大学·通知公告",
+    url: "http://www.shou.edu.cn/tzgg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 5/12（2026-10 验证）",
+  },
+  {
+    name: "上海中医药大学·活动剪影",
+    url: "http://iec.shutcm.edu.cn/hdly/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 2/24（2026-10 验证）",
+  },
+  {
+    name: "上海新国际博览中心·展会",
+    url: "https://www.sniec.net/",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·会展 · 窗口内活跃 2/6（2026-10 验证）",
+  },
+  {
+    name: "SegmentFault",
+    url: "https://segmentfault.com/events",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·场馆 · 窗口内活跃 1/24（2026-10 验证）",
+  },
+  {
+    name: "上海电机学院·通知公告",
+    url: "http://wgyxy.sdju.edu.cn/tzgg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 1/12（2026-10 验证）",
+  },
+  {
+    name: "上科大创业学院·活动",
+    url: "https://cue.shanghaitech.edu.cn/hdActivities1/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 窗口内活跃 1/11（2026-10 验证）",
+  },
+  {
+    name: "钛媒体·活动",
+    url: "https://www.tmtpost.com/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·科技媒体 · 窗口内活跃 1/11（2026-10 验证）",
+  },
+  {
+    name: "上经贸大·学术讲座",
+    url: "https://www.suibe.edu.cn/kjxy/1308/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 15 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上应技大研究生院·学术交流",
+    url: "https://gs.sit.edu.cn/pygz/xsjl/xsjz.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 15 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上经贸大·会展学院学术活动",
+    url: "http://www.suibe.edu.cn/sis/xshd_22034/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 14 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海海关学院·管理学院科研",
+    url: "https://gsgl.shcc.edu.cn/kxyj/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 14 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海戏剧学院·创意论坛",
+    url: "https://cyxy.sta.edu.cn/547/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 14 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海电机学院·学院通知",
+    url: "https://xyh.sdju.edu.cn/jzxx/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 12 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "静安区图书馆·活动",
+    url: "https://www.jingan.gov.cn/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·图书馆 · 已验证栏目 12 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "复旦大学研究生院·学术活动",
+    url: "https://gsao.fudan.edu.cn/",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 10 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海戏剧学院·文学系活动",
+    url: "https://wmzx.sta.edu.cn/hdxx/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 8 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海海事大学·国际交流讲座",
+    url: "https://smuiec.shmtu.edu.cn/7015/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 8 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海戏剧学院·艺术管理论坛",
+    url: "https://cyxy.sta.edu.cn/571/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 8 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海音乐学院·学术论坛",
+    url: "https://yjsb.shcmusic.edu.cn/158/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 8 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "二工大jxxy·活动预告",
+    url: "http://jxxy.sspu.edu.cn/2085/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 7 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海电机学院·高工学院通知",
+    url: "http://gzxy.sdju.edu.cn/tzgg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 6 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海海关学院·外语学院科研",
+    url: "https://wyx.shcc.edu.cn/kxyj/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 6 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海戏剧学院·讲座信息",
+    url: "https://xw.sta.edu.cn/4261/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 6 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "奉贤图书馆·活动",
+    url: "https://www.fxlib.cn/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·图书馆 · 已验证栏目 6 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "InfoQ 中文站·活动",
+    url: "https://www.infoq.cn/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.listing,
+    notes: "第六批·科技媒体 · 已验证栏目 6 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海对外经贸大学·更多>>",
+    url: "http://mba.suibe.edu.cn/hdtg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 5 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "二工大·旧站通知",
+    url: "http://oldhome.sspu.edu.cn/tzgg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 5 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海海洋大学·热门活动",
+    url: "https://xszx.shou.edu.cn/hd/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 5 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上经贸大·会展学院通知",
+    url: "http://www.suibe.edu.cn/sis/tzgg_22036/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 4 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海戏剧学院·基础部通知",
+    url: "http://jjy.sta.edu.cn/tzgg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 4 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海音乐学院·艺术学知识体系论坛",
+    url: "https://www.shcmusic.edu.cn/gjzgzzdysxzstxlt/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 4 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "复旦大学教务处·通知",
+    url: "https://jwc.fudan.edu.cn/",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.listing,
+    notes: "第六批·高校 · 已验证栏目 4 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上科大创业学院·科研动态",
+    url: "https://cue.shanghaitech.edu.cn/kxyj/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 3 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "豆瓣同城·travel",
+    url: "https://www.douban.com/location/shanghai/events/week-travel",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.douban,
+    notes: "第六批·豆瓣 · 已验证栏目 3 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海海昌海洋公园·活动",
+    url: "https://www.shhcoceanpark.com/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·亲子 · 已验证栏目 3 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海海关学院·公共卫生学院通知",
+    url: "https://ggjj.shcc.edu.cn/tzgg/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 2 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海音乐学院·学生活动预告",
+    url: "https://xsc.shcmusic.edu.cn/329/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 2 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海音乐学院·论坛与会议",
+    url: "https://yjsb.shcmusic.edu.cn/102/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 2 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海音乐学院·作曲理论高峰论坛",
+    url: "https://yjsb.shcmusic.edu.cn/213/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 2 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海交通大学研究生院·招生活动",
+    url: "https://yzb.sjtu.edu.cn/",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 2 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "上海电机学院·智能制造学术讲座",
+    url: "https://aist.sdju.edu.cn/xytskc/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·高校 · 已验证栏目 1 条，近期无更新（2026-10 验证）",
+  },
+  {
+    name: "国家会展中心上海·展会",
+    url: "https://www.neccsh.com/",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    notes: "第六批·会展 · 已验证栏目 1 条，近期无更新（2026-10 验证）",
+  },
+
   // ===== 2026-10 AI 扩容：高校 AI/计算机/数据科学院系讲座栏目 + 活动行 AI 新标签 =====
   {
     name: "华师数据学院·学术报告",
@@ -769,7 +1140,6 @@ export const SOURCE_SEEDS_RAW = [
     parser: PARSERS.huodong,
     notes: "AI 扩容·活动行「AI应用」标签 · AI 应用/投融资路演类活动，窗口内 1/3（2026-10 验证）",
   },
-
 
   // ===== 2026-10 扩展：高校院系讲座栏目（cn-cms-lectures 通用模板 + <li>/锚点兜底扫描器）=====
   {
@@ -1653,7 +2023,6 @@ export const SOURCE_SEEDS_RAW = [
     notes: "jxxy 栏目·学生活动（2026-10 验证）",
   },
 
-
   // ===== 2026-10 第五批扩展：院系讲座/通知公告栏目再挖掘（复旦/华师/上师大/上理工/东华/上财/同济/华政/上大/上海海关学院/上海工商外职院）=====
   {
     name: "复旦中文系·通知公告",
@@ -2206,12 +2575,30 @@ export async function collectEventsFromSources({
   fetchHtml = defaultFetchHtml,
   now = new Date(),
   concurrency = DEFAULT_CONCURRENCY,
+  respectRobots = process.env.COLLECTOR_RESPECT_ROBOTS !== "false",
 } = {}) {
   const { startDate, endDate, days } = toShanghaiDayWindow(now);
   const failures = [];
   const collected = [];
+  const robotsSkipped = [];
 
   const collectOne = async (source) => {
+    // robots 闸门：站点明示禁止抓取时跳过，记入 skipped 而非 failures，
+    // 避免健康报告把「被 robots 拒绝」误判成「源已失效」。
+    if (respectRobots) {
+      try {
+        const decision = await checkRobots(source.url);
+        if (!decision.allowed) {
+          return {
+            events: [],
+            failure: null,
+            skipped: { source: source.name, url: source.url, reason: decision.reason || "robots_disallow" },
+          };
+        }
+      } catch {
+        // 闸门自身异常不应阻断采集
+      }
+    }
     try {
       const parsed = await withSourceTimeout(
         async () => {
@@ -2242,6 +2629,7 @@ export async function collectEventsFromSources({
     const outcomes = await Promise.all(chunk.map(collectOne));
     for (const outcome of outcomes) {
       if (outcome.failure) failures.push(outcome.failure);
+      else if (outcome.skipped) robotsSkipped.push(outcome.skipped);
       else collected.push(...outcome.events);
     }
   }
@@ -2257,6 +2645,7 @@ export async function collectEventsFromSources({
       ok: false,
       events: previousEvents,
       failures,
+      robotsSkipped,
       collectedCount: 0,
       publishedCount: previousEvents.length,
       startDate,
@@ -2270,6 +2659,7 @@ export async function collectEventsFromSources({
     ok: failures.length === 0,
     events,
     failures,
+    robotsSkipped,
     rawEvents: collected,
     collectedCount: collected.length,
     publishedCount: events.length,
