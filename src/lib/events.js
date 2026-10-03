@@ -86,6 +86,34 @@ const NEWS_TITLE_PATTERNS = [
   /^[\s",{\[\]\\/]+/,
   /thank you for your feedback/i,
   /跳转到主要内容/,
+
+  // 高校教务/研究生院/院系的「通知公告」栏不是活动源。
+  // 这类栏目里混进来的条目**标题本身不像公告**（"复旦2027考研855考试大纲发布"
+  // 既不以"通知"结尾也不含"关于…的通知"），上面的前缀/后缀规则全部抓不到，
+  // 必须按内容特征补。2026-10 实测：通知公告类源贡献的 6 条错收全部落在这几类形态。
+  //
+  // 注意：**不要整类退休「通知公告」源** —— 池子里有十几个带"通知公告"的栏目
+  //（如"复旦智能材料学院·通知公告"notes 明写"含讲座预告"），其中确实带真讲座，
+  // 一刀切会把它们一起砍掉。按标题特征剔除才是对的做法。
+  /考试大纲|大纲发布|大纲解析|考试说明/,
+  /评选细则|评选办法|评审细则|认定办法|评审标准/,
+  /信息维护|信息核对|信息采集|信息填报|信息确认/,
+  /(选派|申报|报名|推荐|征集|招标|采购|选课|注册)(工作)?(的)?(通知|公告|说明|指南|细则)/,
+  // 周报式汇总（"上经贸大第三周学术活动预告"）是多场活动的目录页，不是某一场活动
+  /(第[一二三四五六七八九十\d]+周|本周|下周|本月|近期)[^，。；]{0,8}(活动|讲座|安排|日程)(预告|汇总|一览|速览)/,
+
+  // 商业地产资讯同样不是活动：新店开业 / 首店战报 / 招商盘点。
+  // 背景：2026-10 发现「赢商网」系源整站产出这类内容，且因 venue 缺省为"上海"
+  // 绕过了 isShanghaiRelevantEvent —— 该源已另行退休（collector.js 的 RETIRED_SOURCE_NAMES）。
+  //
+  // ⚠️ 这里只放**高精度**形态。新闻标题的写法是开放的
+  //（"MIXC AIR落地武汉天河T3探索机场商业"、"服装圈三丽鸥主题店开业巴拉巴拉布局"），
+  // 靠枚举正则永远打不完，那类形状只能靠**退休源**解决，不要往这里堆正则。
+  /待开业|拟开业|即将开业|集中开业/,
+  /\d+\s*(个|家|座)[^，。；]{0,10}(商业项目|购物中心|首店|门店)/,
+  /首店(经济|效应|数量|占比)/,
+  /首进品牌|品牌首店/,
+  /一周要闻|要闻回顾|商业地产周报/,
 ];
 
 // 内容守门：聚合平台（Eventbrite / AllEvents 等）上混入的成人向、夜店拉客、
@@ -188,15 +216,33 @@ export function isPublishableEvent(event) {
   );
 }
 
+// 聚合器（格瓦拉 / 票牛）把展览混在「演出音乐」类目里：源级 category 是固定的，
+// 一个票务站的「演出」栏目里同时挂着话剧、音乐会和展览。
+// 标题以「展」结尾是最强的可判别信号——「XX特展 / 大展 / 首展 / 艺术展」不会是一场演出。
+// 2026-10 实测：演出音乐类目下 13 条标题以「展」结尾的条目全部是展览。
+const EXHIBITION_TITLE_SUFFIX_RE = /(特展|大展|首展|艺展|艺术展|纪念展|文物展|主题展|光影展|展览)$/;
+
+export function normalizeEventCategory(event) {
+  const category = event?.category;
+  if (category === "演出音乐" && EXHIBITION_TITLE_SUFFIX_RE.test(String(event.title || "").trim())) {
+    return "展览";
+  }
+  return category;
+}
+
 export function filterPublishableEvents(events) {
   return events.filter(isPublishableEvent).map((event) => {
     const dedupeKey = event.dedupe_key || buildDedupeKey(event);
+    // 类目纠正必须早于结束时间推断：inferEventEndTime 会按类别决定是否补长期档期，
+    // 「展览」才会拿到 +90 天，而这条展原本挂着「演出音乐」。
+    const category = normalizeEventCategory(event);
+    const normalized = category === event.category ? event : { ...event, category };
     return {
-      ...event,
+      ...normalized,
       dedupe_key: dedupeKey,
       // 长期活动（展览 / 驻场演出）源页面常只给开始日，这里补齐约 3 个月的结束时间。
       // 单场活动仍返回 null，由 coalesce(end_time, start_time) 兜底 —— 详见 event-duration.js
-      end_time: inferEventEndTime(event),
+      end_time: inferEventEndTime(normalized),
       sources: normalizeSources(event),
     };
   });

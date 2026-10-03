@@ -2529,6 +2529,16 @@ const RETIRED_SOURCE_NAMES = new Set([
   "苏州博物馆",
   "NYU Shanghai Events",
   "Lu.ma Shanghai",
+
+  // 域名没错、也没被反爬——是**领域不对**，与上面那批（网络/反爬）原因不同，特此分开记。
+  // 赢商网是商业地产门户，整站产出的是「新店开业 / 品牌首店 / 招商盘点」资讯，不是活动。
+  // 更糟的是它的条目拿不到场馆，buildEvent 会把 venue 兜底成"上海"，
+  // 于是连 isShanghaiRelevantEvent 都拦不住——2026-10 实测窗口内外共 16 条全部是
+  // 广州/深圳/武汉/昆明/山东/长沙的项目资讯，成了「线下活动」里最大的一坨噪声。
+  // 通用兜底已写进 events.js 的 NEWS_TITLE_PATTERNS（待开业/首店/商业项目），
+  // 但这条源本身没有有效产出，直接退休。恢复方式：从集合里删掉即可。
+  "赢商网",
+  "赢商网·华东",
 ]);
 
 export const SOURCE_SEEDS = SOURCE_SEEDS_RAW

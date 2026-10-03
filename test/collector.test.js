@@ -156,3 +156,19 @@ test("classifyFailure buckets error messages reliably", () => {
     assert.equal(classifyFailure(message), expected, `classifyFailure(${JSON.stringify(message)})`);
   }
 });
+
+test("retired off-domain sources are excluded from the active seed set", () => {
+  const names = new Set(SOURCE_SEEDS.map((source) => source.name));
+
+  // 赢商网是商业地产门户（notes 写明"新店开业/品牌首店资讯"），整站产出商业地产新闻，
+  // 不是活动源。2026-10 实测 16 条全部是外地项目资讯，已退休。
+  assert.equal(names.has("赢商网"), false);
+  assert.equal(names.has("赢商网·华东"), false);
+
+  // 反例：带"通知公告"字样的栏目**不能**整类退休 —— 池子里有十几个，
+  // 其中确有带真讲座的（如"复旦智能材料学院·通知公告"）。这类只能靠标题特征过滤。
+  assert.ok(
+    [...names].some((name) => name.includes("通知公告")),
+    "通知公告类栏目应仍有保留，靠 NEWS_TITLE_PATTERNS 做标题级剔除",
+  );
+});
