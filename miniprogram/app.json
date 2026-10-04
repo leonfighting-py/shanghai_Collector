@@ -5,7 +5,7 @@
     "pages/favorites/favorites"
   ],
   "window": {
-    "navigationBarTitleText": "沪上双周活动",
+    "navigationBarTitleText": "上海城市生活雷达",
     "navigationBarBackgroundColor": "@navBg",
     "navigationBarTextStyle": "@navTxt",
     "backgroundColor": "@bg",
@@ -17,8 +17,14 @@
     "backgroundColor": "@tabBg",
     "borderStyle": "@tabBorder",
     "list": [
-      { "pagePath": "pages/home/home", "text": "首页" },
-      { "pagePath": "pages/favorites/favorites", "text": "收藏" }
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/favorites/favorites",
+        "text": "收藏"
+      }
     ]
   },
   "darkmode": true,

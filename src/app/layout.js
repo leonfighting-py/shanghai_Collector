@@ -1,5 +1,4 @@
 import { getSiteUrl } from "../lib/site-url.js";
-import { ThemeProvider } from "./components/ThemeProvider.js";
 import "./styles.css";
 
 export const metadata = {
@@ -13,26 +12,19 @@ export const metadata = {
   },
 };
 
+// 深浅色完全跟随系统（prefers-color-scheme），不再提供手动切换，见 styles.css 顶部的 token
+export const viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbfaf7" },
+    { media: "(prefers-color-scheme: dark)", color: "#201f1d" },
+  ],
+};
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="zh-CN" data-theme="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
-          rel="stylesheet"
-        />
-        {/* Prevent theme flash: set data-theme before paint */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);})()`,
-          }}
-        />
-      </head>
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+    <html lang="zh-CN">
+      <body>{children}</body>
     </html>
   );
 }

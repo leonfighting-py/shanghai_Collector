@@ -3,7 +3,7 @@ import { getSiteUrl } from "../../lib/site-url.js";
 
 export function GET() {
   const base = getSiteUrl();
-  const categoryLines = CATEGORIES.map((c) => `- [${c}](${base}/category/${encodeURIComponent(c)}): 上海${c}精选活动`).join("\n");
+  const categoryLines = CATEGORIES.map((c) => `- [${c}](${base}/?category=${encodeURIComponent(c)}): 上海${c}精选活动`).join("\n");
 
   const body = `# 上海近两日活动精选
 

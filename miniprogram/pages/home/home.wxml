@@ -1,66 +1,166 @@
-<view class="page">
-  <view class="filter-bar">
-    <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}">
-      <view
-        wx:for="{{categories}}"
-        wx:key="*this"
-        class="chip {{item === activeCategory ? 'chip-on' : ''}}"
-        data-category="{{item}}"
-        bindtap="onSelectCategory"
-      >{{item}}</view>
-    </scroll-view>
-    <view class="search">
-      <input
-        class="search-input"
-        placeholder="搜索活动 / 场馆"
-        placeholder-class="search-ph"
-        value="{{searchKeyword}}"
-        confirm-type="search"
-        bindconfirm="onSearchConfirm"
-        bindinput="onSearchInput"
-      />
-      <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">清除</text>
-    </view>
+<!-- 自定义标题栏：压在封面上时透明，下滑越过封面后变实色并显示标题 -->
+<view class="nav {{navSolid ? 'nav-solid' : ''}}" style="height: {{navHeight}}px; padding-top: {{statusBarHeight}}px;">
+  <text class="nav-title">城市生活雷达</text>
+</view>
 
-    <view wx:if="{{!loading && !errorMsg}}" class="sort-bar">
-      <text class="result-count">{{totalCount}} 个活动</text>
-      <view class="segment">
-        <view
-          wx:for="{{sortModes}}"
-          wx:key="key"
-          class="segment-item {{item.key === sortMode ? 'segment-item-on' : ''}}"
-          data-mode="{{item.key}}"
-          bindtap="onSelectSortMode"
-        >{{item.label}}</view>
-      </view>
+<!-- 封面：出血插画 + 标题 + 三个数字 -->
+<view class="cover">
+  <image class="cover-img" src="/assets/cover.jpg" mode="aspectFill" />
+  <view class="cover-scrim"></view>
+  <view class="cover-body">
+    <view class="cover-title">上海城市</view>
+    <view class="cover-title">生活雷达<text class="cover-dot">.</text></view>
+    <view class="cover-stats">
+      <view class="cover-stat"><text class="cover-num serif">{{stats.upcoming}}</text>场即将开始</view>
+      <view class="cover-stat"><text class="cover-num serif">{{stats.ongoing}}</text>场正在进行</view>
+      <view class="cover-stat"><text class="cover-num serif">{{stats.venues}}</text>个场馆</view>
     </view>
   </view>
+</view>
 
-  <!-- 骨架屏：结构与真实卡片一致，避免「加载中…」造成的布局跳变 -->
-  <block wx:if="{{loading}}">
-    <view wx:for="{{[1, 2, 3]}}" wx:key="*this" class="card skeleton-card">
-      <view class="skeleton skeleton-cover"></view>
-      <view class="skeleton-body">
-        <view class="skeleton skeleton-tag"></view>
-        <view class="skeleton skeleton-line"></view>
-        <view class="skeleton skeleton-line skeleton-line-short"></view>
-      </view>
+<view class="search">
+  <input
+    class="search-input"
+    placeholder="搜索活动 / 场馆"
+    placeholder-class="search-ph"
+    value="{{searchKeyword}}"
+    confirm-type="search"
+    bindconfirm="onSearchConfirm"
+    bindinput="onSearchInput"
+  />
+  <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">清除</text>
+</view>
+
+<!-- 骨架屏：结构与真实列表行一致，避免布局跳变 -->
+<block wx:if="{{loading}}">
+  <view wx:for="{{[1, 2, 3, 4]}}" wx:key="*this" class="skeleton-row">
+    <view class="skeleton skeleton-time"></view>
+    <view class="skeleton-body">
+      <view class="skeleton skeleton-line"></view>
+      <view class="skeleton skeleton-line skeleton-line-short"></view>
     </view>
+    <view class="skeleton skeleton-thumb"></view>
+  </view>
+</block>
+
+<view wx:elif="{{errorMsg}}" class="state">
+  <view>{{errorMsg}}</view>
+  <view wx:if="{{errorDetail}}" class="err-detail">{{errorDetail}}</view>
+  <button class="btn-plain retry" bindtap="onRetry">重试</button>
+</view>
+
+<block wx:else>
+  <!-- 正在进行：已开展、未结束的展览与长档期演出 -->
+  <block wx:if="{{ongoing.length}}">
+    <view class="rail-head">
+      <text class="rail-title serif">正在进行</text>
+      <text class="rail-count">{{ongoingCount}} 场</text>
+    </view>
+    <scroll-view class="rail" scroll-x enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{ongoing}}"
+        wx:key="id"
+        class="poster"
+        data-id="{{item.id}}"
+        bindtap="onOpenEvent"
+      >
+        <view class="poster-cover">
+          <text class="poster-fallback serif">{{item.category}}</text>
+          <image
+            wx:if="{{item.image}}"
+            class="poster-img"
+            src="{{item.image}}"
+            mode="aspectFill"
+            lazy-load
+            data-index="{{index}}"
+            binderror="onPosterError"
+          />
+        </view>
+        <view class="poster-title serif">{{item.title}}</view>
+        <view class="poster-meta"><text class="accent">至 {{item.until}}</text> · {{item.venue}}</view>
+      </view>
+    </scroll-view>
   </block>
 
-  <view wx:elif="{{errorMsg}}" class="state">
-    <view>{{errorMsg}}</view>
-    <view wx:if="{{errorDetail}}" class="err-detail">{{errorDetail}}</view>
-    <button class="btn-plain retry" bindtap="onRetry">重试</button>
+  <!-- 吸顶筛选条：类目 Tab + 日期条 -->
+  <view class="sticky" style="top: {{navHeight}}px;">
+    <scroll-view class="tabs" scroll-x enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{categories}}"
+        wx:key="key"
+        class="tab {{item.key === activeCategory ? 'tab-on' : ''}}"
+        data-category="{{item.key}}"
+        bindtap="onSelectCategory"
+      >{{item.label}}</view>
+    </scroll-view>
+    <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{chips}}"
+        wx:key="date"
+        class="chip {{item.isToday ? 'chip-today' : ''}} {{item.isWeekend ? 'chip-weekend' : ''}} {{item.empty ? 'chip-empty' : ''}}"
+        data-date="{{item.date}}"
+        data-empty="{{item.empty}}"
+        bindtap="onJumpDay"
+      >
+        <view class="chip-week">{{item.weekday}}</view>
+        <view class="chip-day serif">{{item.day}}</view>
+        <!-- 粗线 = 当天开始/结束的场次多少；细线 = 当天有展期中的活动 -->
+        <view class="chip-bar" style="width: {{item.bar}}%;"></view>
+        <view wx:if="{{item.running}}" class="chip-bar chip-bar-running"></view>
+      </view>
+    </scroll-view>
   </view>
 
-  <view wx:elif="{{!visibleEvents.length}}" class="state">
+  <view wx:if="{{!days.length}}" class="state">
     当前筛选下暂无活动，换个分类或关键词试试
   </view>
 
-  <block wx:else>
-    <event-card wx:for="{{visibleEvents}}" wx:key="title" event="{{item}}" />
-    <view wx:if="{{visibleEvents.length < totalCount}}" class="state">上拉加载更多</view>
-    <view wx:else class="state">已展示全部（未来 14 天）</view>
-  </block>
-</view>
+  <view wx:for="{{days}}" wx:for-item="day" wx:for-index="dayIndex" wx:key="date" id="day-{{day.date}}" class="day">
+    <view class="day-head {{day.isToday ? 'day-head-today' : ''}}">
+      <text class="day-num serif">{{day.day}}</text>
+      <text class="day-week">{{day.weekday}}{{day.isToday ? ' · 今天' : ''}}</text>
+      <text class="day-meta">{{day.meta}}</text>
+    </view>
+
+    <block wx:for="{{day.rows}}" wx:for-item="row" wx:for-index="rowIndex" wx:key="id">
+      <event-row
+        wx:if="{{row.kind === 'run' || day.showAll || rowIndex < 5}}"
+        title="{{row.title}}"
+        venue="{{row.venue}}"
+        category="{{row.category}}"
+        image="{{row.image}}"
+        time="{{row.time}}"
+        range="{{row.range}}"
+        span="{{row.span}}"
+        data-id="{{row.id}}"
+        bindtap="onOpenEvent"
+      />
+    </block>
+
+    <view wx:if="{{day.hiddenCount}}" class="fold" data-index="{{dayIndex}}" bindtap="onToggleDayRows">
+      <text>{{day.showAll ? '收起' : '展开当日其余 ' + day.hiddenCount + ' 场'}}</text>
+      <text>{{day.showAll ? '↑' : '↓'}}</text>
+    </view>
+
+    <block wx:if="{{day.foldedCount}}">
+      <view class="fold" data-index="{{dayIndex}}" bindtap="onToggleFolded">
+        <text>展期中 · 另有 {{day.foldedCount}} 场今天也能去</text>
+        <text>{{day.foldedOpen ? '收起 ↑' : '展开 ↓'}}</text>
+      </view>
+      <block wx:if="{{day.foldedOpen}}">
+        <view
+          wx:for="{{day.folded}}"
+          wx:key="id"
+          class="run-item"
+          data-id="{{item.id}}"
+          bindtap="onOpenEvent"
+        >
+          <text class="run-title">{{item.title}}</text>
+          <text class="run-until">至 {{item.until}}</text>
+        </view>
+      </block>
+    </block>
+  </view>
+
+  <view wx:if="{{days.length}}" class="state">已展示全部（未来 14 天）</view>
+</block>

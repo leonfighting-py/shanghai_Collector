@@ -1,11 +1,26 @@
-<view class="page">
-  <block wx:if="{{events.length}}">
-    <event-card wx:for="{{events}}" wx:key="title" event="{{item}}" bind:favoritechange="onFavoriteChange" />
-  </block>
-
-  <view wx:else class="state">
-    <view>还没有收藏的活动</view>
-    <view class="hint">在首页活动卡片上点「收藏」，即可离线查看</view>
-    <button class="btn-plain go-home" bindtap="goHome">去首页逛逛</button>
+<block wx:if="{{rows.length}}">
+  <view class="head">
+    <view class="head-title serif">我的收藏<text class="accent">.</text></view>
+    <view class="head-meta">{{rows.length}} 场 · 按开始时间排序</view>
   </view>
+  <view class="list">
+    <event-row
+      wx:for="{{rows}}"
+      wx:key="id"
+      title="{{item.title}}"
+      venue="{{item.venue}}"
+      category="{{item.category}}"
+      image="{{item.image}}"
+      time="{{item.time}}"
+      range="{{item.range}}"
+      data-id="{{item.id}}"
+      bindtap="onOpenEvent"
+    />
+  </view>
+</block>
+
+<view wx:else class="state">
+  <view>还没有收藏的活动</view>
+  <view class="hint">在活动详情页点「收藏」，即可离线查看</view>
+  <button class="btn-plain go-home" bindtap="goHome">去首页逛逛</button>
 </view>

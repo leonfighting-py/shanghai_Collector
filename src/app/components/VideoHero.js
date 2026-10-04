@@ -45,14 +45,12 @@ export function VideoHero({ videoUrl, children }) {
         {videoUrl && !videoFailed && !reducedMotion && (
           <video ref={videoRef} className="hero-video" src={videoUrl} poster={COVER} loop muted playsInline preload="metadata" onError={() => setVideoFailed(true)} />
         )}
-        {!videoUrl || videoFailed ? <div className="shanghai-waterlight" /> : null}
       </div>
       <div className="shanghai-scrim" aria-hidden="true" />
       <div className="shanghai-hero-content">{children}</div>
       {!reducedMotion && (
         <button className="shanghai-motion-control" type="button" onClick={() => setPaused(!paused)} aria-label={paused ? "播放封面动效" : "暂停封面动效"} aria-pressed={paused}>
           <span aria-hidden="true">{paused ? "▷" : "Ⅱ"}</span>
-          {paused ? "播放动效" : "暂停动效"}
         </button>
       )}
     </section>

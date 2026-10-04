@@ -1,36 +1,61 @@
+const agenda = require("../../utils/agenda.js");
 const api = require("../../utils/api.js");
-const config = require("../../utils/config.js");
-const sort = require("../../utils/sort.js");
+const format = require("../../utils/format.js");
 
-const CATEGORIES = ["全部", "演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
-const SORT_MODES = [
-  { key: "recommended", label: "推荐" },
-  { key: "latest", label: "最新" },
+const CATEGORIES = [
+  { key: "", label: "全部" },
+  { key: "演出音乐", label: "演出" },
+  { key: "展览", label: "展览" },
+  { key: "线下活动", label: "活动" },
+  { key: "高校讲座", label: "讲座" },
+  { key: "AI聚会", label: "AI" },
 ];
+const SHORT_CATEGORY = {};
+CATEGORIES.forEach((item) => {
+  if (item.key) SHORT_CATEGORY[item.key] = item.label;
+});
+
+// 每天默认露出的「当天开始 / 结束」行数，其余折叠
+const DAY_ROW_LIMIT = 5;
+// 「正在进行」海报栏最多放几张
+const RAIL_LIMIT = 10;
+// 吸顶筛选条（类目 Tab + 日期条）的高度，单位 px，用于点日期跳转时留出偏移
+const STICKY_HEIGHT = 108;
 
 Page({
   data: {
     categories: CATEGORIES,
-    sortModes: SORT_MODES,
-    activeCategory: "全部",
-    sortMode: "recommended",
-    visibleEvents: [],
-    totalCount: 0,
+    activeCategory: "",
+    searchKeyword: "",
     loading: true,
     errorMsg: "",
     errorDetail: "",
-    searchKeyword: "",
+
+    // 自定义导航：首屏是出血封面，下滑越过封面后才显示实色标题栏
+    statusBarHeight: 20,
+    navHeight: 64,
+    navSolid: false,
+
+    stats: { upcoming: 0, ongoing: 0, venues: 0 },
+    ongoing: [],
+    ongoingCount: 0,
+    chips: [],
+    days: [],
   },
 
-  // 接口一次返回 14 天窗口全量，客户端做筛选/排序/分批上屏
+  // 接口一次返回 14 天窗口全量；setData 里只放渲染要用的精简字段，
+  // 完整事件对象留在这里按下标取（进详情页时用），避免 setData 体积过大
   rawEvents: [],
-  allEvents: [],
-  visibleCount: 0,
+  pool: [],
+  // 每天折叠起来的展期中活动，展开时才 setData
+  foldedByDate: {},
 
   onLoad(options) {
     // 从朋友圈 / 会话分享链接进来时带上关键词，落地即还原筛选结果
     const shared = options && options.search ? String(options.search) : "";
     if (shared) this.setData({ searchKeyword: shared });
+
+    this.measureNav();
 
     // 开放分享入口（含朋友圈）。部分基础库不支持 menus 参数，失败静默忽略即可
     if (wx.showShareMenu) {
@@ -43,17 +68,41 @@ Page({
     this.load();
   },
 
+  // 标题栏高度 = 状态栏 + 胶囊按钮上下留白，跟着机型走（刘海屏 / 灵动岛各不相同）
+  measureNav() {
+    try {
+      const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+      const statusBarHeight = info.statusBarHeight || 20;
+      const menu = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
+      const navHeight = menu && menu.bottom ? menu.bottom + (menu.top - statusBarHeight) : statusBarHeight + 44;
+      this.setData({ statusBarHeight, navHeight });
+    } catch (error) {
+      // 取不到就用默认值，不影响功能
+    }
+  },
+
+  onPageScroll(event) {
+    // 封面高 744rpx，滚过大半后切到实色标题栏。只在状态翻转时 setData
+    const threshold = (wx.getWindowInfo ? wx.getWindowInfo().windowWidth : 375) * 0.75;
+    const navSolid = event.scrollTop > threshold;
+    if (navSolid === this.data.navSolid) return;
+    this.setData({ navSolid });
+    // 胶囊按钮和状态栏文字的颜色：压在封面上用白色，实色标题栏上跟随深浅色
+    const dark = (wx.getAppBaseInfo ? wx.getAppBaseInfo().theme : "") === "dark";
+    wx.setNavigationBarColor({
+      frontColor: navSolid && !dark ? "#000000" : "#ffffff",
+      backgroundColor: "#000000",
+      fail: () => {},
+    });
+  },
+
   onPullDownRefresh() {
     this.load().finally(() => wx.stopPullDownRefresh());
   },
 
-  onReachBottom() {
-    this.renderMore();
-  },
-
   load() {
     this.setData({ loading: true, errorMsg: "", errorDetail: "" });
-    // 分类不在服务端过滤：一次拿全量，切分类/切排序都在本地重排，零延迟。
+    // 分类不在服务端过滤：一次拿全量，切分类在本地重算，零延迟。
     // 只有搜索需要走服务端（要匹配 summary，本地拿不到全文）。
     const params = {};
     const keyword = this.data.searchKeyword.trim();
@@ -64,7 +113,7 @@ Page({
       .then((res) => {
         this.rawEvents = res.events || [];
         this.setData({ loading: false });
-        this.applySort();
+        this.rebuild();
       })
       .catch((err) => {
         this.setData({
@@ -76,42 +125,131 @@ Page({
       });
   },
 
-  // 本地筛选 + 排序，并把分批上屏的游标重置回第一页
-  applySort() {
-    const category = this.data.activeCategory === "全部" ? "" : this.data.activeCategory;
-    const pool = category ? this.rawEvents.filter((event) => event.category === category) : this.rawEvents;
-    this.allEvents = sort.sortForCategory(pool, category, { mode: this.data.sortMode });
-    this.visibleCount = 0;
-    this.setData({ totalCount: this.allEvents.length });
-    this.renderMore();
-  },
+  // 按当前类目重算整页：统计数字、「正在进行」海报栏、日期条、日程表
+  rebuild() {
+    const today = format.toShanghaiDate(new Date());
+    const category = this.data.activeCategory;
+    this.pool = category ? this.rawEvents.filter((event) => event.category === category) : this.rawEvents;
+    const indexOf = new Map(this.pool.map((event, index) => [event, index]));
 
-  renderMore() {
-    const target = this.visibleCount + config.PAGE_SIZE;
-    if (target >= this.allEvents.length) {
-      if (this.visibleCount === this.allEvents.length) return;
-      this.visibleCount = this.allEvents.length;
-      this.setData({ visibleEvents: this.allEvents, totalCount: this.allEvents.length });
-      return;
-    }
-    this.visibleCount = target;
-    this.setData({ visibleEvents: this.allEvents.slice(0, target), totalCount: this.allEvents.length });
+    const split = agenda.splitByToday(this.pool, today);
+    const venues = {};
+    this.pool.forEach((event) => {
+      venues[event.venue] = true;
+    });
+
+    const built = agenda.buildAgenda(this.pool, today);
+    const busiest = Math.max.apply(null, [1].concat(built.map((day) => day.startCount + day.endCount)));
+    this.foldedByDate = {};
+
+    const days = built
+      .filter((day) => day.rows.length > 0)
+      .map((day) => {
+        this.foldedByDate[day.date] = day.folded;
+        const own = day.rows.filter((row) => row.kind !== "run").length;
+        return {
+          date: day.date,
+          day: day.day,
+          weekday: day.weekday,
+          isToday: day.isToday,
+          meta: day.startCount ? `${day.startCount} 场开始` : `${day.runningCount} 场展期中`,
+          rows: day.rows.map((row) => {
+            const labels = agenda.rowLabels(row.event, row.kind, day.date);
+            return {
+              id: indexOf.get(row.event),
+              kind: row.kind,
+              title: row.event.title,
+              venue: row.event.venue,
+              category: SHORT_CATEGORY[row.event.category] || row.event.category,
+              image: row.event.image_url || "",
+              time: labels.time,
+              range: labels.range,
+              span: labels.span,
+            };
+          }),
+          hiddenCount: Math.max(0, own - DAY_ROW_LIMIT),
+          showAll: false,
+          foldedCount: day.folded.length,
+          folded: [],
+          foldedOpen: false,
+        };
+      });
+
+    this.setData({
+      stats: { upcoming: split.upcoming.length, ongoing: split.ongoing.length, venues: Object.keys(venues).length },
+      ongoingCount: split.ongoing.length,
+      ongoing: split.ongoing.slice(0, RAIL_LIMIT).map((event) => ({
+        id: indexOf.get(event),
+        title: event.title,
+        venue: event.venue,
+        category: SHORT_CATEGORY[event.category] || event.category,
+        image: event.image_url || "",
+        until: agenda.dotDate(agenda.endDay(event)),
+      })),
+      chips: built.map((day) => ({
+        date: day.date,
+        day: day.day,
+        weekday: day.weekday,
+        isToday: day.isToday,
+        isWeekend: day.isWeekend,
+        empty: day.rows.length === 0,
+        bar: Math.round(((day.startCount + day.endCount) / busiest) * 80),
+        running: day.runningCount > 0,
+      })),
+      days,
+    });
   },
 
   onSelectCategory(event) {
     const category = event.currentTarget.dataset.category;
     if (category === this.data.activeCategory) return;
     this.setData({ activeCategory: category });
-    this.applySort();
+    this.rebuild();
   },
 
-  onSelectSortMode(event) {
-    const mode = event.currentTarget.dataset.mode;
-    if (mode === this.data.sortMode) return;
-    this.setData({ sortMode: mode });
-    this.applySort();
-    // 换排序等于换一套首屏，滚回顶部避免"点了没反应"的错觉
-    wx.pageScrollTo({ scrollTop: 0, duration: 200 });
+  // 点日期条 → 滚到那一天。偏移量要扣掉固定标题栏和吸顶筛选条的高度
+  onJumpDay(event) {
+    const { date, empty } = event.currentTarget.dataset;
+    if (empty) return;
+    wx.pageScrollTo({
+      selector: `#day-${date}`,
+      offsetTop: -(this.data.navHeight + STICKY_HEIGHT),
+      duration: 250,
+    });
+  },
+
+  onToggleDayRows(event) {
+    const index = event.currentTarget.dataset.index;
+    this.setData({ [`days[${index}].showAll`]: !this.data.days[index].showAll });
+  },
+
+  // 展开「展期中 · 另有 N 场」：这批数据量大，展开时才 setData
+  onToggleFolded(event) {
+    const index = event.currentTarget.dataset.index;
+    const day = this.data.days[index];
+    if (day.foldedOpen) {
+      this.setData({ [`days[${index}].foldedOpen`]: false });
+      return;
+    }
+    const folded = (this.foldedByDate[day.date] || []).map((item) => ({
+      id: this.pool.indexOf(item),
+      title: item.title,
+      until: agenda.dotDate(agenda.endDay(item)),
+    }));
+    this.setData({ [`days[${index}].folded`]: folded, [`days[${index}].foldedOpen`]: true });
+  },
+
+  onOpenEvent(event) {
+    const target = this.pool[event.currentTarget.dataset.id];
+    if (!target) return;
+    wx.navigateTo({
+      url: "/pages/detail/detail",
+      success: (res) => res.eventChannel.emit("event", target),
+    });
+  },
+
+  onPosterError(event) {
+    this.setData({ [`ongoing[${event.currentTarget.dataset.index}].image`]: "" });
   },
 
   onSearchInput(event) {
@@ -134,7 +272,7 @@ Page({
 
   // 分享当前筛选结果，而不是干巴巴一个首页
   onShareAppMessage() {
-    const category = this.data.activeCategory === "全部" ? "" : `【${this.data.activeCategory}】`;
+    const category = this.data.activeCategory ? `【${this.data.activeCategory}】` : "";
     const keyword = this.data.searchKeyword.trim();
     return {
       title: `${category}上海未来两周活动${keyword ? `｜${keyword}` : ""}`,

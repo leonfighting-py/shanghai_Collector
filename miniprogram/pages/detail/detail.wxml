@@ -1,4 +1,4 @@
-<view wx:if="{{event}}" class="page">
+<view wx:if="{{event}}" class="detail">
   <image
     wx:if="{{event.image_url && !imageFailed}}"
     class="hero"
@@ -7,33 +7,36 @@
     binderror="onImageError"
   />
 
-  <view class="card section">
-    <view class="title-row">
-      <text class="tag">{{event.category}}</text>
-    </view>
-    <view class="title">{{event.title}}</view>
+  <view class="main">
+    <view class="category">{{event.category}}</view>
+    <view class="title serif">{{event.title}}</view>
 
-    <view class="info-row">
-      <view class="info-label">时间</view>
-      <view class="info-value">{{period}}</view>
-    </view>
-    <view class="info-row">
-      <view class="info-label">场馆</view>
-      <view class="info-value">{{event.venue}}</view>
-    </view>
-    <view class="info-row">
-      <view class="info-label">来源</view>
-      <view class="info-value">{{event.source_name}}</view>
+    <view class="info">
+      <view class="info-row">
+        <view class="info-label">时间</view>
+        <view class="info-value">
+          <view>{{period}}</view>
+          <view wx:if="{{periodNote}}" class="muted">{{periodNote}}</view>
+        </view>
+      </view>
+      <view class="info-row">
+        <view class="info-label">场馆</view>
+        <view class="info-value">{{event.venue}}</view>
+      </view>
+      <view class="info-row">
+        <view class="info-label">来源</view>
+        <view class="info-value">{{event.source_name}}</view>
+      </view>
     </view>
   </view>
 
-  <view wx:if="{{event.summary}}" class="card section">
-    <view class="section-title">活动简介</view>
+  <view wx:if="{{event.summary}}" class="block">
+    <view class="block-title serif">活动简介</view>
     <view class="summary">{{event.summary}}</view>
   </view>
 
-  <view wx:if="{{sourceList.length > 1}}" class="card section">
-    <view class="section-title">数据来源（{{sourceList.length}}）</view>
+  <view wx:if="{{sourceList.length > 1}}" class="block">
+    <view class="block-title serif">数据来源（{{sourceList.length}}）</view>
     <view
       wx:for="{{sourceList}}"
       wx:key="name"
@@ -47,14 +50,15 @@
     </view>
   </view>
 
+  <view class="signup-hint">报名链接将复制到剪贴板，可在浏览器中打开完成报名</view>
+
+  <!-- 底部固定操作栏 -->
   <view class="actions">
     <button class="btn-plain action-fav {{favorited ? 'action-fav-on' : ''}}" bindtap="onToggleFavorite">
-      {{favorited ? "已收藏" : "收藏"}}
+      {{favorited ? "★ 已收藏" : "☆ 收藏"}}
     </button>
     <button class="btn-primary action-signup" bindtap="onSignup">
       {{targetPlatform ? "去" + targetPlatform + "报名" : "复制报名链接"}}
     </button>
   </view>
-
-  <view class="signup-hint">报名链接将复制到剪贴板，可在浏览器中打开完成报名</view>
 </view>

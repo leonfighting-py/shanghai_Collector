@@ -205,22 +205,29 @@ start_time <= endDate 且 coalesce(end_time, start_time) >= startDate
 `test/repository.test.js` 里有一条回归护栏专门钉这个不变量
 （`publish predicate matches the read window so long-running events are never dropped`），**不要删**。
 
-## 9.3 小程序排序：推荐 / 最新（2026-10-03）
+## 9.3 首页：按天分组的日程表（2026-10-04 改版）
 
-小程序原来只有「按 start_time 升序」，Web 的评分体系没跟过来，两端首屏顺序不一致。
-现已在 `miniprogram/utils/sort.js` 移植 Web 的 `scoreEvent`，首页加了「推荐 / 最新」分段控件。
+首页不再是「推荐 / 最新」排序的卡片流，改成和 Web 同构的**日程表**：
+封面 → 搜索 → 「正在进行」海报栏 → 吸顶的类目 Tab + 日期条 → 按天分组的列表。
+原来的 `utils/sort.js`（评分排序）和 `components/event-card` 已删除。
 
-| 档位 | 行为 |
-| --- | --- |
-| 推荐（默认） | 按评分降序。评分项：多源交叉验证 `min(源数,4)×8`、一手源 T1 `+12`、类别（演出音乐 14 / 展览 10 / 线下活动 6）、有报名链接 `+6`、有封面图 `+20`、周末 `+10`、18 点后 `+8`、临近度 `max(0, 14-天数×2)`、标题关键词（音乐节 18 / 开幕 16 / 限定 14…）、中文标题 `+28` |
-| 最新 | 严格按 `start_time` 升序（展览档按「有封面优先」排） |
+分桶逻辑在 `miniprogram/utils/agenda.js`，是 Web 端 `src/lib/agenda.js` 的 CommonJS 移植：
+一条活动占它的整个日期区间，在区间内每一天都算数，只是呈现不同——
 
-例外：**高校讲座两档都走 `sortCampusLectures`**（AI 相关置顶，其余近期在前、已发生排后），
-与 Web 类目页行为一致——讲座的用户意图是「锁定最近一场」，不是「看推荐」。
+| kind | 含义 | 时间栏显示 |
+| --- | --- | --- |
+| `start` | 当天开始 | 钟点（跨天的在标题下写「10.10 — 10.17 · 共 8 天」） |
+| `last` | 当天是最后一天 | 「末日」 |
+| `run` | 展期中（已开始、未结束） | 「展期」+「至 10.11 · 还剩 3 天」 |
 
-⚠️ 评分规则改动必须**同步改 Web 端 `src/lib/recommendations.js` 的 `scoreEvent`**，否则两端首页顺序会漂。
+展期中的活动常年有几十场，不能每天全部平铺：每天至少露出 3 行（Web 是 5 行），
+当天开始 / 结束的不够就用展期中的补，**3 天内结束的优先，其余按天轮换**；
+剩下的收进「展期中 · 另有 N 场今天也能去」，点开才 `setData`。
 
-另外：首页的**分类切换与排序切换都在本地重排**（接口一次返回 14 天全量），只有搜索走服务端。
+⚠️ 分桶 / 露出规则改动必须**同步改 `src/lib/agenda.js`**（那边有单元测试 `test/agenda.test.js`）。
+
+首页的**类目切换在本地重算**（接口一次返回 14 天全量），只有搜索走服务端。
+`setData` 里只放渲染用的精简字段，完整事件对象留在 `this.pool` 按下标取，避免数据包过大。
 
 ## 9.4 日期区间展示（2026-10-03）
 
@@ -228,8 +235,8 @@ start_time <= endDate 且 coalesce(end_time, start_time) >= startDate
 
 | 函数 | 用途 | 跨月长期展的输出 |
 | --- | --- | --- |
-| `eventRangeShort` | 列表卡片（紧凑） | `9.24–10.30` |
-| `eventPeriod` | 详情页（完整） | `9月24日 周四 10:00 至 10月30日 周五` |
+| `eventRangeShort` | 紧凑区间（2026-10-04 改版后列表行改用 `agenda.rangeText`，此函数暂无调用方） | `9.24–10.30` |
+| `eventPeriod` | 详情页的单日活动（跨天活动改用 `agenda` 拼「区间 + 共 N 天」） | `9月24日 周四 10:00 至 10月30日 周五` |
 
 两者在**跨日时都不带结束钟点**——跨的是"档期"，结束时刻是当天闭馆时间，没有信息量。
 同一天的活动仍然保留钟点（`10.6 19:30–21:30`）。
@@ -237,47 +244,45 @@ start_time <= endDate 且 coalesce(end_time, start_time) >= startDate
 卡片角标 `eventBadge`：今天/明天/后天优先；已开幕但未结束的长期活动标**「进行中」**
 （这类活动的 `start_time` 在很久以前，`relativeLabel` 返回空，不加这层用户会以为它没有时间信息）。
 
-## 9.5 视觉语言：无彩色 + 液态玻璃（2026-10-03）
+## 9.5 视觉语言：「素白」杂志编辑风（2026-10-04 改版）
 
-小程序原来用品牌紫 `#4b3fe3`（深色 `#8f85ff`），与 Web 端的视觉语言不一致。
-Web 的真源是 `src/app/styles.css`，它的 `--brand-color` **不是色相，而是「最高对比填充色」**：
+两端共用一套 token，真源是 `src/app/styles.css` 顶部的 `:root`，小程序在 `miniprogram/app.wxss` 的 `page` 里同名同值：
 
-| token | 浅色 | 深色 |
-| --- | --- | --- |
-| `--brand-color` | `#1d1d1f` | `#fff` |
-| `--bg` | `#f5f5f7` | `#000` |
-| `--card-bg` | `rgba(255,255,255,.55)` | `rgba(0,0,0,.3)` |
-| `--card-border` | `rgba(0,0,0,.08)` | `rgba(255,255,255,.1)` |
+| token | 浅色 | 深色 | 用途 |
+| --- | --- | --- | --- |
+| `--paper` | `#fbfaf7` | `#201f1d` | 页面底色（纯色，带一丝暖） |
+| `--paper-2` | `#f0eeea` | `#2e2c2a` | 搜索框、图片占位 |
+| `--ink` | `#191817` | `#efede8` | 正文、粗分隔线、主按钮底 |
+| `--ink-2` / `--ink-3` | `#5f5d59` / `#918e89` | `#aba8a2` / `#77746f` | 次级 / 弱文字 |
+| `--hair` | 墨色 14% | 墨色 16% | 细分隔线 |
+| `--accent` | `#c4472a` | `#f08a5d` | 唯一强调色（取自封面插画的珊瑚橙） |
 
-小程序已同构：`miniprogram/app.wxss` 里 `--brand` 只是「反相填充」语义，**不再是品牌紫**；
-`theme.json` 的 `tabSelected` 也一并改成 `#1d1d1f` / `#ffffff`。
+- **没有卡片、玻璃、模糊、圆角、阴影**。层次只靠字号、字重和线：粗线分大段，细线分行。
+- **标题和日期数字用系统宋体**（`.serif`）。iOS 有 Songti SC；没有宋体的 Android 会回落到黑体，版式不受影响。
+  不加载网络字体：Web 的 CSP 是 `style-src 'self'`，小程序加载中文字体包又太大。
+- **深浅色跟随系统**，两端都不提供手动切换。小程序靠 `app.json` 的 `darkmode` + `theme.json`，
+  `theme.json` 的导航栏 / tabBar 颜色要和 `--paper` 保持一致。
+- **强调色只用在**：今天的日期、类目字样、跨天区间、「末日 / 展期」、已收藏。不要拿它当大面积底色。
+- **没有图的活动只显示文字**，列表行不放灰色占位块；海报栏和详情头图的槽位底下垫类目字样。
 
-- **选中态 = 反相填充**（对齐 Web `.explore-chip.is-active`）：
-  `background: var(--brand); color: var(--on-brand)`。用在选中 chip、排序分段、日期角标、主按钮。
-- ⚠️ **`--on-brand` 必须跟着 `--brand` 反相**。老代码是 `color: #ffffff` 硬编码，
-  深色下 `--brand` 变白后就成**白底白字**，主按钮会直接消失。改 `--brand` 时一定要一起看 `--on-brand`。
-- **唯一暖色强调**留给收藏态（`#f5b544` 系），对齐 Web `.card-favorite.is-active`——全站唯一允许的色相。
-  文字的对比度靠 `color: var(--text)` 保住，不要用琥珀色当文字色。
-- **卡片 = 液态玻璃**：半透明底 + `backdrop-filter: blur(18px)` + 细描边 + 24rpx 圆角，对齐 Web `.glass-card`。
-- ⚠️ **深色卡片不要照抄 Web 的 `rgba(0,0,0,.3)`**。Web 的卡片是「纯黑玻璃」，靠 `.content-bg`
-  的城市照片透出层次；小程序没有照片底，纯黑玻璃会让卡片糊进纯黑背景。
-  所以深色改用 8% 半透明白 + 12% 描边——**这是有意偏离 Web 数值的一处**。
+首页是自定义导航（`navigationStyle: custom`）：第一屏是出血的插画封面（`assets/cover.jpg`，
+由 `public/images/shanghai-radar-cover.jpg` 缩到 1000px 宽得到），下滑越过封面后才显示实色标题栏。
+标题栏高度按胶囊按钮位置算（`measureNav`），吸顶筛选条的 `top` 跟着它走。
 
-其余改造：
+其余：
 
 | 项 | 做法 |
 | --- | --- |
-| 卡片封面 | 16:9。用 `padding-bottom: 56.25%` 撑高，不用 `aspect-ratio`（旧 webview 不支持） |
-| 无图兜底 | 封面槽底**永远**铺无彩色渐变 `--cover-grad`，无图 / 裂图 / 加载中都显示类目水印字，不留空白洞 |
-| 加载态 | 骨架屏（`app.wxss` 的 `.skeleton*`），结构与真实卡片一致，避免「加载中…」的布局跳变 |
-| 筛选条 | 吸顶液态玻璃条，负 margin 出血抵消 `.page` 内边距，滚动时卡片从它背后穿过并被模糊 |
+| 列表行 | `components/event-row`：左时间、中标题 + 场馆、右 128rpx 方形缩略图。纯展示组件，点击由使用方 `bindtap` |
+| 加载态 | 骨架屏，结构与真实列表行一致 |
+| 详情页 | 出血头图 → 强调色类目 → 宋体大标题 → 粗线信息表；底部固定「收藏 / 报名」操作栏 |
+| 收藏 | 列表行上不再有收藏按钮，收藏入口只在详情页；收藏页按开始时间排序 |
 | 分享 | 首页 `onShareAppMessage` / `onShareTimeline` 带上当前分类与关键词；`onLoad(options)` 读回 `search` 还原筛选 |
 
-**离线预览**：`docs/preview/miniprogram-visual.html` 是浅色/深色双列静态预览，
-不装微信开发者工具也能先看设计（token 与尺寸抄自 wxss，换算 `1rpx = 0.5px`）。
-⚠️ 改 wxss 的颜色或尺寸后要**同步改这份预览**，否则它会骗人。
+**离线预览**：`docs/preview/redesign-editorial.html` 是这次改版的设计稿（Web + 小程序，含真实数据快照），
+不装微信开发者工具也能看版式。它是定稿前的探索稿，顶栏还留着另外两套候选配色，**以代码为准**。
 
 **未做（有意）**：tabBar 仍是纯文字。加图标需要 light/dark 两套 PNG，而 `theme.json`
 只能切 `tabColor` / `tabSelected`，**切不了 app.json 里的 `iconPath`**——深色下必然有半边图标不可见，
-且静态彩色 PNG 与这套无彩色语言也不搭。要做需先确认基础库是否支持在 `iconPath` 上写 `@变量`。
+且静态彩色 PNG 与这套克制的编辑风也不搭。要做需先确认基础库是否支持在 `iconPath` 上写 `@变量`。
 

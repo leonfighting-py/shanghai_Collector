@@ -1,3 +1,4 @@
+const agenda = require("../../utils/agenda.js");
 const favorites = require("../../utils/favorites.js");
 const format = require("../../utils/format.js");
 const registration = require("../../utils/registration.js");
@@ -6,6 +7,7 @@ Page({
   data: {
     event: null,
     period: "",
+    periodNote: "",
     favorited: false,
     imageFailed: false,
     sourceList: [],
@@ -23,9 +25,14 @@ Page({
   applyEvent(event) {
     if (!event || !event.title) return;
     const target = registration.resolveRegistration(event.signup_url);
+    const multiDay = agenda.isMultiDay(event);
     this.setData({
       event,
-      period: format.eventPeriod(event),
+      // 跨天活动突出「档期」：主行写区间和天数，副行写首日几点开始
+      period: multiDay
+        ? `${agenda.dotDate(agenda.startDay(event))} — ${agenda.dotDate(agenda.endDay(event))}（共 ${agenda.spanDays(event)} 天）`
+        : format.eventPeriod(event),
+      periodNote: multiDay ? `首日 ${format.eventDate(event.start_time)} ${format.eventTime(event.start_time)} 开始` : "",
       favorited: favorites.isFavorite(event),
       sourceList: Array.isArray(event.sources) ? event.sources : [],
       targetPlatform: target.type === "miniprogram" ? target.name : "",
@@ -59,7 +66,7 @@ Page({
   onShareAppMessage() {
     const event = this.data.event || {};
     return {
-      title: event.title ? `【${event.category}】${event.title}` : "沪上双周活动",
+      title: event.title ? `【${event.category}】${event.title}` : "上海城市生活雷达",
       path: "/pages/home/home",
       imageUrl: event.image_url || "",
     };

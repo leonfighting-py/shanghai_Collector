@@ -1,8 +1,9 @@
 {
-  "navigationBarTitleText": "沪上双周活动",
+  "navigationStyle": "custom",
+  "navigationBarTextStyle": "white",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "@bgTxt",
   "usingComponents": {
-    "event-card": "/components/event-card/event-card"
+    "event-row": "/components/event-row/event-row"
   }
 }

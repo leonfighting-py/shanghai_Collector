@@ -1,101 +1,402 @@
-/* 吸顶筛选条：全宽出血 + 液态玻璃底。
-   负 margin 抵消 .page 的 24rpx 内边距，再在自身内边距里补回来，
-   这样筛选条横向铺满，滚动时下方卡片从它背后穿过并被模糊。 */
-.filter-bar {
-  position: sticky;
+/* 首页没有系统导航栏（navigationStyle: custom），页面自己从屏幕最顶端开始画 */
+
+/* ---------- 自定义标题栏 ---------- */
+.nav {
+  position: fixed;
   top: 0;
-  z-index: 20;
-  margin: -24rpx -24rpx 24rpx;
-  padding: 24rpx 24rpx 20rpx;
-  background: var(--bar-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 2rpx solid var(--line);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: background-color 0.2s;
 }
 
-.chips {
-  white-space: nowrap;
-}
-
-.chip {
-  display: inline-block;
-  padding: 12rpx 28rpx;
-  margin-right: 16rpx;
-  border-radius: 999rpx;
-  background: var(--card);
-  color: var(--text-2);
-  font-size: 26rpx;
-  border: 2rpx solid var(--card-border);
-}
-
-/* 选中态 = 反相填充，对齐 Web 端 .explore-chip.is-active */
-.chip-on {
-  background: var(--brand);
-  color: var(--on-brand);
-  border-color: transparent;
+.nav-title {
+  font-size: 32rpx;
   font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
+.nav-solid {
+  background: var(--paper);
+}
+
+.nav-solid .nav-title {
+  opacity: 1;
+}
+
+/* ---------- 封面 ---------- */
+.cover {
+  position: relative;
+  height: 744rpx;
+  overflow: hidden;
+  background: #0b3039;
+  color: #fff5e8;
+}
+
+.cover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cover-scrim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(3, 23, 30, 0.94), rgba(3, 23, 30, 0.25) 55%, rgba(3, 23, 30, 0.3));
+}
+
+.cover-body {
+  position: absolute;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: 44rpx;
+}
+
+.cover-title {
+  font-size: 80rpx;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.cover-dot {
+  color: #ffb97c;
+}
+
+.cover-stats {
+  display: flex;
+  gap: 44rpx;
+  margin-top: 32rpx;
+  padding-top: 28rpx;
+  border-top: 1rpx solid rgba(255, 245, 232, 0.25);
+}
+
+.cover-stat {
+  font-size: 22rpx;
+  color: #c6d2cb;
+}
+
+.cover-num {
+  display: block;
+  font-size: 44rpx;
+  line-height: 1.1;
+  font-weight: 500;
+  color: #fff5e8;
+}
+
+/* ---------- 搜索 ---------- */
 .search {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  margin-top: 20rpx;
-  padding: 0 24rpx;
-  background: var(--card);
-  border: 2rpx solid var(--card-border);
-  border-radius: 999rpx;
+  margin: 32rpx 32rpx 0;
+  padding: 0 28rpx;
+  background: var(--paper-2);
 }
 
 .search-input {
   flex: 1;
-  height: 72rpx;
+  height: 80rpx;
   font-size: 26rpx;
 }
 
 .search-ph {
-  color: var(--text-2);
+  color: var(--ink-3);
 }
 
 .search-clear {
-  color: var(--text-2);
+  color: var(--ink-2);
   font-size: 24rpx;
   padding: 8rpx;
 }
 
-/* 排序条：左侧当前结果数，右侧「推荐 / 最新」分段控件 */
-.sort-bar {
+/* ---------- 正在进行：竖版海报横滑 ---------- */
+.rail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 40rpx 32rpx 20rpx;
+}
+
+.rail-title {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.rail-count {
+  font-size: 24rpx;
+  color: var(--ink-2);
+}
+
+.rail {
+  white-space: nowrap;
+  padding-left: 32rpx;
+  box-sizing: border-box;
+}
+
+.poster {
+  display: inline-block;
+  width: 224rpx;
+  margin-right: 24rpx;
+  vertical-align: top;
+  white-space: normal;
+}
+
+/* 封面槽：底下垫类目字样，图盖在上面 —— 无图 / 裂图时不留空白洞 */
+.poster-cover {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 24rpx;
+  justify-content: center;
+  height: 298rpx;
+  background: var(--paper-2);
 }
 
-.result-count {
-  color: var(--text-2);
-  font-size: 24rpx;
+.poster-fallback {
+  font-size: 32rpx;
+  letter-spacing: 0.2em;
+  color: var(--ink-3);
 }
 
-.segment {
-  display: flex;
-  padding: 4rpx;
-  border-radius: 999rpx;
-  background: var(--card);
-  border: 2rpx solid var(--card-border);
+.poster-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.segment-item {
-  padding: 8rpx 28rpx;
-  border-radius: 999rpx;
-  color: var(--text-2);
-  font-size: 24rpx;
-  line-height: 1.6;
+.poster-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.4;
+  font-weight: 700;
 }
 
-.segment-item-on {
-  background: var(--brand);
-  color: var(--on-brand);
+.poster-meta {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+/* ---------- 吸顶筛选条 ---------- */
+.sticky {
+  position: sticky;
+  z-index: 20;
+  margin-top: 36rpx;
+  background: var(--paper);
+  border-top: 1rpx solid var(--hair);
+  border-bottom: 2rpx solid var(--ink);
+}
+
+.tabs {
+  white-space: nowrap;
+  padding: 0 32rpx;
+  box-sizing: border-box;
+}
+
+.tab {
+  display: inline-block;
+  margin-right: 40rpx;
+  padding: 24rpx 0 18rpx;
+  font-size: 28rpx;
+  color: var(--ink-2);
+  border-bottom: 4rpx solid transparent;
+}
+
+.tab-on {
+  color: var(--ink);
   font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.chips {
+  white-space: nowrap;
+  border-top: 1rpx solid var(--hair);
+}
+
+.chip {
+  display: inline-block;
+  width: 100rpx;
+  padding: 12rpx 0 16rpx;
+  text-align: center;
+  border-right: 1rpx solid var(--hair);
+  vertical-align: top;
+}
+
+.chip-week {
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.chip-day {
+  font-size: 34rpx;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.chip-bar {
+  height: 6rpx;
+  max-width: 80%;
+  margin: 8rpx auto 0;
+  background: var(--ink);
+  opacity: 0.55;
+}
+
+.chip-bar-running {
+  width: 80%;
+  height: 2rpx;
+  margin-top: 4rpx;
+  opacity: 0.35;
+}
+
+.chip-weekend .chip-week {
+  color: var(--accent);
+}
+
+.chip-today {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.chip-today .chip-week {
+  color: var(--paper);
+  opacity: 0.7;
+}
+
+.chip-today .chip-bar {
+  background: var(--paper);
+}
+
+.chip-empty {
+  opacity: 0.35;
+}
+
+/* ---------- 日程表 ---------- */
+.day {
+  padding: 0 32rpx;
+}
+
+.day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16rpx;
+  padding: 44rpx 0 12rpx;
+}
+
+.day-num {
+  font-size: 80rpx;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.day-week {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.day-meta {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+
+.day-head-today .day-num,
+.day-head-today .day-week {
+  color: var(--accent);
+}
+
+.fold {
+  display: flex;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-top: 1rpx solid var(--hair);
+  font-size: 24rpx;
+  color: var(--ink-2);
+}
+
+.run-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 18rpx 0;
+  border-top: 1rpx solid var(--hair);
+  font-size: 26rpx;
+}
+
+.run-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.run-until {
+  flex: none;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+
+/* ---------- 加载 / 错误 ---------- */
+.skeleton-row {
+  display: flex;
+  gap: 24rpx;
+  margin: 0 32rpx;
+  padding: 28rpx 0;
+  border-top: 1rpx solid var(--hair);
+}
+
+.skeleton-row:first-of-type {
+  margin-top: 40rpx;
+}
+
+.skeleton-time {
+  width: 84rpx;
+  height: 32rpx;
+}
+
+.skeleton-body {
+  flex: 1;
+}
+
+.skeleton-line {
+  height: 36rpx;
+}
+
+.skeleton-line-short {
+  width: 55%;
+  height: 24rpx;
+  margin-top: 16rpx;
+}
+
+.skeleton-thumb {
+  width: 128rpx;
+  height: 128rpx;
 }
 
 .retry {
@@ -109,6 +410,6 @@
   padding: 0 32rpx;
   font-size: 22rpx;
   line-height: 1.5;
-  color: var(--text-2);
+  color: var(--ink-2);
   word-break: break-all;
 }

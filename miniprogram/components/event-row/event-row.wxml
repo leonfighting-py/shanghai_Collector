@@ -1,0 +1,19 @@
+<view class="row">
+  <text class="row-time serif {{span ? 'row-time-span' : ''}}">{{time}}</text>
+  <view class="row-main">
+    <view class="row-title serif">{{title}}</view>
+    <view class="row-meta">
+      <text class="row-cat">{{category}}</text>
+      <text wx:if="{{range}}" class="row-range">{{range}} · </text>
+      <text>{{venue}}</text>
+    </view>
+  </view>
+  <image
+    wx:if="{{image && !imageFailed}}"
+    class="row-thumb"
+    src="{{image}}"
+    mode="aspectFill"
+    lazy-load
+    binderror="onImageError"
+  />
+</view>

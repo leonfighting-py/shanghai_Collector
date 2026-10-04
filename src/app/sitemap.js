@@ -14,7 +14,7 @@ export default function sitemap() {
 
   for (const category of CATEGORIES) {
     entries.push({
-      url: `${base}/category/${encodeURIComponent(category)}`,
+      url: `${base}/?category=${encodeURIComponent(category)}`,
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.7,

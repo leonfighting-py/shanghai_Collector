@@ -1,62 +1,29 @@
-import { CATEGORIES, COLLECTION_WINDOW_DAYS, toShanghaiDayWindow } from "./events.js";
-import { getDisplayTopPicks, sortCampusLectures } from "./recommendations.js";
+import { COLLECTION_WINDOW_DAYS, toShanghaiDate, toShanghaiDayWindow } from "./events.js";
+import { formatDotDate, pickHighlights, splitByToday } from "./agenda.js";
+import { getDisplayTopPicks } from "./recommendations.js";
 
-export const HOME_SECTION_PREVIEW_LIMIT = 4;
-
-export function categoryBrowsePath(category) {
-  return `/category/${encodeURIComponent(category)}`;
-}
-
-export function buildHomeViewModel(
-  events,
-  { now = new Date(), featuredLimit = 5, sectionLimit = HOME_SECTION_PREVIEW_LIMIT } = {},
-) {
+/**
+ * 首页服务端视图模型：只算首屏下方那条「本期」信息和「本期推荐」。
+ * 日程表本身（按天分桶、类目/搜索筛选）在客户端由 src/lib/agenda.js 现算，
+ * 因为切类目要求零延迟，不能每次回服务端。
+ */
+export function buildHomeViewModel(events, { now = new Date(), highlightLimit = 3 } = {}) {
   const window = toShanghaiDayWindow(now);
+  const today = toShanghaiDate(now);
+  const { ongoing, upcoming } = splitByToday(events, today);
+
   return {
-    updatedLabel: `${COLLECTION_WINDOW_DAYS}-Day Update`,
-    updatedDate: formatShanghaiShortDate(now),
-    windowLabel: `${window.startDate} 至 ${window.endDate}`,
-    featuredEvents: getDisplayTopPicks(events, featuredLimit, now),
-    categorySections: CATEGORIES.map((category) => {
-      const inCategory = events.filter((event) => event.category === category);
-      const categoryEvents =
-        category === "高校讲座"
-          ? sortCampusLectures(inCategory, now)
-          : getDisplayTopPicks(inCategory, inCategory.length, now, {
-              preferImages: category === "展览",
-            });
-
-      return {
-        title: category,
-        eyebrow: CATEGORY_EYEBROWS[category],
-        totalCount: categoryEvents.length,
-        events: categoryEvents.slice(0, sectionLimit),
-        browseHref: categoryBrowsePath(category),
-      };
-    }).filter((section) => section.totalCount > 0),
+    today,
+    windowDays: COLLECTION_WINDOW_DAYS,
+    issueLabel: `${window.startDate.slice(0, 4)} · ${formatDotDate(window.startDate)} — ${formatDotDate(window.endDate)}`,
+    stats: {
+      upcoming: upcoming.length,
+      ongoing: ongoing.length,
+      venues: new Set(events.map((event) => event.venue)).size,
+    },
+    highlights: pickHighlights(getDisplayTopPicks(upcoming, upcoming.length, now), {
+      today,
+      limit: highlightLimit,
+    }),
   };
-}
-
-export function formatShanghaiShortDate(value = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Shanghai",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date(value));
-
-  const month = parts.find((part) => part.type === "month")?.value || "01";
-  const day = parts.find((part) => part.type === "day")?.value || "01";
-  return `${month}/${day}`;
-}
-
-const CATEGORY_EYEBROWS = {
-  演出音乐: "Live Music & Shows",
-  展览: "Exhibitions",
-  线下活动: "City Happenings",
-  高校讲座: "Campus Talks",
-  AI聚会: "AI Meetups",
-};
-
-export function getCategoryEyebrow(category) {
-  return CATEGORY_EYEBROWS[category] || "Category";
 }

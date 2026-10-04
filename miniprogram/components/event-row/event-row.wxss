@@ -1,0 +1,61 @@
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24rpx;
+  padding: 28rpx 0;
+  border-top: 1rpx solid var(--hair);
+}
+
+.row-time {
+  flex: none;
+  width: 84rpx;
+  padding-top: 4rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+/* 「末日 / 展期」是文字不是钟点：降一档字号，用强调色 */
+.row-time-span {
+  font-size: 24rpx;
+  color: var(--accent);
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 32rpx;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.row-meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-cat {
+  margin-right: 12rpx;
+  color: var(--accent);
+}
+
+.row-range {
+  color: var(--accent);
+}
+
+.row-thumb {
+  flex: none;
+  width: 128rpx;
+  height: 128rpx;
+  background: var(--paper-2);
+}

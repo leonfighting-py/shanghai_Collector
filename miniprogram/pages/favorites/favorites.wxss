@@ -1,3 +1,28 @@
+.head {
+  padding: 36rpx 32rpx 24rpx;
+}
+
+.head-title {
+  font-size: 64rpx;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.head-meta {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: var(--ink-2);
+}
+
+.list {
+  margin: 0 32rpx;
+  border-top: 2rpx solid var(--ink);
+}
+
 .hint {
   margin-top: 12rpx;
   font-size: 24rpx;
