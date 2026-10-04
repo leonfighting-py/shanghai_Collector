@@ -93,20 +93,19 @@
         bindtap="onSelectCategory"
       >{{item.label}}</view>
     </scroll-view>
-    <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}">
+    <!-- scroll-into-view：当前日期滚出日期条可视范围时自动带回来 -->
+    <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="chip-{{activeDate}}" scroll-with-animation>
       <view
         wx:for="{{chips}}"
         wx:key="date"
-        class="chip {{item.isToday ? 'chip-today' : ''}} {{item.isWeekend ? 'chip-weekend' : ''}} {{item.empty ? 'chip-empty' : ''}}"
+        id="chip-{{item.date}}"
+        class="chip {{item.date === activeDate ? 'chip-active' : ''}} {{item.isToday ? 'chip-today' : ''}} {{item.isWeekend ? 'chip-weekend' : ''}} {{item.empty ? 'chip-empty' : ''}}"
         data-date="{{item.date}}"
         data-empty="{{item.empty}}"
         bindtap="onJumpDay"
       >
         <view class="chip-week">{{item.weekday}}</view>
         <view class="chip-day serif">{{item.day}}</view>
-        <!-- 粗线 = 当天开始/结束的场次多少；细线 = 当天有展期中的活动 -->
-        <view class="chip-bar" style="width: {{item.bar}}%;"></view>
-        <view wx:if="{{item.running}}" class="chip-bar chip-bar-running"></view>
       </view>
     </scroll-view>
   </view>

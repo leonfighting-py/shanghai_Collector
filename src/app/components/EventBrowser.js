@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   buildAgenda,
@@ -31,6 +31,10 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
   // 展开状态以 "more:<date>" / "run:<date>" 为键
   const [expanded, setExpanded] = useState({});
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
+  const [activeDate, setActiveDate] = useState(today);
+  const filtersRef = useRef(null);
+  const daysRef = useRef(null);
 
   // 把筛选状态写回地址栏，方便分享；不走路由跳转，避免重新请求
   useEffect(() => {
@@ -64,7 +68,56 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
   const ongoing = useMemo(() => splitByToday(filtered, today).ongoing, [filtered, today]);
   const agenda = useMemo(() => buildAgenda(filtered, { today, days }), [filtered, today, days]);
   const visibleDays = agenda.filter((day) => day.rows.length > 0);
-  const busiest = Math.max(1, ...agenda.map((day) => day.startCount + day.endCount));
+  const firstVisibleDate = visibleDays[0]?.date || today;
+
+  // 吸顶筛选条的实际高度写进 CSS 变量：大号日期的吸附位置、锚点偏移都依赖它
+  useEffect(() => {
+    const node = filtersRef.current;
+    if (!node) return undefined;
+    const sync = () => document.documentElement.style.setProperty("--filters-height", `${node.offsetHeight}px`);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  // 滚动时找出「已经滚到筛选条下面」的最后一天，作为当前日期
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = (filtersRef.current?.offsetHeight || 0) + 80;
+      let current = firstVisibleDate;
+      for (const section of document.querySelectorAll("section.day[id]")) {
+        if (section.getBoundingClientRect().top > line) break;
+        current = section.id.replace("day-", "");
+      }
+      setActiveDate(current);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [firstVisibleDate, visibleDays.length, expanded]);
+
+  // 窄屏下日期条能横向滚动：当前日期滚出可视范围时把它带回来
+  useEffect(() => {
+    const strip = daysRef.current;
+    const chip = strip?.querySelector(".is-active");
+    if (!strip || !chip) return;
+    const left = chip.offsetLeft - strip.offsetLeft;
+    if (left < strip.scrollLeft || left + chip.offsetWidth > strip.scrollLeft + strip.clientWidth) {
+      strip.scrollTo({ left: left - strip.clientWidth / 2 + chip.offsetWidth / 2, behavior: "smooth" });
+    }
+  }, [activeDate]);
+
   const toggle = (key) => setExpanded((current) => ({ ...current, [key]: !current[key] }));
 
   return (
@@ -95,7 +148,7 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
         </section>
       ) : null}
 
-      <div className="filters" id="agenda">
+      <div className="filters" id="agenda" ref={filtersRef}>
         <div className="filters-line">
           <div className="tabs" role="group" aria-label="分类筛选">
             <button type="button" className="tab" aria-pressed={!category} onClick={() => setCategory("")}>
@@ -134,25 +187,24 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
               aria-pressed={onlyFavorites}
               onClick={() => setOnlyFavorites((value) => !value)}
             >
-              {onlyFavorites ? "★" : "☆"} 收藏{favorites.length ? ` ${favorites.length}` : ""}
+              <b aria-hidden="true">{onlyFavorites ? "★" : "☆"}</b>
+              我的收藏
+              <span>{favorites.length}</span>
             </button>
           </div>
         </div>
-        <nav className="days" aria-label="按日期跳转">
+        <nav className="days" aria-label="按日期跳转" ref={daysRef}>
           {agenda.map((day) => {
-            const count = day.startCount + day.endCount;
             const empty = day.rows.length === 0;
             return (
               <a
                 key={day.date}
                 href={empty ? undefined : `#day-${day.date}`}
-                className={`day-chip${day.isToday ? " is-today" : ""}${day.isWeekend ? " is-weekend" : ""}${empty ? " is-empty" : ""}`}
+                aria-current={day.date === activeDate ? "true" : undefined}
+                className={`day-chip${day.date === activeDate ? " is-active" : ""}${day.isToday ? " is-today" : ""}${day.isWeekend ? " is-weekend" : ""}${empty ? " is-empty" : ""}`}
               >
                 <small>{day.weekday}</small>
                 <b>{day.day}</b>
-                {/* 粗线 = 当天开始/结束的场次多少；细线 = 当天有展期中的活动 */}
-                <i style={{ width: `${Math.round((count / busiest) * 80)}%` }} />
-                {day.runningCount > 0 ? <i className="is-running" /> : null}
               </a>
             );
           })}

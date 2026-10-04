@@ -219,9 +219,9 @@
 
 .tab {
   display: inline-block;
-  margin-right: 40rpx;
-  padding: 24rpx 0 18rpx;
-  font-size: 28rpx;
+  margin-right: 44rpx;
+  padding: 26rpx 0 20rpx;
+  font-size: 34rpx;
   color: var(--ink-2);
   border-bottom: 4rpx solid transparent;
 }
@@ -258,38 +258,30 @@
   font-weight: 500;
 }
 
-.chip-bar {
-  height: 6rpx;
-  max-width: 80%;
-  margin: 8rpx auto 0;
-  background: var(--ink);
-  opacity: 0.55;
-}
-
-.chip-bar-running {
-  width: 80%;
-  height: 2rpx;
-  margin-top: 4rpx;
-  opacity: 0.35;
-}
-
 .chip-weekend .chip-week {
   color: var(--accent);
 }
 
-.chip-today {
+/* 填充 = 当前滚动到的那一天（跟着页面走）；「今天」只用强调色数字标记 */
+.chip-today .chip-day {
+  color: var(--accent);
+}
+
+.chip-active {
   background: var(--ink);
   color: var(--paper);
 }
 
-.chip-today .chip-week {
+.chip-active .chip-week {
   color: var(--paper);
   opacity: 0.7;
 }
 
-.chip-today .chip-bar {
-  background: var(--paper);
+.chip-active .chip-day {
+  color: var(--paper);
 }
+
+
 
 .chip-empty {
   opacity: 0.35;

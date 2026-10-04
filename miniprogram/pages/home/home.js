@@ -20,7 +20,7 @@ const DAY_ROW_LIMIT = 5;
 // 「正在进行」海报栏最多放几张
 const RAIL_LIMIT = 10;
 // 吸顶筛选条（类目 Tab + 日期条）的高度，单位 px，用于点日期跳转时留出偏移
-const STICKY_HEIGHT = 108;
+const STICKY_HEIGHT = 116;
 
 Page({
   data: {
@@ -41,6 +41,8 @@ Page({
     ongoingCount: 0,
     chips: [],
     days: [],
+    // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
+    activeDate: "",
   },
 
   // 接口一次返回 14 天窗口全量；setData 里只放渲染要用的精简字段，
@@ -49,6 +51,8 @@ Page({
   pool: [],
   // 每天折叠起来的展期中活动，展开时才 setData
   foldedByDate: {},
+  // 每个日期分组距页面顶部的距离（px），滚动时用来判断当前滚到哪一天
+  dayTops: [],
 
   onLoad(options) {
     // 从朋友圈 / 会话分享链接进来时带上关键词，落地即还原筛选结果
@@ -85,6 +89,7 @@ Page({
     // 封面高 744rpx，滚过大半后切到实色标题栏。只在状态翻转时 setData
     const threshold = (wx.getWindowInfo ? wx.getWindowInfo().windowWidth : 375) * 0.75;
     const navSolid = event.scrollTop > threshold;
+    this.syncActiveDate(event.scrollTop);
     if (navSolid === this.data.navSolid) return;
     this.setData({ navSolid });
     // 胶囊按钮和状态栏文字的颜色：压在封面上用白色，实色标题栏上跟随深浅色
@@ -94,6 +99,33 @@ Page({
       backgroundColor: "#000000",
       fail: () => {},
     });
+  },
+
+  // 量出每个日期分组的位置。列表内容变化（切类目、展开折叠）后都要重量
+  measureDays() {
+    wx.createSelectorQuery()
+      .selectAll(".day")
+      .boundingClientRect()
+      .selectViewport()
+      .scrollOffset()
+      .exec((res) => {
+        const rects = (res && res[0]) || [];
+        const scrollTop = res && res[1] ? res[1].scrollTop : 0;
+        this.dayTops = rects.map((rect) => ({ date: rect.id.replace("day-", ""), top: rect.top + scrollTop }));
+        this.syncActiveDate(scrollTop);
+      });
+  },
+
+  // 找出「已经滚到吸顶筛选条下面」的最后一天。只在日期变化时 setData
+  syncActiveDate(scrollTop) {
+    if (!this.dayTops.length) return;
+    const line = scrollTop + this.data.navHeight + STICKY_HEIGHT + 40;
+    let current = this.dayTops[0].date;
+    for (let index = 0; index < this.dayTops.length; index += 1) {
+      if (this.dayTops[index].top > line) break;
+      current = this.dayTops[index].date;
+    }
+    if (current !== this.data.activeDate) this.setData({ activeDate: current });
   },
 
   onPullDownRefresh() {
@@ -139,7 +171,6 @@ Page({
     });
 
     const built = agenda.buildAgenda(this.pool, today);
-    const busiest = Math.max.apply(null, [1].concat(built.map((day) => day.startCount + day.endCount)));
     this.foldedByDate = {};
 
     const days = built
@@ -193,11 +224,10 @@ Page({
         isToday: day.isToday,
         isWeekend: day.isWeekend,
         empty: day.rows.length === 0,
-        bar: Math.round(((day.startCount + day.endCount) / busiest) * 80),
-        running: day.runningCount > 0,
       })),
       days,
-    });
+      activeDate: days.length ? days[0].date : "",
+    }, () => this.measureDays());
   },
 
   onSelectCategory(event) {
@@ -220,7 +250,7 @@ Page({
 
   onToggleDayRows(event) {
     const index = event.currentTarget.dataset.index;
-    this.setData({ [`days[${index}].showAll`]: !this.data.days[index].showAll });
+    this.setData({ [`days[${index}].showAll`]: !this.data.days[index].showAll }, () => this.measureDays());
   },
 
   // 展开「展期中 · 另有 N 场」：这批数据量大，展开时才 setData
@@ -228,7 +258,7 @@ Page({
     const index = event.currentTarget.dataset.index;
     const day = this.data.days[index];
     if (day.foldedOpen) {
-      this.setData({ [`days[${index}].foldedOpen`]: false });
+      this.setData({ [`days[${index}].foldedOpen`]: false }, () => this.measureDays());
       return;
     }
     const folded = (this.foldedByDate[day.date] || []).map((item) => ({
@@ -236,7 +266,7 @@ Page({
       title: item.title,
       until: agenda.dotDate(agenda.endDay(item)),
     }));
-    this.setData({ [`days[${index}].folded`]: folded, [`days[${index}].foldedOpen`]: true });
+    this.setData({ [`days[${index}].folded`]: folded, [`days[${index}].foldedOpen`]: true }, () => this.measureDays());
   },
 
   onOpenEvent(event) {
