@@ -134,6 +134,7 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .shanghai-hero *, .shanghai-hero *::before { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
+  .drawer, .drawer-backdrop { animation: none; }
 }
 
 /* ============================================
@@ -398,23 +399,50 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 }
 .fold:hover { color: var(--accent); }
 
-.run-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 32px;
-  padding-bottom: 8px;
-}
-.run-item {
+/* ---------- 「展期中」抽屉：桌面从右侧滑出，手机从底部升起 ---------- */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 0;
-  border-top: 1px solid var(--hair);
-  font-size: 14px;
+  justify-content: flex-end;
+  background: rgba(10, 10, 9, 0.5);
+  animation: drawer-fade 0.18s ease-out;
 }
-.run-item span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.run-item span:last-child { flex: none; font-size: 12px; color: var(--ink-3); }
-.run-item:hover span:first-child { color: var(--accent); }
+.drawer {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 100%);
+  height: 100%;
+  background: var(--paper);
+  border-left: 3px solid var(--ink);
+  animation: drawer-in-right 0.22s ease-out;
+}
+.drawer-head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--ink);
+}
+.drawer-head p { margin: 0; }
+.drawer-title { font-size: 15px; font-weight: 600; }
+.drawer-title b { margin-right: 10px; font-family: var(--serif); font-size: 44px; line-height: 1; font-weight: 500; }
+.drawer-meta { margin-top: 6px !important; font-size: 12px; color: var(--ink-2); }
+.drawer-close { flex: none; padding: 8px 14px; border: 1px solid var(--ink); font-size: 14px; font-weight: 600; }
+.drawer-close:hover { background: var(--ink); color: var(--paper); }
+.drawer-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 28px 28px; }
+/* 抽屉比正文窄，行内不放类目列，缩略图用小方图 */
+.drawer .row { grid-template-columns: 52px minmax(0, 1fr) 56px 24px; gap: 14px; }
+.drawer .row-cat { display: none; }
+.drawer .row-thumb { width: 56px; height: 56px; }
+.drawer .row-main strong { font-size: 17px; }
+
+@keyframes drawer-fade { from { opacity: 0; } }
+@keyframes drawer-in-right { from { transform: translateX(40px); opacity: 0; } }
+@keyframes drawer-in-up { from { transform: translateY(40px); opacity: 0; } }
 
 .empty { padding: 72px 0; text-align: center; font-size: 14px; color: var(--ink-2); }
 
@@ -461,6 +489,9 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   .row-cat { display: none; }
   .row-thumb { width: 56px; height: 56px; }
   .row-main strong { font-size: 17px; }
-  .run-list { grid-template-columns: minmax(0, 1fr); }
+  .drawer-backdrop { align-items: flex-end; }
+  .drawer { width: 100%; height: 86svh; border-left: 0; border-top: 3px solid var(--ink); animation-name: drawer-in-up; }
+  .drawer-head { padding: 18px 20px 14px; }
+  .drawer-body { padding: 0 20px 24px; }
   .colophon { flex-direction: column; }
 }

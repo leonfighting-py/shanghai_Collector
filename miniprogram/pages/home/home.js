@@ -43,6 +43,8 @@ Page({
     days: [],
     // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
     activeDate: "",
+    // 「展期中」完整清单的底部面板
+    drawer: { open: false, day: "", weekday: "", items: [] },
   },
 
   // 接口一次返回 14 天窗口全量；setData 里只放渲染要用的精简字段，
@@ -201,8 +203,6 @@ Page({
           hiddenCount: Math.max(0, own - DAY_ROW_LIMIT),
           showAll: false,
           foldedCount: day.folded.length,
-          folded: [],
-          foldedOpen: false,
         };
       });
 
@@ -253,21 +253,32 @@ Page({
     this.setData({ [`days[${index}].showAll`]: !this.data.days[index].showAll }, () => this.measureDays());
   },
 
-  // 展开「展期中 · 另有 N 场」：这批数据量大，展开时才 setData
-  onToggleFolded(event) {
-    const index = event.currentTarget.dataset.index;
-    const day = this.data.days[index];
-    if (day.foldedOpen) {
-      this.setData({ [`days[${index}].foldedOpen`]: false }, () => this.measureDays());
-      return;
-    }
-    const folded = (this.foldedByDate[day.date] || []).map((item) => ({
-      id: this.pool.indexOf(item),
-      title: item.title,
-      until: agenda.dotDate(agenda.endDay(item)),
-    }));
-    this.setData({ [`days[${index}].folded`]: folded, [`days[${index}].foldedOpen`]: true }, () => this.measureDays());
+  // 「展期中 · 另有 N 场」在底部面板里看。这批数据量大，打开时才 setData
+  onOpenDrawer(event) {
+    const day = this.data.days[event.currentTarget.dataset.index];
+    const items = (this.foldedByDate[day.date] || []).map((item) => {
+      const labels = agenda.rowLabels(item, "run", day.date);
+      return {
+        id: this.pool.indexOf(item),
+        title: item.title,
+        venue: item.venue,
+        category: SHORT_CATEGORY[item.category] || item.category,
+        image: item.image_url || "",
+        time: labels.time,
+        range: labels.range,
+      };
+    });
+    this.setData({
+      drawer: { open: true, day: day.day, weekday: day.weekday + (day.isToday ? " · 今天" : ""), items },
+    });
   },
+
+  onCloseDrawer() {
+    this.setData({ drawer: { open: false, day: "", weekday: "", items: [] } });
+  },
+
+  // 占位：吞掉面板上的点击和遮罩上的滑动，避免穿透到下面的页面
+  noop() {},
 
   onOpenEvent(event) {
     const target = this.pool[event.currentTarget.dataset.id];

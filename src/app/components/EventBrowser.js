@@ -28,8 +28,10 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
   const [category, setCategory] = useState(initialCategory);
   const [search, setSearch] = useState(initialSearch);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
-  // 展开状态以 "more:<date>" / "run:<date>" 为键
+  // 「展开当日其余」的展开状态，以 "more:<date>" 为键
   const [expanded, setExpanded] = useState({});
+  // 「展期中」完整清单在抽屉里看：几十条纯文字摊在页面里，展开后要往回滑很久才能收起
+  const [drawerDate, setDrawerDate] = useState("");
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
   // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
   const [activeDate, setActiveDate] = useState(today);
@@ -117,6 +119,23 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
       strip.scrollTo({ left: left - strip.clientWidth / 2 + chip.offsetWidth / 2, behavior: "smooth" });
     }
   }, [activeDate]);
+
+  const drawerDay = drawerDate ? agenda.find((day) => day.date === drawerDate) : null;
+
+  // 抽屉打开时锁住页面滚动，Esc 关闭
+  useEffect(() => {
+    if (!drawerDay) return undefined;
+    const onKey = (event) => {
+      if (event.key === "Escape") setDrawerDate("");
+    };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [drawerDay]);
 
   const toggle = (key) => setExpanded((current) => ({ ...current, [key]: !current[key] }));
 
@@ -221,7 +240,6 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
           const featured = day.rows.filter((row) => row.kind === "run");
           const showAll = expanded[`more:${day.date}`];
           const shownOwn = showAll ? own : own.slice(0, DAY_ROW_LIMIT);
-          const runOpen = expanded[`run:${day.date}`];
 
           return (
             <section className={`day${day.isToday ? " is-today" : ""}`} id={`day-${day.date}`} key={day.date}>
@@ -252,34 +270,53 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
                   </button>
                 ) : null}
                 {day.folded.length > 0 ? (
-                  <>
-                    <button type="button" className="fold" aria-expanded={Boolean(runOpen)} onClick={() => toggle(`run:${day.date}`)}>
-                      <span>展期中 · 另有 {day.folded.length} 场今天也能去</span>
-                      <span aria-hidden="true">{runOpen ? "收起 ↑" : "展开 ↓"}</span>
-                    </button>
-                    {runOpen ? (
-                      <div className="run-list">
-                        {day.folded.map((event) => (
-                          <a
-                            className="run-item"
-                            key={event.dedupe_key}
-                            href={safeExternalUrl(event.signup_url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <span>{event.title}</span>
-                            <span>至 {formatDotDate(eventEndDay(event))}</span>
-                          </a>
-                        ))}
-                      </div>
-                    ) : null}
-                  </>
+                  <button type="button" className="fold" aria-haspopup="dialog" onClick={() => setDrawerDate(day.date)}>
+                    <span>展期中 · 另有 {day.folded.length} 场今天也能去</span>
+                    <span aria-hidden="true">查看全部 →</span>
+                  </button>
                 ) : null}
               </div>
             </section>
           );
         })
       )}
+
+      {drawerDay ? (
+        <div className="drawer-backdrop" onClick={() => setDrawerDate("")}>
+          <div
+            className="drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${drawerDay.month} 月 ${drawerDay.day} 日展期中的活动`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="drawer-head">
+              <div>
+                <p className="drawer-title">
+                  <b>{drawerDay.day}</b>
+                  {drawerDay.weekday}{drawerDay.isToday ? " · 今天" : ""}
+                </p>
+                <p className="drawer-meta">展期中 · {drawerDay.folded.length} 场这天也能去 · 按结束日期排序</p>
+              </div>
+              <button type="button" className="drawer-close" onClick={() => setDrawerDate("")} autoFocus>
+                关闭 ✕
+              </button>
+            </header>
+            <div className="drawer-body">
+              {drawerDay.folded.map((event) => (
+                <AgendaRow
+                  key={event.dedupe_key}
+                  event={event}
+                  kind="run"
+                  date={drawerDay.date}
+                  favorite={isFavorite(event.dedupe_key)}
+                  onToggleFavorite={() => toggleFavorite(event.dedupe_key)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

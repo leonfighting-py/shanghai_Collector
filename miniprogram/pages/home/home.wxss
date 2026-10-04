@@ -331,27 +331,73 @@
   color: var(--ink-2);
 }
 
-.run-item {
+/* ---------- 「展期中」底部面板 ---------- */
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
   display: flex;
+  align-items: flex-end;
+  background: rgba(10, 10, 9, 0.5);
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 80vh;
+  background: var(--paper);
+  border-top: 6rpx solid var(--ink);
+}
+
+.drawer-head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 24rpx;
-  padding: 18rpx 0;
-  border-top: 1rpx solid var(--hair);
-  font-size: 26rpx;
+  padding: 32rpx 32rpx 24rpx;
+  border-bottom: 2rpx solid var(--ink);
 }
 
-.run-title {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.drawer-title {
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
-.run-until {
-  flex: none;
+.drawer-day {
+  margin-right: 16rpx;
+  font-size: 72rpx;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.drawer-meta {
+  margin-top: 8rpx;
   font-size: 22rpx;
-  color: var(--ink-3);
+  color: var(--ink-2);
+}
+
+.drawer-close {
+  flex: none;
+  padding: 12rpx 24rpx;
+  border: 2rpx solid var(--ink);
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.drawer-body {
+  flex: 1;
+  height: 0;
+  padding: 0 32rpx;
+  box-sizing: border-box;
+}
+
+.drawer-end {
+  height: 48rpx;
 }
 
 /* ---------- 加载 / 错误 ---------- */

@@ -141,25 +141,41 @@
       <text>{{day.showAll ? '↑' : '↓'}}</text>
     </view>
 
-    <block wx:if="{{day.foldedCount}}">
-      <view class="fold" data-index="{{dayIndex}}" bindtap="onToggleFolded">
-        <text>展期中 · 另有 {{day.foldedCount}} 场今天也能去</text>
-        <text>{{day.foldedOpen ? '收起 ↑' : '展开 ↓'}}</text>
-      </view>
-      <block wx:if="{{day.foldedOpen}}">
-        <view
-          wx:for="{{day.folded}}"
-          wx:key="id"
-          class="run-item"
-          data-id="{{item.id}}"
-          bindtap="onOpenEvent"
-        >
-          <text class="run-title">{{item.title}}</text>
-          <text class="run-until">至 {{item.until}}</text>
-        </view>
-      </block>
-    </block>
+    <view wx:if="{{day.foldedCount}}" class="fold" data-index="{{dayIndex}}" bindtap="onOpenDrawer">
+      <text>展期中 · 另有 {{day.foldedCount}} 场今天也能去</text>
+      <text>查看全部 →</text>
+    </view>
   </view>
 
   <view wx:if="{{days.length}}" class="state">已展示全部（未来 14 天）</view>
 </block>
+
+<!-- 「展期中」完整清单：从底部升起的面板，自己滚动，随时可关。
+     不直接摊在页面里 —— 几十行展开后要往回滑很久才能收起 -->
+<view wx:if="{{drawer.open}}" class="drawer-backdrop" bindtap="onCloseDrawer" catchtouchmove="noop">
+  <view class="drawer" catchtap="noop">
+    <view class="drawer-head">
+      <view>
+        <view class="drawer-title"><text class="drawer-day serif">{{drawer.day}}</text>{{drawer.weekday}}</view>
+        <view class="drawer-meta">展期中 · {{drawer.items.length}} 场这天也能去 · 按结束日期排序</view>
+      </view>
+      <view class="drawer-close" bindtap="onCloseDrawer">关闭 ✕</view>
+    </view>
+    <scroll-view class="drawer-body" scroll-y enhanced show-scrollbar="{{false}}">
+      <event-row
+        wx:for="{{drawer.items}}"
+        wx:key="id"
+        title="{{item.title}}"
+        venue="{{item.venue}}"
+        category="{{item.category}}"
+        image="{{item.image}}"
+        time="{{item.time}}"
+        range="{{item.range}}"
+        span
+        data-id="{{item.id}}"
+        bindtap="onOpenEvent"
+      />
+      <view class="drawer-end"></view>
+    </scroll-view>
+  </view>
+</view>
