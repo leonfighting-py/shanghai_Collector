@@ -288,7 +288,7 @@ start_time <= endDate 且 coalesce(end_time, start_time) >= startDate
 **离线预览**：`docs/preview/redesign-editorial.html` 是这次改版的设计稿（Web + 小程序，含真实数据快照），
 不装微信开发者工具也能看版式。它是定稿前的探索稿，顶栏还留着另外两套候选配色，**以代码为准**。
 
-**未做（有意）**：tabBar 仍是纯文字。加图标需要 light/dark 两套 PNG，而 `theme.json`
-只能切 `tabColor` / `tabSelected`，**切不了 app.json 里的 `iconPath`**——深色下必然有半边图标不可见，
-且静态彩色 PNG 与这套克制的编辑风也不搭。要做需先确认基础库是否支持在 `iconPath` 上写 `@变量`。
+**tabBar 图标**（2026-10-04）：`assets/tab/` 下每个图标有 light / dark × 未选中 / 选中 四张 81×81 PNG，
+线性为未选中、填充为选中，颜色与 `tabColor` / `tabSelected` 一致。
+`app.json` 的 `iconPath` / `selectedIconPath` 写成 `@iconHome` 这类变量，由 `theme.json` 按深浅色切换。
 

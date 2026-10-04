@@ -50,7 +50,7 @@
     </view>
   </view>
 
-  <view class="signup-hint">报名链接将复制到剪贴板，可在浏览器中打开完成报名</view>
+  <view class="signup-hint">活动链接将复制到剪贴板，可在浏览器中打开查看详情</view>
 
   <!-- 底部固定操作栏 -->
   <view class="actions">
@@ -58,7 +58,7 @@
       {{favorited ? "★ 已收藏" : "☆ 收藏"}}
     </button>
     <button class="btn-primary action-signup" bindtap="onSignup">
-      {{targetPlatform ? "去" + targetPlatform + "报名" : "复制报名链接"}}
+      {{targetPlatform ? "去" + targetPlatform + "查看" : "复制活动链接"}}
     </button>
   </view>
 </view>

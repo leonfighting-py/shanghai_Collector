@@ -1,4 +1,5 @@
-// 报名链接处理：
+// 活动外链处理（界面上统一叫「活动链接 / 查看详情」，不叫「报名」——
+// 大多数活动是购票、预约或直接到场，并不需要报名）：
 // 个人主体小程序无法使用 web-view（且 web-view 也仅能打开自有业务域名），
 // 第三方报名页分两种情况：
 //  1. 平台有小程序（大麦/活动行/秀动）→ wx.navigateToMiniProgram 直达
@@ -23,8 +24,8 @@ function copySignupUrl(url) {
     data: url,
     success: () => {
       wx.showModal({
-        title: "报名链接已复制",
-        content: "请打开手机浏览器粘贴访问，完成报名。",
+        title: "活动链接已复制",
+        content: "请打开手机浏览器粘贴访问，查看详情、购票或预约。",
         showCancel: false,
       });
     },
@@ -33,7 +34,7 @@ function copySignupUrl(url) {
 
 function openRegistration(url) {
   if (!/^https?:\/\//i.test(url || "")) {
-    wx.showToast({ title: "暂无报名链接", icon: "none" });
+    wx.showToast({ title: "暂无活动链接", icon: "none" });
     return;
   }
   const target = resolveRegistration(url);

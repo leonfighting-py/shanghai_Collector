@@ -7,7 +7,11 @@
     "tabColor": "#918e89",
     "tabSelected": "#191817",
     "tabBg": "#fbfaf7",
-    "tabBorder": "white"
+    "tabBorder": "white",
+    "iconHome": "assets/tab/home-light.png",
+    "iconHomeOn": "assets/tab/home-on-light.png",
+    "iconFav": "assets/tab/fav-light.png",
+    "iconFavOn": "assets/tab/fav-on-light.png"
   },
   "dark": {
     "navBg": "#201f1d",
@@ -17,6 +21,10 @@
     "tabColor": "#77746f",
     "tabSelected": "#efede8",
     "tabBg": "#201f1d",
-    "tabBorder": "black"
+    "tabBorder": "black",
+    "iconHome": "assets/tab/home-dark.png",
+    "iconHomeOn": "assets/tab/home-on-dark.png",
+    "iconFav": "assets/tab/fav-dark.png",
+    "iconFavOn": "assets/tab/fav-on-dark.png"
   }
 }
