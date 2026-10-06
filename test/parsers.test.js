@@ -22,6 +22,8 @@ import { parseShlibActivity } from "../src/lib/parsers/shlib-activity.js";
 import { parseJiadingLibraryLectures } from "../src/lib/parsers/jiading-library.js";
 import { parsePowerlongMuseum } from "../src/lib/parsers/powerlong-museum.js";
 import { parseIicShanghai } from "../src/lib/parsers/iic-shanghai.js";
+import { parseHuodongBa } from "../src/lib/parsers/huodongba.js";
+import { parseRockbundArtMuseum } from "../src/lib/parsers/rockbund.js";
 
 const fixture = (name) => readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8");
 
@@ -55,6 +57,124 @@ test("douban parser fetches event detail pages", async () => {
 
   assert.equal(events.length, 1);
   assert.equal(events[0].title, "爵士之夜现场演出");
+});
+
+// 互动吧（活动网）2026-10 改版回归测试。
+// 改版三点：① `?cityCode=` 参数失效，只有路径式城市维度可用；② 列表页只剩
+// `<article class="activity-card">` 卡片，日期是「展至 10月29日」这类**相对文案**；
+// ③ 详情页才有 schema.org Event JSON-LD（含准确起止日）。
+const HUODONGBA_SOURCE = {
+  name: "互动吧上海",
+  url: "https://huodong.com/event/shanghai",
+  category: "线下活动",
+  tier: "T2",
+};
+const HUODONGBA_LIST = `
+  <div class="event-list">
+    <article class="activity-card">
+      <a class="card-hit" href="/event/detail/eyufp"
+         aria-label="浸入式音乐秀《双城之战》" data-growth-code="eyufp"></a>
+      <h3 class="activity-title">浸入式音乐秀《双城之战》</h3>
+      <p class="activity-meta"><span class="meta-date">展至 10月29日</span>
+        <span class="meta-location" title="上海 · 静安区">上海 · 静安区</span></p>
+    </article>
+    <article class="activity-card">
+      <a class="card-hit" href="/event/detail/eykRE" aria-label="舞台剧《诺曼底公寓》"></a>
+      <h3 class="activity-title">舞台剧《诺曼底公寓》</h3>
+      <p class="activity-meta"><span class="meta-date">展至 10月11日</span>
+        <span class="meta-location" title="上海 · 徐汇区">上海 · 徐汇区</span></p>
+    </article>
+  </div>`;
+const HUODONGBA_DETAILS = {
+  "https://huodong.com/event/detail/eyufp": `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Event","name":"浸入式音乐秀《双城之战》","startDate":"2026-09-30","endDate":"2026-10-29","location":{"@type":"Place","name":"上海市静安区乌鲁木齐北路505号上海宾馆"}}</script>`,
+  "https://huodong.com/event/detail/eykRE": `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Event","name":"舞台剧《诺曼底公寓》","startDate":"2026-09-29","endDate":"2026-10-11","location":{"@type":"Place","name":"上海市徐汇区安福路288号 上海话剧艺术中心"}}</script>`,
+};
+
+test("huodongba parser reads activity cards then schema.org Event from each detail page", async () => {
+  const events = await parseHuodongBa(HUODONGBA_LIST, HUODONGBA_SOURCE, {
+    fetchHtml: async (url) => HUODONGBA_DETAILS[url],
+  });
+
+  assert.equal(events.length, 2);
+  assert.deepEqual(
+    events.map((e) => e.title),
+    ["浸入式音乐秀《双城之战》", "舞台剧《诺曼底公寓》"],
+  );
+  // 开始日必须来自详情页 JSON-LD，而不是列表页的「展至 X」（那是结束日）
+  assert.match(events[0].start_time, /^2026-09-30/);
+  assert.match(events[0].end_time, /^2026-10-29/);
+  // 报名链接必须指向该条详情页；回落成列表页会让所有条目的链接撞在一起
+  assert.equal(events[0].signup_url, "https://huodong.com/event/detail/eyufp");
+  assert.equal(events[1].signup_url, "https://huodong.com/event/detail/eykRE");
+});
+
+test("huodongba parser skips detail pages that fail, keeping the rest", async () => {
+  const events = await parseHuodongBa(HUODONGBA_LIST, HUODONGBA_SOURCE, {
+    fetchHtml: async (url) => {
+      if (url.endsWith("eyufp")) throw new Error("HTTP 500");
+      return HUODONGBA_DETAILS[url];
+    },
+  });
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].title, "舞台剧《诺曼底公寓》");
+});
+
+test("huodongba parser does not fall back to scraping legacy detail links", async () => {
+  // 反向守卫：改版前的列表是 <a href="/event/detail/xxx">标题</a> 直接挂在 <li> 上。
+  // 解析器必须**只认 activity-card 卡片**——若放开成「见 detail 链接就抓」，
+  // 又会退回当年那套「靠详情页 <h1>/日期正则猜字段」的老路，那套在改版后已经抓不到东西。
+  const legacyList = `<ul class="event_list"><li><a href="/event/detail/abc123">某活动</a></li></ul>`;
+  const events = await parseHuodongBa(legacyList, HUODONGBA_SOURCE, {
+    fetchHtml: async () => HUODONGBA_DETAILS["https://huodong.com/event/detail/eyufp"],
+  });
+
+  assert.equal(events.length, 0);
+});
+
+// 上海外滩美术馆：站点 2026-10 改为客户端渲染，官网 HTML 已无展览数据，
+// 改直连其 Sanity 公开数据集（一次请求返回 JSON），这里钉住 JSON → 事件的翻译。
+test("rockbund parser reads exhibitions from the sanity query payload", () => {
+  const body = JSON.stringify({
+    result: [
+      {
+        title: "约塔·蒙巴萨：（在潮汐里）困于流动中",
+        slug: "jota-mombaca-stuck-in-movement-in-the-tide",
+        startDate: "2026-10-31",
+        endDate: "2027-02-21",
+        venue: "上海外滩美术馆",
+        image: "https://cdn.sanity.io/images/fvrm4fsf/production/x.jpg",
+      },
+    ],
+  });
+
+  const events = parseRockbundArtMuseum(body, {
+    name: "上海外滩美术馆",
+    url: "https://fvrm4fsf.apicdn.sanity.io/v2021-10-21/data/query/production?query=x",
+    category: "展览",
+    tier: "T1",
+  });
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].venue, "上海外滩美术馆");
+  assert.match(events[0].start_time, /^2026-10-31/);
+  assert.match(events[0].end_time, /^2027-02-21/);
+  assert.equal(
+    events[0].signup_url,
+    "https://www.rockbundartmuseum.org/exhibitions/jota-mombaca-stuck-in-movement-in-the-tide",
+  );
+});
+
+test("rockbund parser stays quiet when the endpoint returns non-json", () => {
+  // 接口异常（反爬页/网关错误）时静默返回空，交给健康报告呈现，不抛错中断整批采集
+  assert.deepEqual(
+    parseRockbundArtMuseum("<html>403 Forbidden</html>", {
+      name: "上海外滩美术馆",
+      url: "https://fvrm4fsf.apicdn.sanity.io/x",
+      category: "展览",
+    }),
+    [],
+  );
 });
 
 test("smartshanghai parser reads event cards from list page", () => {

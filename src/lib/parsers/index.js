@@ -42,11 +42,11 @@ import {
   parseFotografiskaZh,
   parseListingSite,
   parsePsaShanghai,
-  parseRockbundArtMuseum,
   parseShisuEvents,
   parseSjtuEvents,
   parseUccaEdge,
 } from "./listing.js";
+import { parseRockbundArtMuseum } from "./rockbund.js";
 import { parseShcstheatre } from "./shcstheatre.js";
 import { parseShlabEvents } from "./shlab.js";
 import { parseShowstart } from "./showstart.js";

@@ -7,6 +7,7 @@ import {
 import { defaultFetchHtml } from "./fetch-html.js";
 import { checkRobots } from "./robots.js";
 import { PARSERS } from "./parsers/index.js";
+import { ROCKBUND_SANITY_URL } from "./parsers/rockbund.js";
 import { isRelevantPerformance } from "./parsers/shared.js";
 
 export { defaultFetchHtml } from "./fetch-html.js";
@@ -53,10 +54,13 @@ export const SOURCE_SEEDS_RAW = [
   },
   {
     name: "上海外滩美术馆",
-    url: "https://www.rockbundartmuseum.org/exhibitions/",
+    // ⚠️ 2026-10 站点改为客户端渲染，官网 `/exhibitions/` 的 SSR HTML 已无展览数据。
+    // 改直连其 Sanity 公开数据集（一次请求返回全部未结束展览）。详见 parsers/rockbund.js。
+    url: ROCKBUND_SANITY_URL,
     category: "展览",
     locale: "zh",
     parser: PARSERS.rockbund,
+    notes: "上海外滩美术馆（RAM）· 经 Sanity 公开数据集直读展期（2026-10 改造，替代失效的官网 HTML 抓取）",
   },
   {
     name: "teamLab 无界上海",
@@ -316,10 +320,13 @@ export const SOURCE_SEEDS_RAW = [
   },
   {
     name: "互动吧上海",
-    url: "https://www.huodong.com/event?cityCode=310000",
+    // ⚠️ 2026-10 改版：`?cityCode=310000` 已失效（返回全部城市，首条是北京），
+    // 必须用路径式城市维度。详见 parsers/huodongba.js 顶部说明。
+    url: "https://huodong.com/event/shanghai",
     category: "线下活动",
     locale: "zh",
     parser: PARSERS.huodongBa,
+    notes: "活动网（聚合大麦网/豆瓣/秀动）· 列表页取卡片 → 详情页读 schema.org Event（2026-10 改版后重写）",
   },
   {
     name: "Eventbrite Shanghai",
@@ -2478,8 +2485,8 @@ export function resolveSourceTier(source) {
   return "T2";
 }
 
-// 停采清单（2026-10-01）：以下 40 个信源在当前采集 runner（腾讯云 124.223.200.89，上海电信）
-// 网络上已确认零召回——不是解析规则问题，是网络出口/源站策略问题，逐源实测结论：
+// 停采清单（2026-10-01 建立，2026-10-06 增补）。清单里的源当前零召回，逐源实测结论：
+//   A 组 · 网络/反爬（与解析规则无关）
 //   · Eventbrite 全系 25 源：HTTP 405，机房 IP 被反爬拦截（换 UA/Referer、强制 HTTP/1.1、HTTP/2 均无效）
 //   · 活动行系 10 源：HTTP 403。注意断点很新（2026-09-27 起，此前连续 18 次采集正常），
 //     同期 AllEvents / Lu.ma 也一起断——疑似 runner 出口 IP 被限，属可恢复项，建议 1~2 周后复查
@@ -2487,6 +2494,9 @@ export function resolveSourceTier(source) {
 //   · 上海热线：HTTP 412 反爬；苏州博物馆：源站返回畸形 HTTP 头，Node 解析器拒绝
 //     （HPE_INVALID_HEADER_TOKEN，insecureHTTPParser 也救不回）
 //   · NYU Shanghai Events：证书链缺中间证书（UNABLE_TO_VERIFY_LEAF_SIGNATURE，--use-system-ca 无效）
+//   B 组 · 领域不对（域名正常、无封禁，但整站产出的不是活动）
+//   · 赢商网系：商业地产资讯
+//   C 组 · 结构性 0 条（fetch/解析都正常，但条目全被正确的规则拦掉）——见集合末尾逐条说明
 // 恢复方式：从下面的集合里删掉对应名字即可，上方的 URL 与 parser 定义都还在。
 const RETIRED_SOURCE_NAMES = new Set([
   "AllEvents Shanghai",
@@ -2530,6 +2540,21 @@ const RETIRED_SOURCE_NAMES = new Set([
   "NYU Shanghai Events",
   "Lu.ma Shanghai",
 
+  // ── 2026-10-06 复查：同一批「服务器出口 IP 被反爬」的源，补进停采清单 ──
+  // 判据（逐源实测，非推测）：**同一 URL 在本机（住宅 IP）返回 200 且有数据，在 runner 上返回 403/405**。
+  //   · 活动行「AI 扩容」那批 6 个标签源：本机 200（Agent 源单次 10 条），runner 403；
+  //     并发不是诱因——本机 6 路同时打也都是 200，说明是 runner 出口 IP 被整站限，不是限流误伤。
+  //   · Eventbrite 数据科学：本机 200 + 7 条，runner 405（与已退休的 25 个 Eventbrite 同因）。
+  // 处置同前一批：从生效集里摘掉，URL 与 parser 原样保留——封禁解除后删掉名字即可复活。
+  // ⚠️ 不要再对活动行做批量探测（2026-10-03 已因此触发过 IP 级封禁，见当日 memory）。
+  "活动行·上海Agent",
+  "活动行·上海具身智能",
+  "活动行·上海智能体",
+  "活动行·上海智能制造",
+  "活动行·上海工业互联网",
+  "活动行·上海AI应用",
+  "Eventbrite 上海数据科学",
+
   // 域名没错、也没被反爬——是**领域不对**，与上面那批（网络/反爬）原因不同，特此分开记。
   // 赢商网是商业地产门户，整站产出的是「新店开业 / 品牌首店 / 招商盘点」资讯，不是活动。
   // 更糟的是它的条目拿不到场馆，buildEvent 会把 venue 兜底成"上海"，
@@ -2539,6 +2564,27 @@ const RETIRED_SOURCE_NAMES = new Set([
   // 但这条源本身没有有效产出，直接退休。恢复方式：从集合里删掉即可。
   "赢商网",
   "赢商网·华东",
+
+  // ── 2026-10-06：以下 4 个源**能访问、解析也没坏**，但按当前规则产不出活动，属"结构性 0 条" ──
+  // 与「stale（栏目几个月没更新，一有新帖就会命中）」「被反爬」都不是一回事，故单列。
+  // 判定依据：fetch 200、parser 跑通，但条目**全部**被正确的规则拦掉，且拦得对。
+  //
+  // · 上海对外经贸大学·讲座报告（科研处 kyc/jzhy）：该栏目只发「【上经贸大·科研】第N周学术活动预告」，
+  //   是**多场活动的目录页**，被 NEWS_TITLE_PATTERNS 的周报规则（第N周…活动…预告）正确剔除
+  //   （10-01 曾以 raw=14 入选，那是把周报标题当成了单场活动的误收）。栏目里没有单场活动可抽。
+  //   💡 若日后要复活它，正确做法不是删过滤规则，而是**给周报详情页写展开式解析**（一页拆成多场讲座）。
+  // · 东华教务处·通知公告（jw.dhu.edu.cn/tzgg）：栏目是选课/教材/考场/场地调整等**教务通知**，
+  //   标题命中「通知/公示/选课/信息维护」等规则被正确剔除——它本身不是活动源。
+  // · 上海戏剧学院·基础部通知（jjy.sta.edu.cn，继续教育学院）：放假/学位申请/招聘公告，
+  //   与上面同理；且该站在 runner 上出现过 fetch failed，稳定性也差。
+  // · AI Tinkerers Shanghai：用通用 LLM 抽取 parser，需 LLM_EXTRACT_ENABLED=true 才会工作，
+  //   当前环境未开启（返回空是设计行为）；而官网首页是导航/城市列表，即便开启也抽不出条目。
+  //   💡 若日后启用 LLM 抽取，把它从下面删掉即可。
+  // 恢复方式同上：删掉名字。
+  "上海对外经贸大学·讲座报告",
+  "东华教务处·通知公告",
+  "上海戏剧学院·基础部通知",
+  "AI Tinkerers Shanghai",
 ]);
 
 export const SOURCE_SEEDS = SOURCE_SEEDS_RAW

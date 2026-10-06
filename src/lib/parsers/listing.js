@@ -65,15 +65,10 @@ export function parseFosunFoundation(html, source, context) {
   return events;
 }
 
-export function parseRockbundArtMuseum(html, source, context) {
-  return parseListingSite(html, source, {
-    ...context,
-    linkFilter: (href, label) =>
-      /exhibition|program|展览|活动/i.test(href) || /展览|活动|展/.test(label),
-    defaultVenue: "上海外滩美术馆",
-  });
-}
-
+// 注意：上海外滩美术馆的 parser 不在这里，而在 ./rockbund.js。
+// 2026-10 该站改为客户端渲染，官网 HTML 已无展览数据，改走其 Sanity 公开数据集，
+// 不再是「listing 页链接扫描」这一类，故单独成文件。（历史上这里曾有一份同名的通用实现，
+// 与 rockbund.js 重名，index.js 引用的却是这一份，导致改另一份不生效——已合并。）
 export function parseFotografiska(html, source, context) {
   return parseListingSite(html, source, {
     ...context,
