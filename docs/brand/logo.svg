@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="1024" height="1024">
+  <title>上海城市生活雷达</title>
+  <defs>
+    <mask id="notch" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+      <rect width="200" height="200" fill="#fff"/>
+      <circle cx="46" cy="138" r="12" fill="#000"/>
+      <circle cx="154" cy="138" r="12" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="200" height="200" fill="#c4472a"/>
+  <g transform="translate(100 100) scale(.92) translate(-100 -100)">
+    <!-- 后面一张票（墨色） -->
+    <g transform="rotate(12 100 100) translate(112 96) scale(.84) translate(-100 -100)">
+      <rect x="46" y="16" width="108" height="168" rx="12" fill="#191817"/>
+    </g>
+    <!-- 前面一张票（纸色）+ 几何明珠 -->
+    <g transform="rotate(-10 100 100) translate(90 104) scale(.84) translate(-100 -100)">
+      <rect x="46" y="16" width="108" height="168" rx="12" fill="#fbfaf7" mask="url(#notch)"/>
+      <path d="M64 138 H136" stroke="#c4472a" stroke-width="3" stroke-dasharray="5 5" stroke-linecap="round" fill="none"/>
+      <g fill="#191817">
+        <rect x="97.5" y="30" width="5" height="16" rx="2.5"/>
+        <circle cx="100" cy="53" r="9"/>
+        <rect x="94.5" y="58" width="11" height="18"/>
+        <circle cx="100" cy="91" r="18"/>
+        <path d="M91 104 L80 122 L87 122 L97 107 Z M109 104 L120 122 L113 122 L103 107 Z M97 106 h6 v16 h-6z"/>
+      </g>
+      <circle cx="100" cy="161" r="6" fill="#c4472a"/>
+    </g>
+  </g>
+</svg>
