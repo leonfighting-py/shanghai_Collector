@@ -211,10 +211,38 @@
   border-bottom: 2rpx solid var(--ink);
 }
 
+.tabs-row {
+  display: flex;
+  align-items: stretch;
+}
+
 .tabs {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
-  padding: 0 32rpx;
+  padding: 0 0 0 32rpx;
   box-sizing: border-box;
+}
+
+/* 「筛选」入口：打开二级分类 + 区域面板，角标是已选个数 */
+.filter-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 0 28rpx;
+  border-left: 1rpx solid var(--hair);
+  font-size: 26rpx;
+  color: var(--ink-2);
+}
+
+.filter-btn-on {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.filter-count {
+  font-size: 22rpx;
 }
 
 .tab {
@@ -450,4 +478,67 @@
   line-height: 1.5;
   color: var(--ink-2);
   word-break: break-all;
+}
+
+/* ---------- 筛选面板（二级分类 + 区域） ---------- */
+.filter-drawer {
+  height: 62vh;
+}
+
+.filter-label {
+  padding: 36rpx 0 16rpx;
+  font-size: 22rpx;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.fchip {
+  padding: 12rpx 26rpx;
+  border: 1rpx solid var(--hair);
+  font-size: 26rpx;
+  color: var(--ink-2);
+}
+
+.fchip-on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.filter-note {
+  margin-top: 40rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.filter-actions {
+  flex: none;
+  display: flex;
+  border-top: 2rpx solid var(--ink);
+}
+
+.filter-reset,
+.filter-done {
+  flex: 1;
+  padding: 28rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.filter-reset {
+  color: var(--ink-2);
+  border-right: 1rpx solid var(--hair);
+}
+
+.filter-done {
+  background: var(--ink);
+  color: var(--paper);
 }

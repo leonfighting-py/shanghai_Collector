@@ -11,6 +11,8 @@ const PUBLIC_FIELDS = [
   "end_time",
   "venue",
   "category",
+  "subcategory",
+  "district",
   "signup_url",
   "source_name",
   "source_url",

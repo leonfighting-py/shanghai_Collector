@@ -82,17 +82,22 @@
     </scroll-view>
   </block>
 
-  <!-- 吸顶筛选条：类目 Tab + 日期条 -->
+  <!-- 吸顶筛选条：类目 Tab + 筛选入口 + 日期条 -->
   <view class="sticky" style="top: {{navHeight}}px;">
-    <scroll-view class="tabs" scroll-x enhanced show-scrollbar="{{false}}">
-      <view
-        wx:for="{{categories}}"
-        wx:key="key"
-        class="tab {{item.key === activeCategory ? 'tab-on' : ''}}"
-        data-category="{{item.key}}"
-        bindtap="onSelectCategory"
-      >{{item.label}}</view>
-    </scroll-view>
+    <view class="tabs-row">
+      <scroll-view class="tabs" scroll-x enhanced show-scrollbar="{{false}}">
+        <view
+          wx:for="{{categories}}"
+          wx:key="key"
+          class="tab {{item.key === activeCategory ? 'tab-on' : ''}}"
+          data-category="{{item.key}}"
+          bindtap="onSelectCategory"
+        >{{item.label}}</view>
+      </scroll-view>
+      <view class="filter-btn {{filterCount ? 'filter-btn-on' : ''}}" bindtap="onOpenFilter">
+        <text>筛选</text><text wx:if="{{filterCount}}" class="filter-count">{{filterCount}}</text>
+      </view>
+    </view>
     <!-- scroll-into-view：当前日期滚出日期条可视范围时自动带回来 -->
     <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="chip-{{activeDate}}" scroll-with-animation>
       <view
@@ -177,5 +182,54 @@
       />
       <view class="drawer-end"></view>
     </scroll-view>
+  </view>
+</view>
+
+<!-- 筛选面板：二级分类 + 区域。与「展期中」面板同一套视觉，从底部升起。
+     二级挂在某个一级类目下，所以「全部」时该组不出现（二级是类目内的细分）。 -->
+<view wx:if="{{filter.open}}" class="drawer-backdrop" bindtap="onCloseFilter" catchtouchmove="noop">
+  <view class="drawer filter-drawer" catchtap="noop">
+    <view class="drawer-head">
+      <view>
+        <view class="drawer-title">筛选</view>
+        <view class="drawer-meta">选完点「查看结果」收起</view>
+      </view>
+      <view class="drawer-close" bindtap="onCloseFilter">关闭 ✕</view>
+    </view>
+
+    <scroll-view class="drawer-body" scroll-y enhanced show-scrollbar="{{false}}">
+      <block wx:if="{{filter.subcategories.length}}">
+        <view class="filter-label">细分 · {{activeCategory}}</view>
+        <view class="filter-group">
+          <view
+            wx:for="{{filter.subcategories}}"
+            wx:key="value"
+            class="fchip {{item.value === activeSubcategory ? 'fchip-on' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onSelectSubcategory"
+          >{{item.label}}</view>
+        </view>
+      </block>
+      <view wx:else class="filter-label">细分 · 先在上面选一个类目</view>
+
+      <view class="filter-label">区域</view>
+      <view class="filter-group">
+        <view
+          wx:for="{{filter.districts}}"
+          wx:key="value"
+          class="fchip {{item.value === activeDistrict ? 'fchip-on' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="onSelectDistrict"
+        >{{item.label}}</view>
+      </view>
+
+      <view class="filter-note">区域按场馆名与地标推断，识别不出的活动只在「全部」里出现。</view>
+      <view class="drawer-end"></view>
+    </scroll-view>
+
+    <view class="filter-actions">
+      <view class="filter-reset" bindtap="onResetFilter">清除</view>
+      <view class="filter-done" bindtap="onCloseFilter">查看结果</view>
+    </view>
   </view>
 </view>

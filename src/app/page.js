@@ -14,7 +14,7 @@ const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "�
 
 // 传给客户端的字段白名单：日程表只用得到这些，别把 raw_event_ids 等内部字段带下去
 const CLIENT_FIELDS = [
-  "title", "start_time", "end_time", "venue", "category",
+  "title", "start_time", "end_time", "venue", "category", "subcategory", "district",
   "signup_url", "source_name", "summary", "image_url", "dedupe_key",
 ];
 

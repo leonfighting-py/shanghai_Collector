@@ -1,3 +1,4 @@
+import { classifySubcategory, detectDistrict } from "./event-classify.js";
 import { inferEventEndTime } from "./event-duration.js";
 
 export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
@@ -244,6 +245,11 @@ export function filterPublishableEvents(events) {
       // 单场活动仍返回 null，由 coalesce(end_time, start_time) 兜底 —— 详见 event-duration.js
       end_time: inferEventEndTime(normalized),
       sources: normalizeSources(event),
+      // 二级分类与区域是**派生**字段，不落库：本函数同时是发布收口和读路径收口
+      //（repository.listEvents / cloudrun / Next 页面都经过它），所以在这里算，
+      // Web、小程序 API、采集三处自动一致，且改规则立即生效、无需回填。详见 event-classify.js
+      subcategory: classifySubcategory(normalized),
+      district: detectDistrict(normalized),
     };
   });
 }

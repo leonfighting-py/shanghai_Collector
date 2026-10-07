@@ -1,5 +1,6 @@
 const agenda = require("../../utils/agenda.js");
 const api = require("../../utils/api.js");
+const classify = require("../../utils/classify.js");
 const format = require("../../utils/format.js");
 
 const CATEGORIES = [
@@ -26,6 +27,12 @@ Page({
   data: {
     categories: CATEGORIES,
     activeCategory: "",
+    // 二级分类与区域：与一级类目一样在本地重算，不走服务端（接口一次返回全量）
+    activeSubcategory: "",
+    activeDistrict: "",
+    // 「筛选」入口上的角标数字 = 二级 + 区域已选个数（一级类目是 Tab，不计入）
+    filterCount: 0,
+    filter: { open: false, subcategories: [], districts: [] },
     searchKeyword: "",
     loading: true,
     errorMsg: "",
@@ -162,8 +169,13 @@ Page({
   // 按当前类目重算整页：统计数字、「正在进行」海报栏、日期条、日程表
   rebuild() {
     const today = format.toShanghaiDate(new Date());
-    const category = this.data.activeCategory;
-    this.pool = category ? this.rawEvents.filter((event) => event.category === category) : this.rawEvents;
+    const { activeCategory, activeSubcategory, activeDistrict } = this.data;
+    this.pool = this.rawEvents
+      .filter((event) => !activeCategory || event.category === activeCategory)
+      .filter((event) => !activeSubcategory || event.subcategory === activeSubcategory)
+      // 区域识别不出时服务端下发空串，这类活动只在「全部」下出现 ——
+      // 规则宁可留空也不错标，覆盖情况与提升路径见 src/lib/event-classify.js
+      .filter((event) => !activeDistrict || event.district === activeDistrict);
     const indexOf = new Map(this.pool.map((event, index) => [event, index]));
 
     const split = agenda.splitByToday(this.pool, today);
@@ -233,8 +245,52 @@ Page({
   onSelectCategory(event) {
     const category = event.currentTarget.dataset.category;
     if (category === this.data.activeCategory) return;
-    this.setData({ activeCategory: category });
+    // 二级分类挂在一级类目下，换类目后原来的二级选择必然失效，一并清掉
+    this.setData({ activeCategory: category, activeSubcategory: "" });
     this.rebuild();
+  },
+
+  // ---------- 筛选面板：二级分类 + 区域 ----------
+  onOpenFilter() {
+    this.setData({
+      filter: {
+        open: true,
+        // 「全部」时没有二级可选（二级是类目内的细分），此时该组不渲染
+        subcategories: classify.subcategoryOptions(this.data.activeCategory),
+        districts: classify.districtOptions(),
+      },
+    });
+  },
+
+  onCloseFilter() {
+    this.setData({ "filter.open": false });
+  },
+
+  onSelectSubcategory(event) {
+    const value = event.currentTarget.dataset.value;
+    this.setData({
+      activeSubcategory: value,
+      filterCount: this.countFilters(value, this.data.activeDistrict),
+    });
+    this.rebuild();
+  },
+
+  onSelectDistrict(event) {
+    const value = event.currentTarget.dataset.value;
+    this.setData({
+      activeDistrict: value,
+      filterCount: this.countFilters(this.data.activeSubcategory, value),
+    });
+    this.rebuild();
+  },
+
+  onResetFilter() {
+    this.setData({ activeSubcategory: "", activeDistrict: "", filterCount: 0 });
+    this.rebuild();
+  },
+
+  countFilters(subcategory, district) {
+    return (subcategory ? 1 : 0) + (district ? 1 : 0);
   },
 
   // 点日期条 → 滚到那一天。偏移量要扣掉固定标题栏和吸顶筛选条的高度
