@@ -244,7 +244,12 @@ async function main() {
     // ① 建目录
     mkdirSync(config.outDir, { recursive: true });
 
-    // ② dump。URL 走参数、密码走 PGPASSWORD，密码不进命令行
+    // ② 先把客户端版本打出来。pg_dump 不向前兼容，服务器是 PG 17 而客户端是 16 时
+    //    会直接中止；日志里有这一行，排查时就不用猜了（10-08 第一次跑就踩了这个）。
+    const { stdout: pgVersion } = await run(config.pgDump, ["--version"], { maxBuffer: 1024 * 1024 });
+    console.log(`[backup] ${pgVersion.trim()}`);
+
+    // ③ dump。URL 走参数、密码走 PGPASSWORD，密码不进命令行
     const { url: connectUrl, password } = splitConnectionUrl(
       withSslMode(toSessionUrl(config.databaseUrl)),
     );
@@ -263,11 +268,11 @@ async function main() {
       { env: { ...process.env, PGPASSWORD: password }, maxBuffer: 32 * 1024 * 1024 },
     );
 
-    // ③ 基本体检：文件得存在且不像空壳
+    // ④ 基本体检：文件得存在且不像空壳
     const bytes = statSync(outPath).size;
     if (bytes < 1024) throw new Error(`dump 只有 ${bytes} 字节，明显不对`);
 
-    // ④ 关键校验：清单里必须真的有那四张表
+    // ⑤ 关键校验：清单里必须真的有那四张表
     const { stdout: listing } = await run(config.pgRestore, ["--list", outPath], {
       maxBuffer: 32 * 1024 * 1024,
     });
@@ -285,7 +290,7 @@ async function main() {
       return { ok: true, dryRun: true, fileName, bytes, digest };
     }
 
-    // ⑤ 第一路：GitHub Release（永久保留，不像 Artifacts 90 天过期）
+    // ⑥ 第一路：GitHub Release（永久保留，不像 Artifacts 90 天过期）
     const notesPath = join(config.outDir, `${tag}.notes.md`);
     writeFileSync(
       notesPath,
@@ -303,7 +308,7 @@ async function main() {
     });
     console.log(`[backup] 已上传 GitHub Release：${tag}`);
 
-    // ⑥ 第二路：R2（可选）。失败不影响第一路，但要喊出来
+    // ⑦ 第二路：R2（可选）。失败不影响第一路，但要喊出来
     if (r2Enabled(config.r2)) {
       const env = { ...process.env, ...r2Env(config) };
       try {
@@ -330,7 +335,7 @@ async function main() {
       console.log("[backup] R2 未启用（缺 R2_* secret），本次只写 GitHub Release");
     }
 
-    // ⑦ 滚动清理：只删自己前缀的 tag，保留最近 keep 份
+    // ⑧ 滚动清理：只删自己前缀的 tag，保留最近 keep 份
     const { stdout: tagList } = await gh(
       ["release", "list", "--limit", "200", "--json", "tagName", "--jq", ".[].tagName"],
       { config },
