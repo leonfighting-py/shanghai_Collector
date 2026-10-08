@@ -222,3 +222,50 @@ export function detectDistrict(event) {
 
   return "";
 }
+
+// ---------------------------------------------------------------------------
+// 筛选面板用的选项与谓词
+// ---------------------------------------------------------------------------
+// Web 直接 import 本模块；小程序不能引用 src/，在 miniprogram/utils/classify.js
+// 复制了一份同样的选项表 —— test/miniprogram-classify-parity.test.js 会在两边
+// 任一漂移时失败（常量与这两个构造函数的输出都比对）。
+
+/** 二级分类挂在一级类目下，所以没选类目（=「全部」）时不给选项 */
+export function subcategoryOptions(category) {
+  if (!category) return [];
+  const list = SUBCATEGORIES[category] || [];
+  return [{ value: "", label: "全部" }].concat(list.map((name) => ({ value: name, label: name })));
+}
+
+export function districtOptions() {
+  return [{ value: "", label: "全部" }].concat(DISTRICTS.map((name) => ({ value: name, label: name })));
+}
+
+/**
+ * 一级类目 / 二级分类 / 区域三者的筛选谓词，三者是 AND 关系。
+ * 空值一律表示「不限」（含未识别：区域识别不出时字段是 ""，这类活动只在「全部」下出现）。
+ */
+export function matchesClassification(event, { category = "", subcategory = "", district = "" } = {}) {
+  if (category && event?.category !== category) return false;
+  if (subcategory && event?.subcategory !== subcategory) return false;
+  if (district && event?.district !== district) return false;
+  return true;
+}
+
+/**
+ * 从 URL 查询参数里读「细分 / 区域」，**按白名单校验**。
+ * 为什么要白名单：`?sub=` 乱填一个不存在的值，筛出来的就是空列表 ——
+ * 用户看到的是「本站没有活动」而不是「链接参数错了」，不如直接忽略、退回「全部」。
+ * 二级还要挂在选中的一级类目下：类目是「全部」或与二级不属于同一类时，二级不生效。
+ *
+ * @param {object} params 页面收到的 searchParams（Next 已做过 URL 解码）
+ * @param {string} category 已校验过的一级类目（不在白名单时传 ""）
+ */
+export function readClassificationParams(params, category = "") {
+  const sub = typeof params?.sub === "string" ? params.sub.trim() : "";
+  const area = typeof params?.area === "string" ? params.area.trim() : "";
+  return {
+    subcategory: (SUBCATEGORIES[category] || []).includes(sub) ? sub : "",
+    district: DISTRICTS.includes(area) ? area : "",
+  };
+}

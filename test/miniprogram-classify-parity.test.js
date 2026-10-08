@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { DISTRICTS, SUBCATEGORIES } from "../src/lib/event-classify.js";
+import { DISTRICTS, SUBCATEGORIES, districtOptions, subcategoryOptions } from "../src/lib/event-classify.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const miniPath = path.join(root, "miniprogram/utils/classify.js");
@@ -25,9 +25,23 @@ test("小程序端的选项表与 src/lib/event-classify.js 完全一致（含�
   assert.deepEqual(mini.SUBCATEGORIES, SUBCATEGORIES, "SUBCATEGORIES 漂移了");
 });
 
-test("选项构造函数：前面补「全部」，未选类目时二级为空", () => {
-  const { subcategoryOptions, districtOptions } = loadCommonJs(miniPath);
+// 常量一致还不够：两端的选项构造函数（补「全部」、未知类目兜底）也必须产出同样的数组，
+// 否则 Web 筛选面板和小程序面板会出现「选项个数/顺序不一样」这种很难看出来的一致性 bug。
+test("两端选项构造函数的输出完全一致", () => {
+  const mini = loadCommonJs(miniPath);
+  const categories = ["", ...Object.keys(SUBCATEGORIES), "不存在的类目"];
 
+  for (const category of categories) {
+    assert.deepEqual(
+      mini.subcategoryOptions(category),
+      subcategoryOptions(category),
+      `subcategoryOptions("${category}") 漂移了`,
+    );
+  }
+  assert.deepEqual(mini.districtOptions(), districtOptions(), "districtOptions() 漂移了");
+});
+
+test("选项构造函数：前面补「全部」，未选类目时二级为空", () => {
   assert.deepEqual(subcategoryOptions(""), []);
 
   const subs = subcategoryOptions("展览");

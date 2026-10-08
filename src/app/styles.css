@@ -295,8 +295,9 @@ a {
   color: var(--ink);
 }
 .search input::placeholder { color: var(--ink-3); }
-/* 收藏入口：整条筛选栏里唯一带描边的按钮，打开后反相填充 */
-.fav-toggle {
+/* 筛选栏里两个带描边的入口（筛选 / 我的收藏），选中后反相填充 */
+.fav-toggle,
+.filter-toggle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -309,9 +310,14 @@ a {
 }
 .fav-toggle b { color: var(--accent); font-size: 17px; line-height: 1; }
 .fav-toggle span { font-weight: 400; color: var(--ink-2); }
-.fav-toggle:hover { background: var(--paper-2); }
-.fav-toggle[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+/* 已选筛选条件的角标：数字本身用强调色，不靠圆点 */
+.filter-toggle span { font-variant-numeric: tabular-nums; color: var(--accent); }
+.fav-toggle:hover,
+.filter-toggle:hover { background: var(--paper-2); }
+.fav-toggle[aria-pressed="true"],
+.filter-toggle[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .fav-toggle[aria-pressed="true"] span { color: inherit; opacity: 0.7; }
+.filter-toggle[aria-pressed="true"] span { color: inherit; }
 
 .days {
   display: grid;
@@ -440,11 +446,67 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 .drawer .row-thumb { width: 56px; height: 56px; }
 .drawer .row-main strong { font-size: 17px; }
 
+/* ---------- 筛选面板：二级分类 + 区域 ----------
+   壳子复用上面那套抽屉（桌面右侧滑出 / 手机底部升起），只加薄一点的高度和 chip 样式 */
+.filter-drawer { height: min(620px, 100%); }
+.filter-label {
+  margin: 28px 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+.filter-label:first-child { margin-top: 16px; }
+.filter-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.fchip {
+  padding: 7px 14px;
+  border: 1px solid var(--hair);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.fchip:hover { border-color: var(--ink); color: var(--ink); }
+.fchip.is-on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.filter-note { margin-top: 30px; font-size: 12px; line-height: 1.7; color: var(--ink-3); }
+.filter-actions {
+  flex: none;
+  display: flex;
+  gap: 12px;
+  padding: 16px 28px 22px;
+  border-top: 1px solid var(--hair);
+}
+.filter-reset {
+  flex: 1;
+  padding: 13px 0;
+  border: 1px solid var(--hair);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.filter-reset:not(:disabled):hover { border-color: var(--ink); color: var(--ink); }
+.filter-reset:disabled { opacity: 0.4; cursor: default; }
+.filter-done {
+  flex: 2;
+  padding: 13px 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 15px;
+  font-weight: 600;
+}
+.filter-done:hover { background: var(--accent); }
+
 @keyframes drawer-fade { from { opacity: 0; } }
 @keyframes drawer-in-right { from { transform: translateX(40px); opacity: 0; } }
 @keyframes drawer-in-up { from { transform: translateY(40px); opacity: 0; } }
 
 .empty { padding: 72px 0; text-align: center; font-size: 14px; color: var(--ink-2); }
+/* 筛到空时给一条不用回头找面板的出路 */
+.empty-reset {
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px 16px;
+  border: 1px solid var(--ink);
+  font-size: 13px;
+  color: var(--ink);
+}
+.empty-reset:hover { background: var(--ink); color: var(--paper); }
 
 .colophon {
   display: flex;
@@ -493,5 +555,8 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   .drawer { width: 100%; height: 86svh; border-left: 0; border-top: 3px solid var(--ink); animation-name: drawer-in-up; }
   .drawer-head { padding: 18px 20px 14px; }
   .drawer-body { padding: 0 20px 24px; }
+  /* 筛选面板比「展期中」清单短：选项是有限的一屏，留出底下的页面可见 */
+  .filter-drawer { height: 72svh; }
+  .filter-actions { padding: 14px 20px 18px; }
   .colophon { flex-direction: column; }
 }

@@ -13,6 +13,7 @@ import {
   splitByToday,
 } from "../../lib/agenda.js";
 import { CATEGORIES, safeExternalUrl } from "../../lib/events.js";
+import { districtOptions, matchesClassification, subcategoryOptions } from "../../lib/event-classify.js";
 import { EventImage } from "./EventImage.js";
 import { useFavorites } from "./useFavorites.js";
 
@@ -22,32 +23,69 @@ const RAIL_LIMIT = 14;
 
 /**
  * 首页主体：「正在进行」海报栏 + 吸顶筛选条 + 按天分组的日程表。
- * 服务端一次给足整个两周窗口，类目 / 搜索 / 只看收藏都在这里本地筛，切换零延迟。
+ * 服务端一次给足整个两周窗口，类目 / 二级分类 / 区域 / 搜索 / 只看收藏都在这里本地筛，切换零延迟。
+ *
+ * 二级分类与区域是服务端派生的字段（`src/lib/event-classify.js`，不落库），
+ * 数据随首屏 payload 一起下来，所以补筛选 UI 不需要改后端、也不需要重新采集。
  */
-export function EventBrowser({ events, today, days, initialCategory = "", initialSearch = "" }) {
+export function EventBrowser({
+  events,
+  today,
+  days,
+  initialCategory = "",
+  initialSubcategory = "",
+  initialDistrict = "",
+  initialSearch = "",
+}) {
   const [category, setCategory] = useState(initialCategory);
+  const [subcategory, setSubcategory] = useState(initialSubcategory);
+  const [district, setDistrict] = useState(initialDistrict);
   const [search, setSearch] = useState(initialSearch);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   // 「展开当日其余」的展开状态，以 "more:<date>" 为键
   const [expanded, setExpanded] = useState({});
   // 「展期中」完整清单在抽屉里看：几十条纯文字摊在页面里，展开后要往回滑很久才能收起
   const [drawerDate, setDrawerDate] = useState("");
+  // 筛选面板（细分 + 区域）。复用抽屉那套视觉：桌面从右侧滑出、手机从底部升起
+  const [filterOpen, setFilterOpen] = useState(false);
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
   // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
   const [activeDate, setActiveDate] = useState(today);
   const filtersRef = useRef(null);
   const daysRef = useRef(null);
 
+  // 选项表来自与服务端同一份常量：二级挂在类目下（没选类目时该组为空），区域恒为 16 区
+  const subs = useMemo(() => subcategoryOptions(category), [category]);
+  const areas = useMemo(() => districtOptions(), []);
+  // 角标只数「二级 + 区域」：一级类目在上面的 Tab 里已经自证选中，不重复计数
+  const filterCount = (subcategory ? 1 : 0) + (district ? 1 : 0);
+
+  // 换一级类目后，原来的二级选择必然失效，一并清掉（与小程序同一语义）
+  const selectCategory = (name) => {
+    if (name === category) return;
+    setCategory(name);
+    setSubcategory("");
+  };
+
+  const resetFilter = () => {
+    setSubcategory("");
+    setDistrict("");
+  };
+
   // 把筛选状态写回地址栏，方便分享；不走路由跳转，避免重新请求
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (category) params.set("category", category);
     else params.delete("category");
+    if (subcategory) params.set("sub", subcategory);
+    else params.delete("sub");
+    if (district) params.set("area", district);
+    else params.delete("area");
     if (search.trim()) params.set("search", search.trim());
     else params.delete("search");
     const query = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
-  }, [category, search]);
+  }, [category, subcategory, district, search]);
 
   const categoryCounts = useMemo(() => {
     const counts = {};
@@ -58,14 +96,15 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return events.filter((event) => {
-      if (category && event.category !== category) return false;
+      // 一级类目 / 二级分类 / 区域：三者 AND，规则与小程序共用同一份谓词
+      if (!matchesClassification(event, { category, subcategory, district })) return false;
       if (onlyFavorites && !favorites.includes(event.dedupe_key)) return false;
       if (!keyword) return true;
       return [event.title, event.venue, event.summary, event.source_name].some((text) =>
         String(text || "").toLowerCase().includes(keyword),
       );
     });
-  }, [events, category, search, onlyFavorites, favorites]);
+  }, [events, category, subcategory, district, search, onlyFavorites, favorites]);
 
   const ongoing = useMemo(() => splitByToday(filtered, today).ongoing, [filtered, today]);
   const agenda = useMemo(() => buildAgenda(filtered, { today, days }), [filtered, today, days]);
@@ -121,12 +160,16 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
   }, [activeDate]);
 
   const drawerDay = drawerDate ? agenda.find((day) => day.date === drawerDate) : null;
+  // 两个面板互斥：同时开着会叠两层遮罩，Esc 该关谁也没法判断
+  const modalOpen = Boolean(drawerDay) || filterOpen;
 
-  // 抽屉打开时锁住页面滚动，Esc 关闭
+  // 面板打开时锁住页面滚动，Esc 关闭
   useEffect(() => {
-    if (!drawerDay) return undefined;
+    if (!modalOpen) return undefined;
     const onKey = (event) => {
-      if (event.key === "Escape") setDrawerDate("");
+      if (event.key !== "Escape") return;
+      setDrawerDate("");
+      setFilterOpen(false);
     };
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -135,7 +178,17 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
     };
-  }, [drawerDay]);
+  }, [modalOpen]);
+
+  const openFilter = () => {
+    setDrawerDate("");
+    setFilterOpen(true);
+  };
+
+  const openDrawer = (date) => {
+    setFilterOpen(false);
+    setDrawerDate(date);
+  };
 
   const toggle = (key) => setExpanded((current) => ({ ...current, [key]: !current[key] }));
 
@@ -170,7 +223,7 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
       <div className="filters" id="agenda" ref={filtersRef}>
         <div className="filters-line">
           <div className="tabs" role="group" aria-label="分类筛选">
-            <button type="button" className="tab" aria-pressed={!category} onClick={() => setCategory("")}>
+            <button type="button" className="tab" aria-pressed={!category} onClick={() => selectCategory("")}>
               全部<sup>{events.length}</sup>
             </button>
             {CATEGORIES.map((name) => (
@@ -179,13 +232,23 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
                 className="tab"
                 key={name}
                 aria-pressed={category === name}
-                onClick={() => setCategory(name)}
+                onClick={() => selectCategory(name)}
               >
                 {name}<sup>{categoryCounts[name] || 0}</sup>
               </button>
             ))}
           </div>
           <div className="tools">
+            <button
+              type="button"
+              className="filter-toggle"
+              aria-haspopup="dialog"
+              aria-expanded={filterOpen}
+              aria-pressed={filterCount > 0}
+              onClick={openFilter}
+            >
+              筛选{filterCount > 0 ? <span>{filterCount}</span> : null}
+            </button>
             <label className="search">
               <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
                 <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -232,7 +295,12 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
 
       {visibleDays.length === 0 ? (
         <p className="empty">
-          {onlyFavorites ? "还没有收藏的活动，点活动右侧的星标即可收藏。" : "没有匹配的活动，试试换个关键词或分类。"}
+          {onlyFavorites ? "还没有收藏的活动，点活动右侧的星标即可收藏。" : "没有匹配的活动，试试换个关键词、类目或筛选条件。"}
+          {filterCount > 0 ? (
+            <button type="button" className="empty-reset" onClick={resetFilter}>
+              清除细分与区域筛选
+            </button>
+          ) : null}
         </p>
       ) : (
         visibleDays.map((day) => {
@@ -270,7 +338,7 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
                   </button>
                 ) : null}
                 {day.folded.length > 0 ? (
-                  <button type="button" className="fold" aria-haspopup="dialog" onClick={() => setDrawerDate(day.date)}>
+                  <button type="button" className="fold" aria-haspopup="dialog" onClick={() => openDrawer(day.date)}>
                     <span>展期中 · 另有 {day.folded.length} 场今天也能去</span>
                     <span aria-hidden="true">查看全部 →</span>
                   </button>
@@ -313,6 +381,76 @@ export function EventBrowser({ events, today, days, initialCategory = "", initia
                   onToggleFavorite={() => toggleFavorite(event.dedupe_key)}
                 />
               ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {filterOpen ? (
+        <div className="drawer-backdrop" onClick={() => setFilterOpen(false)}>
+          <div
+            className="drawer filter-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="筛选活动"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="drawer-head">
+              <div>
+                <p className="drawer-title">筛选</p>
+                <p className="drawer-meta">选完点「查看结果」收起 · 已生效 {filtered.length} 场</p>
+              </div>
+              <button type="button" className="drawer-close" onClick={() => setFilterOpen(false)} autoFocus>
+                关闭 ✕
+              </button>
+            </header>
+
+            <div className="drawer-body">
+              {subs.length > 0 ? (
+                <>
+                  <p className="filter-label">细分 · {category}</p>
+                  <div className="filter-group">
+                    {subs.map((item) => (
+                      <button
+                        type="button"
+                        key={item.value}
+                        className={`fchip${item.value === subcategory ? " is-on" : ""}`}
+                        aria-pressed={item.value === subcategory}
+                        onClick={() => setSubcategory(item.value)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="filter-label">细分 · 先在上面选一个类目</p>
+              )}
+
+              <p className="filter-label">区域</p>
+              <div className="filter-group">
+                {areas.map((item) => (
+                  <button
+                    type="button"
+                    key={item.value}
+                    className={`fchip${item.value === district ? " is-on" : ""}`}
+                    aria-pressed={item.value === district}
+                    onClick={() => setDistrict(item.value)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="filter-note">区域按场馆名与地标推断，识别不出的活动只在「全部」里出现。</p>
+            </div>
+
+            <div className="filter-actions">
+              <button type="button" className="filter-reset" onClick={resetFilter} disabled={filterCount === 0}>
+                清除
+              </button>
+              <button type="button" className="filter-done" onClick={() => setFilterOpen(false)}>
+                查看结果
+              </button>
             </div>
           </div>
         </div>

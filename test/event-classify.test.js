@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { DISTRICTS, SUBCATEGORIES, classifySubcategory, detectDistrict } from "../src/lib/event-classify.js";
+import { DISTRICTS, SUBCATEGORIES, classifySubcategory, detectDistrict, districtOptions, matchesClassification, readClassificationParams, subcategoryOptions } from "../src/lib/event-classify.js";
 
 test("二级分类：按一级类目给出细分", () => {
   const cases = [
@@ -117,4 +117,100 @@ test("SUBCATEGORIES 覆盖规则的全部产出", () => {
       `「${event.title}」判成「${sub}」，不在 ${event.category} 的选项里`,
     );
   }
+});
+
+// ---------------------------------------------------------------------------
+// 筛选面板：选项构造 + 筛选谓词（Web 直接用，小程序侧由 parity 测试比对）
+// ---------------------------------------------------------------------------
+
+test("筛选选项：前面补「全部」，且未选类目时二级为空", () => {
+  assert.deepEqual(subcategoryOptions(""), [], "没选类目就不该给出二级选项");
+
+  const subs = subcategoryOptions("展览");
+  assert.equal(subs[0].value, "");
+  assert.equal(subs[0].label, "全部");
+  assert.equal(subs.length, SUBCATEGORIES.展览.length + 1);
+  assert.equal(subs[1].value, SUBCATEGORIES.展览[0]);
+  // 顺序要与规则表的展示顺序一致，面板里才是从细分到兜底
+  assert.deepEqual(
+    subs.slice(1).map((item) => item.value),
+    SUBCATEGORIES.展览,
+  );
+
+  const areas = districtOptions();
+  assert.equal(areas.length, DISTRICTS.length + 1);
+  assert.equal(areas[0].value, "");
+  assert.deepEqual(
+    areas.slice(1).map((item) => item.value),
+    DISTRICTS,
+  );
+
+  // 未知类目不抛错，只是没有真实选项（只剩「全部」这一项）
+  assert.deepEqual(subcategoryOptions("不存在的类目"), [{ value: "", label: "全部" }]);
+});
+
+test("筛选谓词：类目 / 细分 / 区域三者是 AND，空值一律不限", () => {
+  const events = [
+    { category: "展览", subcategory: "艺术展", district: "黄浦" },
+    { category: "展览", subcategory: "摄影", district: "徐汇" },
+    { category: "演出音乐", subcategory: "音乐会", district: "" },
+  ];
+  const pick = (filters) => events.filter((event) => matchesClassification(event, filters));
+
+  assert.equal(pick({}).length, 3, "全空 = 全部");
+  assert.equal(pick({ category: "展览" }).length, 2);
+  assert.equal(pick({ subcategory: "摄影" }).length, 1, "只给细分也要生效");
+  assert.equal(pick({ category: "展览", subcategory: "摄影" }).length, 1);
+  assert.equal(pick({ category: "演出音乐", subcategory: "摄影" }).length, 0, "不同类目下的细分不该命中");
+  assert.equal(pick({ district: "徐汇" }).length, 1);
+  assert.equal(pick({ category: "展览", district: "徐汇" }).length, 1);
+  assert.equal(pick({ category: "演出音乐", district: "徐汇" }).length, 0);
+});
+
+// 区域识别不出来时服务端下发的是 ""，这类活动只在「全部」下出现 —— 宁可留空也不错标
+test("筛选谓词：选具体区域时，识别不出区域的活动被排除", () => {
+  const unknown = { category: "展览", subcategory: "艺术展", district: "" };
+  assert.equal(matchesClassification(unknown, { district: "" }), true);
+  assert.equal(matchesClassification(unknown, { district: "徐汇" }), false);
+
+  // 字段缺失（老缓存 / 老后端不下发）等同于未识别，不应抛错
+  assert.equal(matchesClassification({ category: "展览" }, { district: "徐汇" }), false);
+  assert.equal(matchesClassification({ category: "展览" }, { district: "" }), true);
+  assert.equal(matchesClassification(undefined, {}), true, "空对象不该被筛掉");
+});
+
+// URL 参数不校验就会「静默筛成空列表」：用户以为站里没活动，其实是链接参数错了
+test("URL 参数读细分与区域：白名单外的值一律忽略", () => {
+  assert.deepEqual(readClassificationParams({ sub: "艺术展", area: "徐汇" }, "展览"), {
+    subcategory: "艺术展",
+    district: "徐汇",
+  });
+
+  // 细分不属于选中的一级类目 → 忽略；类目是「全部」时也没有二级 → 忽略
+  assert.deepEqual(readClassificationParams({ sub: "音乐会", area: "徐汇" }, "展览"), {
+    subcategory: "",
+    district: "徐汇",
+  });
+  assert.deepEqual(readClassificationParams({ sub: "艺术展", area: "徐汇" }, ""), {
+    subcategory: "",
+    district: "徐汇",
+  });
+
+  // 压根不存在的值：两个都忽略，而不是筛成空
+  assert.deepEqual(readClassificationParams({ sub: "不存在的细分", area: "火星" }, "展览"), {
+    subcategory: "",
+    district: "",
+  });
+
+  // 缺参数 / 非字符串（?sub=a&sub=b 会变成数组）都不该抛错
+  assert.deepEqual(readClassificationParams(undefined, "展览"), { subcategory: "", district: "" });
+  assert.deepEqual(readClassificationParams({}, "展览"), { subcategory: "", district: "" });
+  assert.deepEqual(readClassificationParams({ sub: ["艺术展", "摄影"], area: ["徐汇"] }, "展览"), {
+    subcategory: "",
+    district: "",
+  });
+  assert.deepEqual(readClassificationParams({ sub: "  摄影  ", area: " 徐汇 " }, "展览"), {
+    subcategory: "摄影",
+    district: "徐汇",
+  });
 });

@@ -2,6 +2,7 @@ import { EventBrowser } from "./components/EventBrowser.js";
 import { EventImage } from "./components/EventImage.js";
 import { HomeHero } from "./components/HomeHero.js";
 import { eventEndDay, eventStartDay, formatDotDate, formatShanghaiClock, isMultiDay } from "../lib/agenda.js";
+import { readClassificationParams } from "../lib/event-classify.js";
 import { CATEGORIES, safeExternalUrl, toShanghaiDate } from "../lib/events.js";
 import { buildHomeViewModel } from "../lib/home-view-model.js";
 import { listEvents } from "../lib/repository.js";
@@ -24,6 +25,8 @@ export default async function Home({ searchParams }) {
   const anchor = /^\d{4}-\d{2}-\d{2}$/.test(params?.week || "") ? params.week : toShanghaiDate(new Date());
   const search = typeof params?.search === "string" ? params.search.trim().slice(0, 100) : "";
   const category = CATEGORIES.includes(params?.category) ? params.category : "";
+  // 细分与区域走白名单：乱填的参数会让列表静默筛成空，不如直接忽略（逻辑在 event-classify.js 里有单测）
+  const { subcategory, district } = readClassificationParams(params, category);
 
   // 类目和搜索都在客户端筛（切换零延迟），所以这里永远取整个窗口
   const events = await listEvents({ week: anchor });
@@ -78,6 +81,8 @@ export default async function Home({ searchParams }) {
           today={view.today}
           days={view.windowDays}
           initialCategory={category}
+          initialSubcategory={subcategory}
+          initialDistrict={district}
           initialSearch={search}
         />
 
