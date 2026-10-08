@@ -8,7 +8,7 @@ import {
   buildReleaseNotes,
   getBackupConfig,
   parseS3Listing,
-  r2Enabled,
+  s3Enabled,
   selectStaleByDay,
   selectStaleTags,
   shanghaiDay,
@@ -149,23 +149,63 @@ test("splitConnectionUrl handles password-less and unparseable input", () => {
   assert.deepEqual(splitConnectionUrl("not a url"), { url: "not a url", password: "" });
 });
 
-test("r2 is only enabled when all four settings are present", () => {
+test("第二路：endpoint / bucket / 两把钥匙 缺任何一个都不启用", () => {
   const full = {
-    accountId: "acc",
+    endpoint: "https://cos.ap-shanghai.myqcloud.com",
+    bucket: "b",
     accessKeyId: "id",
     secretAccessKey: "sec",
-    bucket: "b",
   };
-  assert.equal(r2Enabled(full), true);
+  assert.equal(s3Enabled(full), true);
   for (const key of Object.keys(full)) {
-    assert.equal(r2Enabled({ ...full, [key]: "" }), false, `缺 ${key} 时不应启用`);
+    assert.equal(s3Enabled({ ...full, [key]: "" }), false, `缺 ${key} 时不应启用`);
   }
-  assert.equal(r2Enabled({}), false);
+  assert.equal(s3Enabled({}), false);
+
+  // endpoint 是必填而不是可选项：不填的话 aws CLI 会默认打到 AWS S3 上，
+  // 那是「静默传到另一个地方」，比不传更危险 —— 这条护栏就是防这个。
+  assert.equal(s3Enabled({ ...full, endpoint: "" }), false, "缺 endpoint 必须视为未启用");
 });
 
-test("r2 prefix is normalised, defaults applied", () => {
-  assert.equal(getBackupConfig({}).r2.prefix, "db-backups");
-  assert.equal(getBackupConfig({ R2_PREFIX: "/backups/db/" }).r2.prefix, "backups/db");
+test("第二路：provider 无关，配置项全部来自 BACKUP_S3_* 环境变量", () => {
+  // 换存储只改 env、不改代码：这里用腾讯云 COS 的形态验一遍
+  const cos = getBackupConfig({
+    BACKUP_S3_ENDPOINT: "https://cos.ap-shanghai.myqcloud.com/",
+    BACKUP_S3_BUCKET: "my-backups",
+    BACKUP_S3_ACCESS_KEY_ID: "id",
+    BACKUP_S3_SECRET_ACCESS_KEY: "sec",
+    BACKUP_S3_REGION: "ap-shanghai",
+    BACKUP_S3_PREFIX: "/backups/db/",
+  });
+  assert.equal(cos.s3.endpoint, "https://cos.ap-shanghai.myqcloud.com", "末尾斜杠要去掉");
+  assert.equal(cos.s3.bucket, "my-backups");
+  assert.equal(cos.s3.region, "ap-shanghai");
+  assert.equal(cos.s3.prefix, "backups/db", "两侧斜杠都要去掉");
+  assert.equal(s3Enabled(cos.s3), true);
+
+  // 默认值
+  const bare = getBackupConfig({});
+  assert.equal(bare.s3.prefix, "db-backups");
+  assert.equal(bare.s3.region, "auto");
+  assert.equal(bare.s3.endpoint, "");
+  assert.equal(s3Enabled(bare.s3), false);
+
+  // 不再内置 Cloudflare R2 专用变量：给了 R2_* 也不该启用第二路
+  assert.equal(
+    s3Enabled(
+      getBackupConfig({
+        R2_ACCOUNT_ID: "acc",
+        R2_ACCESS_KEY_ID: "id",
+        R2_SECRET_ACCESS_KEY: "sec",
+        R2_BUCKET: "b",
+      }).s3,
+    ),
+    false,
+    "R2_* 已废弃，不应再被识别为第二路配置",
+  );
+});
+
+test("保留数与连接串回落", () => {
   assert.equal(getBackupConfig({}).keep, 30);
   assert.equal(getBackupConfig({ BACKUP_KEEP: "7" }).keep, 7);
   assert.equal(getBackupConfig({ BACKUP_KEEP: "0" }).keep, 30, "非法保留数回落默认值");
@@ -195,7 +235,7 @@ test("release notes carry a usable restore recipe", () => {
     bytes: 1212471,
     digest: "abc123",
     tables: REQUIRED_TABLES,
-    r2: "bucket/db-backups/shanghai-collector-public-2026-10-08.dump",
+    second: "bucket/db-backups/shanghai-collector-public-2026-10-08.dump",
   });
 
   assert.match(notes, /数据库备份 2026-10-08/);
@@ -204,12 +244,14 @@ test("release notes carry a usable restore recipe", () => {
   assert.match(notes, /pg_restore/);
   assert.match(notes, /--schema=public/);
   assert.match(notes, /session pooler\(5432\)/, "必须提醒不用 transaction pooler");
-  assert.match(notes, /Cloudflare R2/);
+  assert.match(notes, /对象存储/, "第二路要说清在对象存储里，不点名具体厂商");
+  assert.doesNotMatch(notes, /Cloudflare/, "不该再出现厂商绑定");
   for (const table of REQUIRED_TABLES) assert.match(notes, new RegExp(`\`${table}\` ✅`));
 });
 
 test("release notes say so when the second copy is not configured", () => {
-  const notes = buildReleaseNotes({ day: "2026-10-08", fileName: "f.dump", bytes: 2048, digest: "d", tables: [], r2: "" });
+  const notes = buildReleaseNotes({ day: "2026-10-08", fileName: "f.dump", bytes: 2048, digest: "d", tables: [], second: "" });
   assert.match(notes, /第二份：未启用/);
+  assert.match(notes, /BACKUP_S3_/, "要告诉用户怎么把它打开");
   for (const table of REQUIRED_TABLES) assert.match(notes, new RegExp(`\`${table}\` ❌`));
 });

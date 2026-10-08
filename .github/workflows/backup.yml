@@ -1,6 +1,6 @@
 name: Database Backup
 
-# 每天把 public schema 全量 dump 一份，存到 GitHub Release（永久保留）+ 可选的 R2。
+# 每天把 public schema 全量 dump 一份，存到 GitHub Release（永久保留）+ 可选的对象存储（第二份）。
 #
 # 为什么需要（2026-10-07/08 事故）：
 #   Supabase 项目被暂停后生产数据整体不可达。当时靠「重跑采集」补救回了 events 表，
@@ -12,6 +12,10 @@ name: Database Backup
 #     用 ubuntu 自带的 16 会直接报 "server version 17.x is not supported"。
 #   · 不用 Actions Artifacts 存 —— 它默认 90 天过期，那不是「最后一道防线」。
 #   · 失败必须推飞书：备份悄悄停掉是这类体系最危险的失效方式。
+#   · 第二路是 provider 无关的：任何兼容 S3 协议的对象存储都能接（腾讯云 COS /
+#     阿里云 OSS / B2 / S3 / MinIO …）。**不绑定 Cloudflare R2** —— 2026-10-08 起
+#     特意去掉了 R2 的专用配置，因为 Cloudflare 侧当时正因 Worker 顶在 CPU 上限上
+#     而间歇性 503，不适合把「最后一道防线」放在同一个平台上。
 on:
   schedule:
     # 05:00 UTC = 北京时间 13:00。排在采集（01:00 UTC）和清理（03:00 UTC）之后，
@@ -59,11 +63,16 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 以下 4 个 secret 配齐后自动启用 R2 第二路；不配就只写 Release，不需要改代码
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          # 第二路（可选）：任何兼容 S3 协议的对象存储。5 个变量配齐即自动启用；
+          # 不配就只写 Release，不需要改代码。endpoint 必填 —— 不填的话 aws CLI 会
+          # 默认打到 AWS S3 上，变成「静默传到另一个地方」，比不传更危险。
+          #   腾讯云 COS：BACKUP_S3_ENDPOINT=https://cos.ap-shanghai.myqcloud.com
+          #   阿里云 OSS：BACKUP_S3_ENDPOINT=https://oss-cn-shanghai.aliyuncs.com
+          BACKUP_S3_ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+          BACKUP_S3_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          BACKUP_S3_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+          BACKUP_S3_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+          BACKUP_S3_REGION: ${{ secrets.BACKUP_S3_REGION }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
         run: node scripts/backup-db.mjs
@@ -75,7 +84,7 @@ jobs:
             echo "## 数据库备份"
             echo ""
             echo "- 保留策略：最近 ${BACKUP_KEEP} 份，滚动删除更早的"
-            echo "- 存储：GitHub Release（配置了 R2_* secret 时同时写一份到 Cloudflare R2）"
+            echo "- 存储：GitHub Release（配齐 BACKUP_S3_* 时同时写一份到对象存储，provider 无关）"
             echo "- 文件校验：pg_restore --list 必须能列出 events / raw_events / collection_runs / source_configs"
             echo "- 失败时会推飞书告警"
           } >> "$GITHUB_STEP_SUMMARY"

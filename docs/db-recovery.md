@@ -199,11 +199,11 @@ runCollectJob()
 | 路 | 位置 | 保留 | 说明 |
 | --- | --- | --- | --- |
 | 第一路（必选） | GitHub Release，tag 形如 `db-backup-2026-10-08` | 最近 **30** 份，滚动删除更早的 | 零配置，用内置 `GITHUB_TOKEN`；Release asset 永久保留（**不是** 90 天就过期的 Artifacts） |
-| 第二路（可选） | Cloudflare R2，路径 `db-backups/` | 同样最近 30 份 | 4 个 secret 配齐就自动启用，不用改代码 |
+| 第二路（可选） | 任意兼容 S3 协议的对象存储，路径 `db-backups/` | 同样最近 30 份 | 配齐 `BACKUP_S3_*` 就自动启用，不用改代码；**不绑定具体厂商** |
 
 ⚠️ **仓库是 public，所以第一路的备份文件任何人都能下载**，内容包括全部活动数据、
 `raw_events` 原始层和你攒的信源池（`SOURCE_SEEDS_RAW` 303 个 / 生效 250 个）。内容本身不敏感
-（没有用户数据、没有密钥），但如果你不想公开信源池，就得尽快把 R2 那一路配上。
+（没有用户数据、没有密钥），但如果你不想公开信源池，就得尽快把第二路（对象存储）配上。
 
 ### 为什么不只靠「重跑采集」重建
 
@@ -274,19 +274,27 @@ pg_restore -d "<连接串>" -t events <文件>   # 只恢复一张表
 
 ⚠️ **`pg_restore` 也不要走 transaction pooler**，和 dump 同理。
 
-### 启用 R2 第二路（等你的密钥）
+### 启用第二路（对象存储，可选）
 
-在 GitHub → Settings → Secrets and variables → Actions 加这 4 个，加完**下次定时任务就自动双写**，
-不需要改任何代码：
+⚠️ **2026-10-08 起不再内置 Cloudflare R2 的专用配置。** 原因：同一时期 Cloudflare 侧
+正因 Worker 顶在 CPU 上限上而间歇性 503，「最后一道防线」不适合和出问题的那一层放在同一个平台。
+第二路现在是 **provider 无关**的 —— 任何兼容 S3 协议的对象存储都能接（腾讯云 COS /
+阿里云 OSS / Backblaze B2 / AWS S3 / MinIO …），换存储只改环境变量、不改代码。
 
-| Secret | 从哪来 |
+在 GitHub → Settings → Secrets and variables → Actions 加这些，加完**下次定时任务就自动双写**：
+
+| Secret | 说明 |
 | --- | --- |
-| `R2_ACCOUNT_ID` | Cloudflare 控制台 → R2 → 右上角 Account ID |
-| `R2_ACCESS_KEY_ID` | R2 → Manage R2 API Tokens → Create API Token（权限选 Object Read & Write） |
-| `R2_SECRET_ACCESS_KEY` | 同上，只显示一次 |
-| `R2_BUCKET` | 你建的 bucket 名，例如 `shanghai-collector-backup` |
+| `BACKUP_S3_ENDPOINT` | **必填**，形如 `https://cos.ap-shanghai.myqcloud.com`（腾讯云 COS）/ `https://oss-cn-shanghai.aliyuncs.com`（阿里云 OSS） |
+| `BACKUP_S3_BUCKET` | 你建的存储桶名，例如 `shanghai-collector-backup` |
+| `BACKUP_S3_ACCESS_KEY_ID` | 该存储的访问密钥 ID |
+| `BACKUP_S3_SECRET_ACCESS_KEY` | 同上，密钥本身 |
+| `BACKUP_S3_REGION` | 可选，默认 `auto`；COS/OSS 参与签名时要填，如 `ap-shanghai` |
+| `BACKUP_S3_PREFIX` | 可选，默认 `db-backups` |
 
-`R2_PREFIX` 可选，默认 `db-backups`。R2 的存储成本基本为 0 —— 库总共 34 MB，
-dump 出来 1.1 MB，30 份约 35 MB，免费额度是 10 GB。
+**为什么 endpoint 是必填而不是可选**：不填的话 `aws` CLI 会默认打到 AWS S3 上，
+那就变成「静默传到另一个地方」——比不传更危险。所以少任何一项都视为「第二路未启用」，
+只写 Release 并在日志里说明（单测有护栏）。
 
-R2 上传失败**不会**中断第一路（会打日志），因为「有一份」比「两份都失败」重要。
+`BACKUP_S3_*` 齐全时脚本用 `aws s3 cp` + `--endpoint-url` 上传，并按日期滚动清理同样保留
+最近 30 份。上传失败**不会**中断第一路（只打日志 + 上线告警），因为「有一份」比「两份都失败」更重要。

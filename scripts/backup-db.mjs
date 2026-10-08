@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 数据库备份：pg_dump → 校验 → 上传 GitHub Release（必选）+ Cloudflare R2（可选）→ 滚动清理
+// 数据库备份：pg_dump → 校验 → 上传 GitHub Release（必选）+ 对象存储（可选）→ 滚动清理
 //
 // 为什么要有它（2026-10-07/08 事故）：
 //   Supabase 项目被暂停后，生产数据整体不可达。当时的补救是「重跑采集」——
@@ -14,8 +14,13 @@
 //     但 Supabase 官方对 pg_dump 的建议是直连或 session 模式，没必要赌。
 //   · 上传成功 ≠ 备份可用。必须用 `pg_restore --list` 确认确实列出了那四张表，
 //     否则会出现「以为有备份，其实备份是空的」——这是备份体系里最坏的失败模式。
-//   · R2 是可选第二路：4 个 secret（R2_*）齐了就自动启用，不齐就只走 Release，
-//     不需要改代码。这样「零配置立刻可用」和「以后加异地」不冲突。
+//   · 第二路是**provider 无关**的：任何兼容 S3 协议的对象存储都行
+//     （腾讯云 COS / 阿里云 OSS / Backblaze B2 / AWS S3 / MinIO …）。
+//     5 个 BACKUP_S3_* 变量配齐就自动启用，不齐就只走 Release，**不需要改代码**。
+//     ⚠️ 2026-10-08 起**不再内置 Cloudflare R2 的专用配置**：Cloudflare 侧当时正因
+//     Worker 顶在 CPU 上限上而间歇性 503，不适合再把备份托付给它。要接 R2 的话，
+//     它本身也兼容 S3，按通用变量填即可（endpoint 形如
+//     https://<account>.r2.cloudflarestorage.com）。
 //   · 连接串拆成两半：不含密码的 URL 走 `-d` 参数、密码走 PGPASSWORD 环境变量。
 //     密码绝不能进命令行参数（会出现在进程列表里）；也不用 PGDATABASE，
 //     因为实测 Supabase 的 postgres 镜像 entrypoint 会让它在 pg_dump 进程里失效。
@@ -52,20 +57,26 @@ export function getBackupConfig(env = process.env) {
     pgRestore: env.PG_RESTORE_BIN || "pg_restore",
     aws: env.AWS_BIN || "aws",
     dryRun: env.BACKUP_DRY_RUN === "1",
-    r2: {
-      accountId: env.R2_ACCOUNT_ID || "",
-      accessKeyId: env.R2_ACCESS_KEY_ID || "",
-      secretAccessKey: env.R2_SECRET_ACCESS_KEY || "",
-      bucket: env.R2_BUCKET || "",
-      prefix: (env.R2_PREFIX || "db-backups").replace(/^\/+|\/+$/g, ""),
+    // 第二路：任何兼容 S3 协议的对象存储。不绑定具体厂商 —— 换存储只改 env，不改代码。
+    s3: {
+      endpoint: (env.BACKUP_S3_ENDPOINT || "").replace(/\/+$/, ""),
+      bucket: env.BACKUP_S3_BUCKET || "",
+      accessKeyId: env.BACKUP_S3_ACCESS_KEY_ID || "",
+      secretAccessKey: env.BACKUP_S3_SECRET_ACCESS_KEY || "",
+      // 有些厂商（COS/OSS）要求区域参与签名；不填时用 auto，对多数 S3 兼容实现无害
+      region: env.BACKUP_S3_REGION || "auto",
+      prefix: (env.BACKUP_S3_PREFIX || "db-backups").replace(/^\/+|\/+$/g, ""),
     },
     webhookUrl: env.FEISHU_WEBHOOK_URL || "",
     secret: env.FEISHU_WEBHOOK_SECRET || "",
   };
 }
 
-export function r2Enabled(r2 = {}) {
-  return Boolean(r2.accountId && r2.accessKeyId && r2.secretAccessKey && r2.bucket);
+// endpoint / bucket / 两把钥匙 齐了才算「第二路可用」。
+// 故意把 endpoint 也列为必填：不填的话 aws CLI 会默认打到 AWS S3 上，
+// 那就变成「静默传到另一个地方」，比不传更危险。
+export function s3Enabled(s3 = {}) {
+  return Boolean(s3.endpoint && s3.bucket && s3.accessKeyId && s3.secretAccessKey);
 }
 
 export function shanghaiDay(date = new Date()) {
@@ -183,19 +194,19 @@ async function gh(args, { config } = {}) {
   return run("gh", full, { maxBuffer: 32 * 1024 * 1024 });
 }
 
-function r2Args(config, tail) {
-  return ["--endpoint-url", `https://${config.r2.accountId}.r2.cloudflarestorage.com`, ...tail];
+function s3Args(config, tail) {
+  return ["--endpoint-url", config.s3.endpoint, ...tail];
 }
 
-function r2Env(config) {
+function s3Env(config) {
   return {
-    AWS_ACCESS_KEY_ID: config.r2.accessKeyId,
-    AWS_SECRET_ACCESS_KEY: config.r2.secretAccessKey,
-    AWS_DEFAULT_REGION: "auto",
+    AWS_ACCESS_KEY_ID: config.s3.accessKeyId,
+    AWS_SECRET_ACCESS_KEY: config.s3.secretAccessKey,
+    AWS_DEFAULT_REGION: config.s3.region,
   };
 }
 
-export function buildReleaseNotes({ day, fileName, bytes, digest, tables, r2 }) {
+export function buildReleaseNotes({ day, fileName, bytes, digest, tables, second }) {
   const tableList = REQUIRED_TABLES.map((t) =>
     tables.includes(t) ? `- \`${t}\` ✅` : `- \`${t}\` ❌`,
   ).join("\n");
@@ -206,7 +217,7 @@ export function buildReleaseNotes({ day, fileName, bytes, digest, tables, r2 }) 
     `- 文件：\`${fileName}\`（${(bytes / 1024 / 1024).toFixed(2)} MB，pg_dump custom 格式）`,
     `- SHA-256：\`${digest}\``,
     `- 范围：\`public\` schema（Supabase 自有的 auth/storage 等不在内，重建项目时会自动生成）`,
-    r2 ? `- 第二份：Cloudflare R2 \`${r2}\`` : `- 第二份：未启用（R2 的 4 个 secret 未配置）`,
+    second ? `- 第二份：对象存储 \`${second}\`` : `- 第二份：未启用（\`BACKUP_S3_*\` 未配置，本次只有这一份）`,
     "",
     "## 包含的表",
     "",
@@ -283,7 +294,9 @@ async function main() {
     console.log(`[backup] 校验通过：${(bytes / 1024 / 1024).toFixed(2)} MB，四张表齐全`);
 
     const digest = sha256(outPath);
-    const r2Target = r2Enabled(config.r2) ? `${config.r2.bucket}/${config.r2.prefix}/${fileName}` : "";
+    const secondTarget = s3Enabled(config.s3)
+      ? `${config.s3.bucket}/${config.s3.prefix}/${fileName}`
+      : "";
 
     if (config.dryRun) {
       console.log(`[backup] --dry-run：跳过上传与清理。sha256=${digest}`);
@@ -300,7 +313,7 @@ async function main() {
         bytes,
         digest,
         tables: REQUIRED_TABLES,
-        r2: r2Target,
+        second: secondTarget,
       }),
     );
     await gh(["release", "create", tag, outPath, "--title", `数据库备份 ${day}`, "--notes-file", notesPath], {
@@ -308,31 +321,31 @@ async function main() {
     });
     console.log(`[backup] 已上传 GitHub Release：${tag}`);
 
-    // ⑦ 第二路：R2（可选）。失败不影响第一路，但要喊出来
-    if (r2Enabled(config.r2)) {
-      const env = { ...process.env, ...r2Env(config) };
+    // ⑦ 第二路：对象存储（可选，provider 无关）。失败不影响第一路，但要喊出来
+    if (s3Enabled(config.s3)) {
+      const env = { ...process.env, ...s3Env(config) };
       try {
         await run(
           config.aws,
-          r2Args(config, ["s3", "cp", outPath, `s3://${config.r2.bucket}/${config.r2.prefix}/${fileName}`]),
+          s3Args(config, ["s3", "cp", outPath, `s3://${config.s3.bucket}/${config.s3.prefix}/${fileName}`]),
           { env, maxBuffer: 32 * 1024 * 1024 },
         );
-        console.log(`[backup] 已上传 R2：s3://${r2Target}`);
+        console.log(`[backup] 已上传第二路：s3://${secondTarget}（${config.s3.endpoint}）`);
 
         const { stdout: lsOut } = await run(
           config.aws,
-          r2Args(config, ["s3", "ls", `s3://${config.r2.bucket}/${config.r2.prefix}/`]),
+          s3Args(config, ["s3", "ls", `s3://${config.s3.bucket}/${config.s3.prefix}/`]),
           { env, maxBuffer: 32 * 1024 * 1024 },
         );
         for (const key of selectStaleByDay(parseS3Listing(lsOut), { keep: config.keep })) {
-          await run(config.aws, r2Args(config, ["s3", "rm", `s3://${config.r2.bucket}/${key}`]), { env });
-          console.log(`[backup] R2 清理旧备份：${key}`);
+          await run(config.aws, s3Args(config, ["s3", "rm", `s3://${config.s3.bucket}/${key}`]), { env });
+          console.log(`[backup] 第二路清理旧备份：${key}`);
         }
       } catch (error) {
-        console.error(`[backup] R2 上传失败（第一路 Release 已成功，不中断）：${error.message}`);
+        console.error(`[backup] 第二路上传失败（第一路 Release 已成功，不中断）：${error.message}`);
       }
     } else {
-      console.log("[backup] R2 未启用（缺 R2_* secret），本次只写 GitHub Release");
+      console.log("[backup] 第二路未启用（BACKUP_S3_* 未配齐），本次只写 GitHub Release");
     }
 
     // ⑧ 滚动清理：只删自己前缀的 tag，保留最近 keep 份
@@ -349,7 +362,7 @@ async function main() {
     }
 
     console.log(`[backup] 完成：${fileName}（${bytes} 字节，sha256=${digest.slice(0, 16)}…）`);
-    return { ok: true, fileName, bytes, digest, tag, r2: r2Target };
+    return { ok: true, fileName, bytes, digest, tag, second: secondTarget };
   } catch (error) {
     // pg_dump 会在连接前就把文件建出来，失败后留下一个 0 字节空壳。
     // 必须清掉 —— 否则它看起来像一份备份，这是最容易被误判的情况。
