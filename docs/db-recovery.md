@@ -106,6 +106,25 @@ Restart 按钮灰掉但你明明是 Owner。
 改完第 2 处记得让 Hyperdrive 生效（控制台保存后会自动重启连接池），
 改完第 3 处要**发布新版本**才生效。
 
+### 这个项目的 pooler 连接串长什么样（2026-10-08 实测）
+
+```
+postgresql://postgres.zvlnemhtzxtxaaxulodg:<密码>@aws-1-us-west-2.pooler.supabase.com:6543/postgres
+```
+
+扫过 22 个 region × `aws-0`/`aws-1` 两种前缀共 44 个主机，**只有 `aws-1-us-west-2` 能找到 tenant**：
+
+```
+✅ aws-1-us-west-2.pooler.supabase.com   →  transaction(6543) 与 session(5432) 都通
+   aws-0-us-west-2.pooler.supabase.com   →  tenant/user not found
+```
+
+⚠️ **注意是 `aws-1-` 前缀，不是 `aws-0-`。** 网上大量教程还写着 `aws-0-`，照抄会得到
+`tenant/user not found` —— 这个报错**不代表项目没了**，只代表那个主机上没有你的 tenant。
+
+⚠️ **restore 之后 tenant 注册有延迟**：恢复完成约 2 分钟时扫描 16 个 region 全部
+`tenant not found`，约 10 分钟后再扫才找到。**恢复完请等 5–10 分钟再判定，否则会误判成恢复失败。**
+
 ## 7. 恢复后验证清单
 
 ```bash
@@ -121,6 +140,26 @@ node scripts/canary.mjs && echo "OK"
 # ④ 小程序（人工）
 #    开发者工具点「编译」，确认首页有数据、筛选面板选项不为空
 ```
+
+⚠️ **本机用 `.env` 直连是连不上的** —— 那是 `db.<ref>.supabase.co:5432` 的 **IPv6-only**
+通道，本机多半报 `ECONNRESET`。**这不代表数据库没恢复。** 要在本机验连接，用 pooler 形态：
+
+```bash
+node -e '
+const pg = require("pg");
+const c = new pg.Client({
+  connectionString: "postgresql://postgres.zvlnemhtzxtxaaxulodg:<密码>@aws-1-us-west-2.pooler.supabase.com:6543/postgres",
+  ssl: { rejectUnauthorized: false },
+});
+c.connect()
+ .then(() => c.query("select count(*) from events"))
+ .then((r) => console.log("events:", r.rows[0].count))
+ .catch((e) => console.log("失败:", e.message))
+ .finally(() => c.end());
+'
+```
+
+（本机在 2026-10-08 实测 `aws-1-us-west-2:6543` 可用，`events` 表 303 行。）
 
 ## 8. 复盘：为什么这次静默了两天
 
