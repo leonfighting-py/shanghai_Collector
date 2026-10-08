@@ -189,8 +189,104 @@ runCollectJob()
 
 ### 还没做、建议你决定的
 - **升级到 Pro（$25/月）**：付费项目不会被暂停，这是唯一能根治「免费额度/闲置暂停」的办法
-- **异地备份**：目前没有任何 `pg_dump` 定时备份。免费项目一旦删除就全没了，值得加一个每天
-  `pg_dump` 到 GitHub Artifacts 或对象存储的 workflow
-- **查清这次暂停的真实原因**：采集本来每 2 天跑一次，不该触发 7 天闲置暂停。
-  可能是免费额度（存储/egress/磁盘 IO 预算）耗尽，也可能是 Supabase 侧的实例暂停
-  —— 登录控制台时顺便看一眼 Billing / Reports 页面
+- ~~异地备份~~ → ✅ **已加，见第 10 节**
+- **查清这次暂停的真实原因**（✅ 已确认：是手动暂停，不是额度问题）
+
+## 10. 备份（2026-10-08 加上）
+
+### 存在哪
+
+| 路 | 位置 | 保留 | 说明 |
+| --- | --- | --- | --- |
+| 第一路（必选） | GitHub Release，tag 形如 `db-backup-2026-10-08` | 最近 **30** 份，滚动删除更早的 | 零配置，用内置 `GITHUB_TOKEN`；Release asset 永久保留（**不是** 90 天就过期的 Artifacts） |
+| 第二路（可选） | Cloudflare R2，路径 `db-backups/` | 同样最近 30 份 | 4 个 secret 配齐就自动启用，不用改代码 |
+
+⚠️ **仓库是 public，所以第一路的备份文件任何人都能下载**，内容包括全部活动数据、
+`raw_events` 原始层和你攒的 307 个信源池。内容本身不敏感（没有用户数据、没有密钥），
+但如果你不想公开信源池，就得尽快把 R2 那一路配上。
+
+### 为什么不只靠「重跑采集」重建
+
+`events` 表确实能由采集完全重建（每次发布都是按窗口全量替换），但：
+
+| 表 | 丢了能不能找回来 |
+| --- | --- |
+| `events` | ✅ 重跑采集即可 |
+| `source_configs` | ✅ 由 `SOURCE_SEEDS` 自动 upsert |
+| `raw_events` | ❌ **没有第二份** —— 原始层，排查解析问题要用 |
+| `collection_runs` | ❌ **没有第二份** —— 历史运行统计，连续失败告警的取样依据 |
+
+备份的另一半价值是**日常回滚**：某次采集把窗口写脏了、或误删了数据，能回到昨天。
+
+### 怎么跑的
+
+`.github/workflows/backup.yml` 每天 **05:00 UTC（北京时间 13:00）** 跑一次，
+排在采集（01:00 UTC）和清理（03:00 UTC）之后，拿到的都是当天最新发布结果。
+
+```bash
+# 手动跑一次
+gh workflow run "Database Backup"
+
+# 本地跑（本机没装 pg_dump 时用 Docker 当客户端）
+BACKUP_DATABASE_URL="<pooler 连接串>" node --env-file=.env scripts/backup-db.mjs
+# 只看不传：加 BACKUP_DRY_RUN=1
+```
+
+产物落在 `.backup/`（已加进 `.gitignore`，**不会**入库）。
+
+### 两个关键设计（改动前先读）
+
+**① dump 走 session pooler（5432），不走 transaction pooler（6543）。**
+6543 实测虽然也能跑通，但 `pg_dump` 需要会话级语义（长事务 + 导出的快照），
+Supabase 官方建议用直连或 session 模式。脚本会自动把 `.pooler.supabase.com:6543`
+改写成 `:5432`，不需要你手动准备第二份连接串。
+（真需要单独指定，用 `BACKUP_DATABASE_URL` 覆盖。）
+
+**② 上传成功 ≠ 备份可用。**
+脚本在 dump 之后会用 `pg_restore --list` 确认清单里**真的列出了四张表**
+（`events` / `raw_events` / `collection_runs` / `source_configs`），
+缺任何一张就判定失败并告警。这条守的是备份体系里最坏的失败模式 ——
+「以为有备份，其实备份是空的」。
+
+另外：失败时会把 pg_dump 留下的 0 字节空壳文件删掉，不让它看起来像一份备份。
+
+### 怎么恢复
+
+Release 的说明里已经带了完整命令，照抄即可。核心三步：
+
+```bash
+# 1. 从 Release 页面下载 .dump 文件
+# 2. 找一个 PostgreSQL 17 客户端（服务器是 PG 17，客户端版本不能更低）
+pg_restore --dbname "<新项目的 session pooler 连接串>" \
+  --schema=public --no-owner --no-privileges --clean --if-exists \
+  shanghai-collector-public-2026-10-08.dump
+
+# 3. 验证
+PGDATABASE="<连接串>" psql -c "select count(*) from events"
+```
+
+常用变体：
+
+```bash
+pg_restore --list <文件>              # 先看里面有什么
+pg_restore -d "<连接串>" -t events <文件>   # 只恢复一张表
+```
+
+⚠️ **`pg_restore` 也不要走 transaction pooler**，和 dump 同理。
+
+### 启用 R2 第二路（等你的密钥）
+
+在 GitHub → Settings → Secrets and variables → Actions 加这 4 个，加完**下次定时任务就自动双写**，
+不需要改任何代码：
+
+| Secret | 从哪来 |
+| --- | --- |
+| `R2_ACCOUNT_ID` | Cloudflare 控制台 → R2 → 右上角 Account ID |
+| `R2_ACCESS_KEY_ID` | R2 → Manage R2 API Tokens → Create API Token（权限选 Object Read & Write） |
+| `R2_SECRET_ACCESS_KEY` | 同上，只显示一次 |
+| `R2_BUCKET` | 你建的 bucket 名，例如 `shanghai-collector-backup` |
+
+`R2_PREFIX` 可选，默认 `db-backups`。R2 的存储成本基本为 0 —— 库总共 34 MB，
+dump 出来 1.1 MB，30 份约 35 MB，免费额度是 10 GB。
+
+R2 上传失败**不会**中断第一路（会打日志），因为「有一份」比「两份都失败」重要。

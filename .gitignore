@@ -13,3 +13,7 @@ coverage
 scripts/source-health-report.*
 scripts/probe-*.js
 .workbuddy/
+
+# 数据库备份产物：含全量活动数据与信源池，绝不入库
+.backup/
+*.dump

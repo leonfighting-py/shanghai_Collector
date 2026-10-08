@@ -1,0 +1,74 @@
+name: Database Backup
+
+# 每天把 public schema 全量 dump 一份，存到 GitHub Release（永久保留）+ 可选的 R2。
+#
+# 为什么需要（2026-10-07/08 事故）：
+#   Supabase 项目被暂停后生产数据整体不可达。当时靠「重跑采集」补救回了 events 表，
+#   但 raw_events 原始层和 collection_runs 历史运行记录没有第二份，丢了就是丢了。
+#   备份的另一半价值是日常回滚 —— 某次采集把窗口写脏时能回到昨天。
+#
+# 设计约束（改动前请先读）：
+#   · 必须装 PostgreSQL 17 客户端。服务器是 PG 17，pg_dump 不向前兼容，
+#     用 ubuntu 自带的 16 会直接报 "server version 17.x is not supported"。
+#   · 不用 Actions Artifacts 存 —— 它默认 90 天过期，那不是「最后一道防线」。
+#   · 失败必须推飞书：备份悄悄停掉是这类体系最危险的失效方式。
+on:
+  schedule:
+    # 05:00 UTC = 北京时间 13:00。排在采集（01:00 UTC）和清理（03:00 UTC）之后，
+    # 这样每天拿到的都是当天最新发布结果。
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+env:
+  BACKUP_KEEP: "30"
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # 创建 / 删除 Release 需要
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL 17 client
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+          https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          pg_dump --version
+
+      - name: Run backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 以下 4 个 secret 配齐后自动启用 R2 第二路；不配就只写 Release，不需要改代码
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+        run: node scripts/backup-db.mjs
+
+      - name: Summarise
+        if: always()
+        run: |
+          {
+            echo "## 数据库备份"
+            echo ""
+            echo "- 保留策略：最近 ${BACKUP_KEEP} 份，滚动删除更早的"
+            echo "- 存储：GitHub Release（配置了 R2_* secret 时同时写一份到 Cloudflare R2）"
+            echo "- 文件校验：pg_restore --list 必须能列出 events / raw_events / collection_runs / source_configs"
+            echo "- 失败时会推飞书告警"
+          } >> "$GITHUB_STEP_SUMMARY"
