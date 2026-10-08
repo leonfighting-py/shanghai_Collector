@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 
 import {
   buildCollectAlert,
+  buildFatalAlert,
   computeConsecutiveFailures,
   getAlertConfig,
+  notifyFatalError,
   sendFeishuText,
   shanghaiTime,
 } from "../src/lib/alerting.js";
@@ -123,4 +125,45 @@ test("alert timestamps are rendered in Asia/Shanghai", () => {
   const text = shanghaiTime(new Date("2026-10-01T14:30:00Z"));
   assert.match(text, /2026\/10\/01/);
   assert.match(text, /22:30/);
+});
+
+// 2026-10-07 生产事故的回归护栏：
+// 数据库不可达时进程在第一步就跑不到收尾逻辑，必须有一条独立的致命告警通道。
+test("fatal alert surfaces the database-unreachable error verbatim", () => {
+  const error = new Error("(ENOTFOUND) tenant/user postgres.zvlnemhtzxtxaaxulodg not found");
+  const text = buildFatalAlert({ stage: "runCollectJob", error }, getAlertConfig({}));
+
+  assert.match(text, /致命错误/);
+  assert.match(text, /runCollectJob/);
+  assert.match(text, /tenant\/user postgres\.zvlnemhtzxtxaaxulodg not found/);
+  assert.match(text, /确认 Supabase 项目状态/, "数据库类错误应附带排查方向");
+});
+
+test("fatal alert works without a recognised error shape", () => {
+  const text = buildFatalAlert({ stage: "启动检查", error: "DATABASE_URL is required" }, getAlertConfig({}));
+  assert.match(text, /DATABASE_URL is required/);
+  assert.doesNotMatch(text, /Supabase/, "非数据库错误不该硬塞排查建议");
+});
+
+test("notifyFatalError sends to feishu when configured", async () => {
+  let body = null;
+  const fetchImpl = async (url, init) => {
+    body = JSON.parse(init.body);
+    return { ok: true, status: 200, json: async () => ({ code: 0 }) };
+  };
+
+  const sent = await notifyFatalError(
+    { stage: "runCollectJob", error: new Error("boom") },
+    { env: { FEISHU_WEBHOOK_URL: "https://example.com/hook" }, fetchImpl },
+  );
+
+  assert.equal(sent.sent, true);
+  assert.equal(body.msg_type, "text");
+  assert.match(body.content.text, /致命错误/);
+  assert.match(body.content.text, /boom/);
+});
+
+test("notifyFatalError stays silent (no throw) when no webhook is configured", async () => {
+  const result = await notifyFatalError({ stage: "runCollectJob", error: new Error("boom") }, { env: {} });
+  assert.deepEqual(result, { sent: false, reason: "no_webhook" });
 });

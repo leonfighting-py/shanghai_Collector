@@ -158,3 +158,44 @@ export async function notifyCollectAlert(payload, options = {}) {
     return { sent: false, reason: error instanceof Error ? error.message : String(error) };
   }
 }
+
+// 致命错误告警：进程在采集流程中途抛错、整轮没有产出时使用。
+//
+// 为什么必须单独开一条通道（2026-10-07 生产事故）：
+//   Supabase 项目不可达后，runCollectJob 在**第一步** listEvents 就抛错，Node 直接以
+//   未捕获异常退出，于是后面那段 notifyCollectAlert 从来没被执行过 —— 连续失败源 /
+//   分类塌方 / 守门拦截这些信号统统依赖采集跑完，而这次连第一步都没过。
+//   结果：生产静默停摆两天，全靠人工发现。
+//   教训：告警不能挂在"采集成功之后的收尾逻辑"上，否则它和被监控对象同生共死。
+const DB_UNREACHABLE_HINT = /tenant\/user|ENOTFOUND|ECONNREFUSED|ETIMEDOUT|password authentication|getaddrinfo/i;
+
+export function buildFatalAlert({ stage = "采集", error, hint = "" } = {}, config = getAlertConfig()) {
+  const message = error instanceof Error ? error.message : String(error);
+  const lines = [
+    `【上海活动采集告警｜致命错误】${shanghaiTime()}`,
+    `阶段：${stage}`,
+    `错误：${clip(message, 300)}`,
+  ];
+  const advice = hint || (DB_UNREACHABLE_HINT.test(message) ? "像是数据库不可达或连接串失效：先确认 Supabase 项目状态与 DATABASE_URL" : "");
+  if (advice) lines.push(`建议：${advice}`);
+  lines.push("", "→ 本轮采集未完成，线上活动数据不会更新");
+  return lines.join("\n");
+}
+
+// 与 notifyCollectAlert 的区别：即使 FEISHU_WEBHOOK_URL 未配置也要把文本打到 stderr，
+// 因为 GitHub Actions 的失败日志是最后一道可见的线索。
+export async function notifyFatalError(payload, options = {}) {
+  const config = getAlertConfig(options.env || process.env);
+  const text = buildFatalAlert(payload, config);
+
+  if (!config.webhookUrl) {
+    console.error(`[alert] 未配置 FEISHU_WEBHOOK_URL，致命告警只能留在日志里：\n${text}`);
+    return { sent: false, reason: "no_webhook" };
+  }
+
+  try {
+    return await sendFeishuText(text, { webhookUrl: config.webhookUrl, secret: config.secret }, options.fetchImpl || fetch);
+  } catch (error) {
+    return { sent: false, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
