@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { getAlertConfig, sendFeishuText, shanghaiTime } from "../src/lib/alerting.js";
 import { SOURCE_SEEDS, classifyFailure as classifyLegacyKind } from "../src/lib/collector.js";
 import { defaultFetchHtml } from "../src/lib/fetch-html.js";
-import { filterPublishableEvents, toShanghaiDayWindow } from "../src/lib/events.js";
+import { filterPublishableEvents, isInDateRange, toShanghaiDayWindow } from "../src/lib/events.js";
 import { listRecentCollectionRuns } from "../src/lib/repository.js";
 
 const CONCURRENCY = 5;
@@ -23,7 +23,9 @@ async function probeSource(source, now) {
       ),
     ]);
     const parsed = await source.parser(html, source, { fetchHtml: defaultFetchHtml, now, window: { startDate, endDate, days } });
-    const publishable = filterPublishableEvents(parsed);
+    // 与发布口径对齐（collector.js 的 publishEvents 就是 filterPublishableEvents + isInDateRange 两步）。
+    // 只做前者会把这批源的「窗口外条目」也算进可发布数，报告里的数字因此虚高。
+    const publishable = filterPublishableEvents(parsed).filter((event) => isInDateRange(event, startDate, endDate));
     return {
       source: source.name,
       category: source.category,
@@ -74,7 +76,7 @@ lines.push(`- fetch 成功：${okSources} / ${results.length}`);
 lines.push(`- 僵尸源（fetch 成功但解析 0 条）：${zombieSources.length}`);
 lines.push(`- 失败源（fetch/解析报错）：${failedSources.length}`);
 lines.push(`- 原始召回总数：${totalRaw}`);
-lines.push(`- 可发布总数：${totalPublishable}`);
+lines.push(`- 可发布总数（窗口内，与发布口径一致）：${totalPublishable}`);
 lines.push("");
 lines.push("## 明细（按健康度排序）");
 lines.push("");
@@ -149,7 +151,7 @@ if (alertConfig.enabled) {
   const healthLines = [
     `【信源体检报告】${shanghaiTime(now)}`,
     `源总数 ${results.length}｜fetch 成功 ${okSources}｜僵尸源 ${zombieSources.length}｜失败源 ${failedSources.length}`,
-    `原始召回 ${totalRaw}｜可发布 ${totalPublishable}`,
+    `原始召回 ${totalRaw}｜窗口内可发布 ${totalPublishable}`,
   ];
   if (failedSources.length > 0) {
     healthLines.push("", `失败源（${failedSources.length}）：`);
