@@ -2585,6 +2585,36 @@ const RETIRED_SOURCE_NAMES = new Set([
   "东华教务处·通知公告",
   "上海戏剧学院·基础部通知",
   "AI Tinkerers Shanghai",
+
+  // ── 2026-10-12：按 10-12 信源体检报告逐条复核后停采 5 个。判据＝本机直连（绕开沙箱代理）
+  // 用项目自身的 parser + filterPublishableEvents 复跑，非推测。这 5 个都不属于「等封禁解除就能复活」那类。
+  //
+  // A 组 · 站点还活着，但这两个 URL 再也拿不到上海的活动
+  // · 上师大教学发展中心·教学发展沙龙（jxfz.shnu.edu.cn/jxfzsl）、·讲座（…/jzbg）：
+  //   302 跳到超星托管平台 shnucfd.mh.chaoxing.com/<同名路径> 后 404 —— 该中心整体搬到超星了。
+  //   新站首页是 3.9 KB 的 JS 外壳（客户端渲染，整页没有一个 <a>），要抓得先逆向它的接口。
+  //   ⚠️ 报告里显示的是 HTTP 502、本机实测是 302→404，两个数都来自这条跳转链路；别看到 502
+  //   就以为只是"暂时挂了"。
+  // · 西交利物浦大学·讲座预告（meeting.xjtu.edu.cn/lecturenotices）：**名字与 URL 对不上** ——
+  //   这个域名是**西安交通大学**学术资源平台（页头即「西安交通大学学术资源平台」，条目是陕西数理论坛、
+  //   周惠久论坛等西安本地讲座）。parser 的 defaultVenue 是"上海"，等于把西安的讲座标成上海活动发布出去。
+  //   💡 真实的活动页 https://www.xjtlu.edu.cn/zh/events 可达（200 / 81 KB），但 cnCmsLectures 在那页上
+  //   抓的是新闻（「查看全部故事」「西浦教育创新基金正式启动」），24 条要全扔 —— 复活它得先写专属 parser。
+  //   💡 另：该站响应头 charset=gbk、页内 <meta charset="UTF-8"> 是错的，正是这个源暴露了
+  //   fetch-html 只按 UTF-8 解码的 bug（2026-10-12 已修，见 test/fetch-html.test.js）。
+  //
+  // B 组 · 页面本身就没有活动可抽（parser 拦得对，改规则才是错的）
+  // · 宝龙美术馆·即将到来（exhibition_future.html）：整页只有一个 <div class="comingSoon"> + 一张
+  //   占位图，解析 0 条是正确结果。同域的「正在热展」正常解出 4 条，说明 parser 没坏。
+  //   💡 复活条件：该馆真上架新展预告（页面出现 exhibition_detail 链接）时删掉名字即可。
+  // · 上外活动平台（event.shisu.edu.cn）：本机 200 / 0.95s，但整站只解出 1 条，是 6 月的
+  //   「西索文景网上线」公告（不是活动，且在窗口外）；runner 侧 10 次里 5 次 12s 超时
+  //   （fetch-html.js 的 AbortSignal.timeout(12_000)）。产出≈0 且稳定性差，退休。
+  "上师大教学发展中心·教学发展沙龙",
+  "上师大教学发展中心·讲座",
+  "西交利物浦大学·讲座预告",
+  "宝龙美术馆·即将到来",
+  "上外活动平台",
 ]);
 
 export const SOURCE_SEEDS = SOURCE_SEEDS_RAW
