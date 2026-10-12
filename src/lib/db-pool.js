@@ -75,6 +75,23 @@ function attachPoolErrorLogger(pool, label) {
   });
 }
 
+// pg-pool 把连接租出去时会先摘掉自己的 error 监听（_acquireClient 里的
+// client.removeListener('error', idleListener)）—— 租用期间连接上没有任何监听器。
+// 此时若对端关掉连接，pg 会在 socket 的 end 回调里同步 emit('error')
+// （pg/lib/client.js 的 con.once('end') → _handleErrorEvent），node 直接以
+// Unhandled 'error' event 结束进程，pool.on('error') 也拦不到（那条只管空闲连接）。
+// 2026-10-11 事故就是这个形状：那次跑的是含退避重试的 43539c2，日志里一条 [db] 重试都没有，
+// 崩溃信息是 Emitted 'error' event on Client instance（不是 on Pool instance）。
+// 这里只负责「别让进程被带走」：错误本身照样由 client.query() 的 reject 传出，
+// 走哪条重试分支仍由 runStatementWithRetry 决定。用完必须拆掉，别在归还的连接上留监听。
+export function attachCheckoutErrorGuard(client, label = "") {
+  const onError = (error) => {
+    console.error(`[db]${label} 连接在租用期间被对端关闭（失败已交给当前语句处理）：${error?.message || error}`);
+  };
+  client.on("error", onError);
+  return () => client.removeListener("error", onError);
+}
+
 function databaseSsl(connectionString) {
   if (
     connectionString.includes("render.com") ||
@@ -148,6 +165,7 @@ export async function runStatementWithRetry(pool, sqlText, params = [], options 
       continue;
     }
 
+    const detachGuard = attachCheckoutErrorGuard(client);
     try {
       const result = await client.query(sqlText, params);
       client.release();
@@ -160,6 +178,8 @@ export async function runStatementWithRetry(pool, sqlText, params = [], options 
       if (attempt >= attempts || !connectionBroken || !readOnly) throw error;
       onRetry({ phase: "query", attempt, error });
       await sleepImpl(backoffFor(backoff, attempt));
+    } finally {
+      detachGuard();
     }
   }
 
@@ -226,6 +246,7 @@ export async function runTransaction(statements, env = process.env) {
   attachPoolErrorLogger(pool, "（事务）");
 
   const client = await acquireWithRetry(pool);
+  const detachGuard = attachCheckoutErrorGuard(client, "（事务）");
   try {
     await client.query("begin");
     const results = [];
@@ -239,6 +260,7 @@ export async function runTransaction(statements, env = process.env) {
     throw error;
   } finally {
     client.release();
+    detachGuard();
     await pool.end().catch(() => {});
   }
 }
