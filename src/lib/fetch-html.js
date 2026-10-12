@@ -71,6 +71,34 @@ function jitter() {
   return Math.floor(Math.random() * 150);
 }
 
+// Node 的 response.text() 固定按 UTF-8 解码，不看 Content-Type 里的 charset（浏览器会看）。
+// GBK 站的正文会整片变成 U+FFFD：2026-10-12 实测 meeting.xjtu.edu.cn —— 响应头 charset=gbk、
+// 字节也确实是 GBK，而页内 <meta charset="UTF-8"> 是错的（写错了的站并不少见）。
+// 所以判断顺序必须是「响应头 charset → 页内 meta → UTF-8」，不能反过来信 meta。
+const META_CHARSET_RE = /<meta[^>]+charset\s*=\s*["']?\s*([a-z0-9._-]+)/i;
+
+export function parseContentTypeCharset(contentType) {
+  const match = /charset\s*=\s*["']?\s*([a-z0-9._-]+)/i.exec(String(contentType || ""));
+  return match ? match[1].toLowerCase() : "";
+}
+
+function sniffMetaCharset(bytes) {
+  // meta 一定在 head 里，只解开头一段就够；用 UTF-8 解，ASCII 部分（含 charset 名字）不受影响
+  const head = new TextDecoder("utf-8").decode(bytes.subarray(0, 4096));
+  const match = META_CHARSET_RE.exec(head);
+  return match ? match[1].toLowerCase() : "";
+}
+
+export function decodeHtmlBytes(bytes, contentType = "") {
+  const label = parseContentTypeCharset(contentType) || sniffMetaCharset(bytes) || "utf-8";
+  try {
+    return new TextDecoder(label).decode(bytes);
+  } catch {
+    // 认不出的标签（拼错 / 私有编码）→ 退回 UTF-8，别让整个源因此挂掉
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+}
+
 export async function defaultFetchHtml(url) {
   const response = await fetchWithRetry(url, {
     retries: DEFAULT_RETRY_COUNT,
@@ -79,7 +107,7 @@ export async function defaultFetchHtml(url) {
     next: { revalidate: 3600 },
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.text();
+  return decodeHtmlBytes(new Uint8Array(await response.arrayBuffer()), response.headers.get("content-type"));
 }
 
 export async function defaultFetchJson(url) {

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { fetchWithRetry } from "../src/lib/fetch-html.js";
+import { decodeHtmlBytes, defaultFetchHtml, fetchWithRetry, parseContentTypeCharset } from "../src/lib/fetch-html.js";
 
 const noopSleep = async () => {};
 const okResponse = () => ({ ok: true, status: 200, text: async () => "ok" });
@@ -63,4 +63,65 @@ test("retry: non-retryable thrown error is not retried", async () => {
     (error) => /boom/.test(error.message),
   );
   assert.equal(calls.length, 1);
+});
+
+// 「西安交通大学」的 GBK 字节。UTF-8 解会得到 ������ͨ��ѧ —— 2026-10-11 线上
+// 西交讲座源的标题就是这个形状（Node 的 response.text() 只按 UTF-8 解）。
+const GBK_SAMPLE = Uint8Array.from([206, 247, 176, 178, 189, 187, 205, 168, 180, 243, 209, 167]);
+const EXPECTED = "西安交通大学";
+
+test("charset: 从 Content-Type 提取 charset（带引号 / 大小写 / 无 charset）", () => {
+  assert.equal(parseContentTypeCharset("text/html;charset=gbk"), "gbk");
+  assert.equal(parseContentTypeCharset('text/html; charset="GB2312"'), "gb2312");
+  assert.equal(parseContentTypeCharset("text/html; charset=UTF-8"), "utf-8");
+  assert.equal(parseContentTypeCharset("text/html"), "");
+  assert.equal(parseContentTypeCharset(null), "");
+});
+
+test("charset: 响应头声明优先于页内 meta（西交大页面 meta 写的是 UTF-8，是错的）", () => {
+  const html = Buffer.concat([
+    Buffer.from('<html><head><meta charset="UTF-8"><title>'),
+    Buffer.from(GBK_SAMPLE),
+    Buffer.from("</title></head></html>"),
+  ]);
+
+  assert.equal(decodeHtmlBytes(new Uint8Array(html), "text/html;charset=gbk").includes(EXPECTED), true);
+  // 对照组：忽略响应头、只信 meta 就会解成乱码 —— 这正是修之前的行为
+  assert.equal(decodeHtmlBytes(new Uint8Array(html), "").includes(EXPECTED), false);
+});
+
+test("charset: 响应头没声明时按页内 meta 解", () => {
+  const html = Buffer.concat([
+    Buffer.from('<html><head><meta http-equiv="Content-Type" content="text/html; charset=gbk"><title>'),
+    Buffer.from(GBK_SAMPLE),
+  ]);
+
+  assert.equal(decodeHtmlBytes(new Uint8Array(html), "text/html").includes(EXPECTED), true);
+});
+
+test("charset: 任何地方都没声明时按 UTF-8 解", () => {
+  const utf8 = new TextEncoder().encode(`<html><title>${EXPECTED}</title></html>`);
+  assert.equal(decodeHtmlBytes(utf8, "text/html").includes(EXPECTED), true);
+});
+
+test("charset: 认不出的编码标签退回 UTF-8，不抛错", () => {
+  const utf8 = new TextEncoder().encode(EXPECTED);
+  assert.equal(decodeHtmlBytes(utf8, "text/html;charset=x-nonsense-enc"), EXPECTED);
+});
+
+test("defaultFetchHtml: 按声明编码返回文本（不是 UTF-8 硬解）", async () => {
+  const body = Buffer.concat([Buffer.from("<title>"), Buffer.from(GBK_SAMPLE), Buffer.from("</title>")]);
+  const originalFetch = globalThis.fetch;
+  const requested = [];
+  globalThis.fetch = async (url) => {
+    requested.push(url);
+    return new Response(body, { headers: { "content-type": "text/html;charset=gbk" } });
+  };
+  try {
+    const html = await defaultFetchHtml("https://example.test/lecture");
+    assert.equal(requested.length, 1);
+    assert.equal(html.includes(EXPECTED), true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
