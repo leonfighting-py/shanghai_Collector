@@ -10,7 +10,10 @@ jobs:
     # 跑在腾讯云 self-hosted runner 上，避免美国 IP 被境内 .edu.cn/.cn 站点屏蔽。
     # runner 注册时需带 --labels china；若 runner 离线，job 会排队等待（最长 6h 超时）。
     runs-on: [self-hosted, china]
-    timeout-minutes: 20
+    # 2026-10-12：20 分钟上限会掐掉一次正常的采集。开着 LLM 富化（vars.LLM_ENRICHMENT_ENABLED=true）
+    # 时实测要 18~25 分钟：10-08 成功那次 18m18s（余量仅 1m42s），10-12 手动重跑跑到 19m35s
+    # 仍未完成就被 cancel，整轮不发布。自建 runner 不计费，放宽到 35 分钟。
+    timeout-minutes: 35
     steps:
       # 境内 runner 无法直连 github.com 的 git/npm，统一走境内镜像重写：
       # - git: insteadOf 把 https://github.com/ 前缀替换为 gh-proxy 镜像
