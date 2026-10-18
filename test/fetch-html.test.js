@@ -65,6 +65,67 @@ test("retry: non-retryable thrown error is not retried", async () => {
   assert.equal(calls.length, 1);
 });
 
+// 2026-10-16 实测的形态：第 1 次尝试卡满 undici 的连接超时（10s）才失败，而超时 signal 若在
+// 重试循环外只建一个、被三次尝试共享，第 2 次尝试刚起步就撞上它（报 TimeoutError，不可重试），
+// 第 3 次根本没机会跑 —— 「重试 3 次」实际退化成 1 次多。这里用 120ms/150ms 的小时间尺度复现。
+function slowAttemptFetch(records) {
+  return (url, options) =>
+    new Promise((resolve, reject) => {
+      const attempt = records.length + 1;
+      records.push({ signal: options.signal, abortedAtEntry: Boolean(options.signal?.aborted) });
+      const onAbort = () => reject(options.signal.reason ?? new DOMException("aborted", "AbortError"));
+      options.signal?.addEventListener("abort", onAbort, { once: true });
+      setTimeout(() => {
+        options.signal?.removeEventListener("abort", onAbort);
+        if (attempt === 1) {
+          const error = new TypeError("fetch failed");
+          error.cause = { code: "UND_ERR_CONNECT_TIMEOUT" };
+          reject(error);
+          return;
+        }
+        resolve(okResponse());
+      }, 120);
+    });
+}
+
+test("retry: 每次尝试各拿一份超时预算，不共享一个倒计时", async () => {
+  const records = [];
+  const response = await fetchWithRetry("https://example.test", {
+    fetchImpl: slowAttemptFetch(records),
+    retries: 1,
+    timeoutMs: 150,
+    sleepImpl: noopSleep,
+  });
+
+  assert.equal(response.status, 200, "第 2 次尝试在 150ms 预算内跑完（120ms）应当成功");
+  assert.equal(records.length, 2, "连接超时（TypeError）应当重试");
+  assert.notEqual(records[0].signal, records[1].signal, "两次尝试必须是各自新建的 signal");
+  assert.deepEqual(
+    records.map((item) => item.abortedAtEntry),
+    [false, false],
+    "每次尝试开始时预算都不该已被消耗",
+  );
+});
+
+test("defaultFetchHtml: 重试时不复用同一个 AbortSignal", async () => {
+  const signals = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options) => {
+    signals.push(options.signal);
+    if (signals.length === 1) throw new TypeError("fetch failed");
+    return new Response("<title>ok</title>", { headers: { "content-type": "text/html;charset=utf-8" } });
+  };
+  try {
+    const html = await defaultFetchHtml("https://example.test/lecture");
+    assert.equal(html.includes("ok"), true);
+    assert.equal(signals.length, 2, "首个网络错误应当重试");
+    assert.notEqual(signals[0], signals[1]);
+    assert.equal(signals[1].aborted, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 // 「西安交通大学」的 GBK 字节。UTF-8 解会得到 ������ͨ��ѧ —— 2026-10-11 线上
 // 西交讲座源的标题就是这个形状（Node 的 response.text() 只按 UTF-8 解）。
 const GBK_SAMPLE = Uint8Array.from([206, 247, 176, 178, 189, 187, 205, 168, 180, 243, 209, 167]);

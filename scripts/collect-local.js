@@ -4,6 +4,7 @@ import { getAlertConfig, notifyCollectAlert, notifyFatalError } from "../src/lib
 import { runCollectJob } from "../src/lib/collect-job.js";
 import { shouldFailCollectProcess } from "../src/lib/collect-result.js";
 import { SOURCE_SEEDS } from "../src/lib/collector.js";
+import { initOutboundProxy } from "../src/lib/outbound-proxy.js";
 import { listRecentCollectionRuns } from "../src/lib/repository.js";
 
 // 致命错误的统一出口：推飞书 + 写 Step Summary + 把原文打到 stderr。
@@ -28,6 +29,17 @@ if (!process.env.DATABASE_URL) {
 }
 
 let result;
+
+// 出口代理：只有配了 OUTBOUND_PROXY 才生效（境外源在境内 runner 上会被 403/405）。
+// 配了却加载失败（缺 undici / 地址写错）必须硬失败，别静默退化成直连。
+try {
+  const proxyStatus = await initOutboundProxy();
+  if (proxyStatus !== "disabled") console.log(`[proxy] 出口代理 ${proxyStatus}`);
+} catch (error) {
+  await reportFatal("出口代理", error);
+  throw error;
+}
+
 try {
   result = await runCollectJob();
 } catch (error) {
@@ -49,6 +61,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
     `- 封面图：回填 ${result.image_backfill?.backfilled ?? 0}/${result.image_backfill?.attempted ?? 0} 条`,
     `- LLM 预算：${result.llm_budget?.used ?? 0}/${result.llm_budget?.cap ?? "-"} 次调用（${result.llm_budget?.enabled ? "已启用熔断" : "未启用"}）`,
     `- 发布守门：${guard.allowed ? "通过" : `拦截（${guard.reason}，新 ${guard.newCount} < 旧 ${guard.previousCount}）`}`,
+    `- 境外源：${result.offshore?.status === "ok" ? `合并 ${result.offshore.count} 条（生成于 ${result.offshore.generatedAt}）` : `${result.offshore?.status || "disabled"}${result.offshore?.reason ? `：${result.offshore.reason}` : ""}`}`,
     "",
     failedSources ? `### 失败源（${result.failures.length}）\n${failedSources}` : "### 全部源成功",
     "",

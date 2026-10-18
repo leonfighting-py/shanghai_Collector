@@ -54,9 +54,31 @@ jobs:
           npm config set registry https://registry.npmmirror.com
           npm ci
 
+      # 境外源（Eventbrite / 活动行 / AllEvents）在境内 runner 上是 403/405，
+      # 由 offshore.yml 在 GitHub 托管 runner（境外出口）采好后以 artifact 交过来。
+      # 任何一步失败都只告警、不阻断本轮采集（境内源照常发布）。
+      - name: Fetch offshore events artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set +e
+          rm -f offshore-events.json
+          API="https://api.github.com/repos/$REPO"
+          HEADERS=(-H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json")
+          RUN_ID=$(curl -fsSL --retry 3 "${HEADERS[@]}" "$API/actions/workflows/offshore.yml/runs?status=success&per_page=1" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["workflow_runs"][0]["id"] if d.get("workflow_runs") else "")')
+          if [ -z "$RUN_ID" ]; then echo "::warning::没有成功的 offshore 运行，本轮不带境外源"; exit 0; fi
+          ARTIFACT_ID=$(curl -fsSL --retry 3 "${HEADERS[@]}" "$API/actions/runs/$RUN_ID/artifacts" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next((a["id"] for a in d.get("artifacts",[]) if a["name"]=="offshore-events"), ""))')
+          if [ -z "$ARTIFACT_ID" ]; then echo "::warning::run $RUN_ID 里没有 offshore-events 产物"; exit 0; fi
+          echo "offshore run=$RUN_ID artifact=$ARTIFACT_ID"
+          curl -fsSL --retry 3 "${HEADERS[@]}" "$API/actions/artifacts/$ARTIFACT_ID/zip" -o /tmp/offshore.zip
+          python3 -c "import zipfile; zipfile.ZipFile('/tmp/offshore.zip').extractall('.')" || { echo "::warning::解压失败"; exit 0; }
+          ls -l offshore-events.json 2>/dev/null || echo "::warning::解压后没有 offshore-events.json"
+
       - name: Run collector
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          OFFSHORE_EVENTS_FILE: offshore-events.json
           LLM_ENRICHMENT_ENABLED: ${{ vars.LLM_ENRICHMENT_ENABLED || 'false' }}
           LLM_ENRICHMENT_SOURCES: ${{ vars.LLM_ENRICHMENT_SOURCES || 'all' }}
           LLM_CATEGORY_FILTER_ENABLED: ${{ vars.LLM_CATEGORY_FILTER_ENABLED || '' }}

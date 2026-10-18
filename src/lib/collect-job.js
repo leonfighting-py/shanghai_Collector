@@ -1,7 +1,8 @@
-import { collectEventsFromSources, SOURCE_SEEDS } from "./collector.js";
+import { collectEventsFromSources, LAND_SOURCES, SOURCE_SEEDS } from "./collector.js";
 import { filterEventCategories, getCategoryFilterConfig } from "./category-filter.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
 import { backfillEventImages } from "./image-backfill.js";
+import { loadOffshoreEvents } from "./offshore-events.js";
 import { isRelevantPerformance } from "./parsers/shared.js";
 import { resetLlmBudget, getLlmBudgetUsage } from "./siliconflow.js";
 import {
@@ -70,8 +71,18 @@ export async function runCollectJob() {
   resetLlmBudget();
   const previousEvents = await listEvents();
   await upsertSourceConfigs(SOURCE_SEEDS);
-  const run = await startCollectionRun({ sourceCount: SOURCE_SEEDS.length });
-  const result = await collectEventsFromSources({ previousEvents });
+
+  // 境外源（Eventbrite / 活动行 / AllEvents）在境内 runner 上是 403/405，
+  // 由 offshore.yml 在境外出口采好后以 artifact 交过来；没配这个文件时整段不生效。
+  const offshore = await loadOffshoreEvents(process.env.OFFSHORE_EVENTS_FILE);
+  if (offshore.status === "ok") {
+    console.log(`[offshore] 合并境外源 ${offshore.events.length} 条（生成于 ${offshore.generatedAt}）`);
+  } else if (offshore.status !== "disabled") {
+    console.warn(`[offshore] 未合并：${offshore.reason}`);
+  }
+
+  const run = await startCollectionRun({ sourceCount: LAND_SOURCES.length });
+  const result = await collectEventsFromSources({ previousEvents, sources: LAND_SOURCES, extraEvents: offshore.events });
   const enrichment =
     result.events === previousEvents
       ? { events: previousEvents, enrichedCount: 0, skippedCount: 0, failures: [] }
@@ -160,6 +171,12 @@ export async function runCollectJob() {
     run_id: run.id,
     raw_inserted: rawResult.inserted,
     published_inserted: publishResult.inserted,
+    offshore: {
+      status: offshore.status,
+      count: offshore.events.length,
+      generatedAt: offshore.generatedAt,
+      reason: offshore.reason,
+    },
     llm_budget: getLlmBudgetUsage(),
   };
 }

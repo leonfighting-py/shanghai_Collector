@@ -37,7 +37,8 @@ export const SOURCE_SEEDS_RAW = [
     locale: "en",
     parser: PARSERS.smartshanghai,
   },
-  { name: "AllEvents Shanghai", url: "https://allevents.in/shanghai", category: "演出音乐", locale: "en", parser: PARSERS.allevents },
+  // ⚠️ offshore：境内 runner 打这个站是 403（出口 IP 被拦），只在境外出口的 offshore.yml 里跑，见 docs/offshore-sources.md
+  { name: "AllEvents Shanghai", url: "https://allevents.in/shanghai", category: "演出音乐", locale: "en", parser: PARSERS.allevents, offshore: true },
   {
     name: "Eventbrite Shanghai Music",
     url: "https://www.eventbrite.com/d/china--shanghai/music--events/",
@@ -284,7 +285,8 @@ export const SOURCE_SEEDS_RAW = [
     category: "线下活动",
     locale: "zh",
     parser: PARSERS.huodong,
-    notes: "eventlist 端点为 SSR 渲染，events 页为 JS 渲染",
+    offshore: true,
+    notes: "eventlist 端点为 SSR 渲染，events 页为 JS 渲染；⚠️ 境内 runner 打这站是 403（2026-10 起），只在境外出口跑",
   },
   {
     name: "活动行·上海推荐",
@@ -341,6 +343,7 @@ export const SOURCE_SEEDS_RAW = [
     category: "线下活动",
     locale: "en",
     parser: PARSERS.tentimes,
+    offshore: true,
   },
   {
     name: "Eventbrite Shanghai Networking",
@@ -575,6 +578,7 @@ export const SOURCE_SEEDS_RAW = [
     category: "AI聚会",
     locale: "en",
     parser: PARSERS.eventbriteAiTech,
+    offshore: true,
   },
   {
     name: "Eventbrite Shanghai Tech",
@@ -1627,14 +1631,15 @@ export const SOURCE_SEEDS_RAW = [
   { name: "Eventbrite 上海·古典音乐", url: "https://www.eventbrite.com/d/china--shanghai/classical--events/", category: "演出音乐", locale: "en", parser: PARSERS.tentimes },
   { name: "Eventbrite 上海·爵士", url: "https://www.eventbrite.com/d/china--shanghai/jazz--events/", category: "演出音乐", locale: "en", parser: PARSERS.tentimes },
   { name: "Eventbrite 上海·戏剧", url: "https://www.eventbrite.com/d/china--shanghai/theatre--events/", category: "演出音乐", locale: "en", parser: PARSERS.tentimes },
-  { name: "Eventbrite 上海·读书", url: "https://www.eventbrite.com/d/china--shanghai/book--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
+  { name: "Eventbrite 上海·读书", url: "https://www.eventbrite.com/d/china--shanghai/book--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes, offshore: true },
   { name: "Eventbrite 上海·文化", url: "https://www.eventbrite.com/d/china--shanghai/cultural--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
   { name: "Eventbrite 上海·在线活动", url: "https://www.eventbrite.com/d/china--shanghai/online--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
-  { name: "Eventbrite 上海·工作坊", url: "https://www.eventbrite.com/d/china--shanghai/workshop--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
-  { name: "Eventbrite 上海·展览", url: "https://www.eventbrite.com/d/china--shanghai/exhibitions-and-shows--events/", category: "展览", locale: "en", parser: PARSERS.tentimes },
-  { name: "Eventbrite 上海·设计", url: "https://www.eventbrite.com/d/china--shanghai/design--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
+  { name: "Eventbrite 上海·工作坊", url: "https://www.eventbrite.com/d/china--shanghai/workshop--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes, offshore: true },
+  { name: "Eventbrite 上海·展览", url: "https://www.eventbrite.com/d/china--shanghai/exhibitions-and-shows--events/", category: "展览", locale: "en", parser: PARSERS.tentimes, offshore: true },
+  { name: "Eventbrite 上海·设计", url: "https://www.eventbrite.com/d/china--shanghai/design--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes, offshore: true },
   { name: "Eventbrite 上海·游戏", url: "https://www.eventbrite.com/d/china--shanghai/gaming--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
-  { name: "Eventbrite 上海·免费", url: "https://www.eventbrite.com/d/china--shanghai/free--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes },
+  { name: "Eventbrite 上海·免费", url: "https://www.eventbrite.com/d/china--shanghai/free--events/", category: "线下活动", locale: "en", parser: PARSERS.tentimes, offshore: true },
+  { name: "Eventbrite 上海·艺术", url: "https://www.eventbrite.com/d/china--shanghai/art--events/", category: "展览", locale: "en", parser: PARSERS.tentimes, offshore: true },
 
   {
     name: "上海建桥学院·百家讲坛",
@@ -2432,6 +2437,184 @@ export const SOURCE_SEEDS_RAW = [
     notes: "第五批扩展·已验证栏目(近 2 条，近期无更新)",
   },
 
+  // ===== 2026-10-18 第七批扩展：区级文化场馆 / 票务上海站 / 科研院所 / 高校栏目 =====
+  // 选源口径（这一批与前几批不同，全部按「境内 runner 可达」过滤过）：
+  //   · 只保留**腾讯云 runner 出口 IP 上能 fetch 200 且能解析**的源。境外平台（Eventbrite / Lu.ma /
+  //     AllEvents / Meetup）与活动行（含其标签频道）已在停采清单里，本轮不再补同类——本机住宅 IP
+  //     能拿到数据，runner 上是 403/405，加了只会让体检报告常年飘红。
+  //   · 判据是「本机实测 pub>0」+「结构为主页 SSR 列表」，不是「域名猜对了」。下面每个源的 notes
+  //     里记了实测条数与窗口内条数（2026-10-18，窗口 10-18 起 14 天）。
+  {
+    name: "票牛上海站",
+    url: "https://www.piaoniu.com/shanghai",
+    category: "演出音乐",
+    locale: "zh",
+    parser: PARSERS.piaoniu,
+    notes: "票牛上海频道（不同首页全国榜）· SSR 内嵌项目 JSON，实测 14 条 / 11 条在窗口内，带梅奔、前滩等上海场馆（2026-10-18 新增）",
+  },
+  {
+    name: "上海图书馆·展览",
+    url: "https://www.library.sh.cn/activity?tabName=%E5%B1%95%E8%A7%88",
+    category: "展览",
+    locale: "zh",
+    parser: PARSERS.shlibActivity,
+    defaultVenue: "上海图书馆",
+    notes: "上图活动页「展览」分栏（现有两个源只覆盖综合榜与讲座栏），实测 5 条（2026-10-18 新增）",
+  },
+  {
+    name: "黄浦区文化馆·活动预约",
+    url: "https://www.hpqwhg.cn/WebHome",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "黄浦区文化馆",
+    defaultVenue: "黄浦区文化馆",
+    notes: "区文化馆公开预约（音乐剧探班、歌剧讲座、手作体验、市民夜校）· 实测 9 条 / 3 条在窗口内（2026-10-18 新增）",
+  },
+  {
+    name: "黄浦区图书馆·活动报名",
+    url: "https://www.shhpl.cn/WebNews/Index",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    defaultVenue: "黄浦区图书馆",
+    notes: "区图书馆「活动报名 / 美育课堂」栏目 · 实测 10 条（2026-10-18 新增）",
+  },
+  {
+    name: "普陀区图书馆·活动预告",
+    url: "https://www.ptlib.com.cn/",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    defaultVenue: "普陀区图书馆",
+    notes: "月度活动日历 + 读书会报名 · 实测 9 条，最近一条 2026-09-07（月度更新节奏，2026-10-18 新增）",
+  },
+  {
+    name: "静安区图书馆·活动报名",
+    url: "https://www.shjinganlib.net/News_List.aspx?ColumnNameEn=NOTICE",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    defaultVenue: "静安区图书馆",
+    notes: "栏目以馆务通知为主，活动报名夹杂其中 · 实测 1 条（青年收藏讲坛），产出低但零成本（2026-10-18 新增）",
+  },
+  {
+    name: "豆瓣同城·上海运动",
+    url: "https://www.douban.com/location/shanghai/events/week-sports",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.douban,
+    notes: "豆瓣同城「运动」子类（父源综合榜与已有 7 个子类都覆盖不到）· 实测 3 条 / 1 条在窗口内（2026-10-18 新增）",
+  },
+  {
+    name: "豆瓣同城·上海课程",
+    url: "https://www.douban.com/location/shanghai/events/week-course",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.douban,
+    notes: "豆瓣同城「课程」子类（工作坊/训练营）· 实测 3 条 / 2 条在窗口内（2026-10-18 新增）",
+  },
+  {
+    name: "豆瓣同城·上海亲子",
+    url: "https://www.douban.com/location/shanghai/events/week-kids",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.douban,
+    notes: "豆瓣同城「亲子」子类（含亲子特展）· 实测 3 条 / 1 条在窗口内（2026-10-18 新增）",
+  },
+  {
+    name: "豆瓣同城·上海其他",
+    url: "https://www.douban.com/location/shanghai/events/week-others",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.douban,
+    notes: "豆瓣同城「其他」子类（沉浸式戏剧、体验课等未归类条目）· 实测 3 条 / 2 条在窗口内（2026-10-18 新增）",
+  },
+  {
+    name: "中科院上海硅酸盐所·学术活动",
+    url: "http://www.sic.cas.cn/xwzx/xshd/",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "中科院上海硅酸盐研究所",
+    defaultVenue: "中科院上海硅酸盐研究所",
+    notes: "「会聚」时代人工晶体讲坛等系列 seminar · 实测 10 条（2026-10-18 新增）",
+  },
+  {
+    name: "中科院上海有机所·国际会议",
+    url: "http://www.sioc.cas.cn/hzjl/gjhy/",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "中科院上海有机化学研究所",
+    defaultVenue: "中科院上海有机化学研究所",
+    notes: "国际会议/学术交流会通知，含会议地点 · 实测 18 条 / 1 条在窗口内（2026-10-18 新增）",
+  },
+  {
+    name: "上海文化云·活动报名",
+    // 市级公共文化平台（各区文化馆/图书馆/街道活动中心的报名活动）。
+    // 页面是 HTML 壳，真数据在 ticketActivityListLoad.do 的 AJAX 片段里 —— 详见 parsers/wenhuayun.js。
+    url: "https://www.wenhuayun.cn/ticketActivity/ticketActivityListLoad.do?page=1",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.wenhuayun,
+    defaultVenue: "上海",
+    notes: "上海文化云（wenhuayun.cn）活动报名列表 · 一次 5 页 49 条，47 条可发布（2026-10-18 新增，接口从列表页 JS 反推）",
+  },
+  {
+    name: "上海市政府·区文化活动预告",
+    // 门户「便民提示」栏每两三天就会转入一篇区级《文化活动预告》（一篇正文 10~40 场）。
+    // 这类目录页被 events.js 的周报规则正确剔除，所以必须是展开式 parser（parsers/gov-weekly.js）。
+    // ⚠️ 周报不是每天都有：要翻到第 6~8 页才命中，故 weeklyPages=8（8 次列表请求 + ≤10 篇详情，实测约 2.6s）。
+    url: "https://www.shanghai.gov.cn/nw17239/index.html",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.govWeekly,
+    weeklyPages: 8,
+    defaultVenue: "上海",
+    notes: "区政府《文化活动预告》周报展开 · 一篇拆多场，实测 31 条全部可发布（2026-10-18 新增，含专用解析器）",
+  },
+  {
+    name: "上外贤达·讲座通知",
+    url: "http://www.xdsisu.edu.cn/jztz/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "上外贤达经济人文学院",
+    defaultVenue: "上外贤达经济人文学院",
+    notes: "此前完全未覆盖的院校 · 实测 13 条（2026-10-18 新增）",
+  },
+  {
+    name: "上海海事大学·讲座信息",
+    url: "http://www.shmtu.edu.cn/xsjz/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "上海海事大学",
+    defaultVenue: "上海海事大学",
+    notes: "「海大人文导读」等公开讲座（现有海事源是学术讲座/学生活动两个别的栏目）· 实测 10 条，最近一条 2026-10-16",
+  },
+  {
+    name: "上海立信·科研处学术活动",
+    url: "http://kyc.lixin.edu.cn/info/iList.jsp?cat_id=13374",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "上海立信会计金融学院",
+    defaultVenue: "上海立信会计金融学院",
+    notes: "科研处「序伦财经讲坛」等学术活动（现有两个立信源是校主页讲座与论坛，不含科研处）· 实测 15 条，最近一条 2026-03-02（栏目更新慢，同停采清单里的「已验证栏目·近期无更新」一类）",
+  },
+  {
+    name: "上海对外经贸大学·研究生院学术讲座",
+    url: "http://www.suibe.edu.cn/yjsy/xsjz/list.htm",
+    category: "高校讲座",
+    locale: "zh",
+    parser: PARSERS.cnCmsLectures,
+    venueLabel: "上海对外经贸大学",
+    defaultVenue: "上海对外经贸大学",
+    notes: "研究生院「实践中国」系列讲座 · 实测 14 条，最近一条 2026-06-12（2026-10-18 新增）",
+  },
+
   ...(process.env.WECHAT_EVENTS_API_URL || process.env.WECHAT_EXPORTER_AUTH_KEY
     ? [
         {
@@ -2498,26 +2681,23 @@ export function resolveSourceTier(source) {
 //   · 赢商网系：商业地产资讯
 //   C 组 · 结构性 0 条（fetch/解析都正常，但条目全被正确的规则拦掉）——见集合末尾逐条说明
 // 恢复方式：从下面的集合里删掉对应名字即可，上方的 URL 与 parser 定义都还在。
+//
+// ⚠️ 2026-10-18 起，Eventbrite / 活动行 / AllEvents 里**出口 IP 被拦**的那批改走「境外 runner」：
+// 条目上加 `offshore: true` + 从这个集合里移出 → 由 offshore.yml 采集、主采集合并（docs/offshore-sources.md）。
+// 已复活 10 个；剩下的（Eventbrite Shanghai 综合/音乐/Networking/Tech、舞蹈/古典/爵士/戏剧…）没复活的
+// 原因不是 IP 而是**单轮产量太低**，需要时按同样方式加 `offshore: true` 即可。
 const RETIRED_SOURCE_NAMES = new Set([
-  "AllEvents Shanghai",
   "Eventbrite Shanghai",
   "Eventbrite Shanghai Music",
-  "Eventbrite Shanghai Business",
   "Eventbrite Shanghai Networking",
-  "Eventbrite Shanghai AI",
   "Eventbrite Shanghai Tech",
   "Eventbrite 上海·舞蹈",
   "Eventbrite 上海·古典音乐",
   "Eventbrite 上海·爵士",
   "Eventbrite 上海·戏剧",
-  "Eventbrite 上海·读书",
   "Eventbrite 上海·文化",
   "Eventbrite 上海·在线活动",
-  "Eventbrite 上海·工作坊",
-  "Eventbrite 上海·展览",
-  "Eventbrite 上海·设计",
   "Eventbrite 上海·游戏",
-  "Eventbrite 上海·免费",
   "Eventbrite 上海·语言交流",
   "Eventbrite 上海·兴趣爱好",
   "Eventbrite 上海·表演与视觉艺术",
@@ -2525,7 +2705,6 @@ const RETIRED_SOURCE_NAMES = new Set([
   "Eventbrite 上海·健康身心",
   "Eventbrite 上海·时尚",
   "Eventbrite 上海·社区",
-  "活动行上海",
   "活动行·上海推荐",
   "活动行·上海AI",
   "活动行·上海AI关键词",
@@ -2624,6 +2803,14 @@ export const SOURCE_SEEDS = SOURCE_SEEDS_RAW
     tier: resolveSourceTier(source),
   }));
 
+// 出口 IP 被反爬的源（Eventbrite / 活动行 / AllEvents …）单独归组：
+// 境内 runner 打这些站是 403/405，只能由境外出口的 offshore.yml 采集，
+// 结果以 artifact 形式交给主采集合并（见 docs/offshore-sources.md）。
+export const OFFSHORE_SOURCES = SOURCE_SEEDS.filter((source) => source.offshore);
+
+// 境内 runner 要跑的源：排除 offshore，否则每轮都会白跑一遍并记一堆 403
+export const LAND_SOURCES = SOURCE_SEEDS.filter((source) => !source.offshore);
+
 // 失败原因分类：把原始错误字符串归入固定桶，供健康报告做可靠的趋势统计
 // （替代之前 health-check 里 String(msg).split(':')[0] 的脆弱字符串前缀匹配）。
 export function classifyFailure(message) {
@@ -2632,9 +2819,49 @@ export function classifyFailure(message) {
   if (/429/.test(text)) return "rate_limited";
   if (/HTTP\s*4\d\d|HTTP 4\d\d/.test(text)) return "http_4xx";
   if (/HTTP\s*5\d\d|HTTP 5\d\d/.test(text)) return "http_5xx";
-  if (/fetch failed|ENOTFOUND|ECONNRESET|ECONNREFUSED|EAI_AGAIN|getaddrinfo|TypeError|cert|ssl/i.test(text)) return "network";
+  if (/fetch failed|ENOTFOUND|ENETUNREACH|EHOSTUNREACH|ECONNRESET|ECONNREFUSED|EAI_AGAIN|getaddrinfo|TypeError|cert|ssl/i.test(text)) return "network";
   if (/parse|解析|JSON|无法|expected|unexpected token/i.test(text)) return "parse";
   return "unknown";
+}
+
+// 网络错误要能定位到机制。undici 的外层报错永远是 `fetch failed`，真正的原因藏在
+// error.cause 里（UND_ERR_CONNECT_TIMEOUT = 连接阶段被丢包；ECONNREFUSED = 端口拒绝；
+// ENETUNREACH/EHOSTUNREACH = 该地址家族不可达；EAI_AGAIN = DNS 抖动），
+// happy-eyeballs 各自失败时 cause 是个 AggregateError，errors[] 里每个地址一条。
+// 2026-10-13 / 10-15 嘉定图书馆源连续两轮只记下「fetch failed」，无从判断是哪一种 ——
+// 采集只记 message，所以这里把 cause 链一并拼进 message。
+export function describeError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!(error instanceof Error)) return message;
+
+  const labels = [];
+  const seen = new Set();
+
+  const walk = (node, depth) => {
+    if (!node || typeof node !== "object" || depth > 4 || seen.has(node)) return;
+    seen.add(node);
+    const children = Array.isArray(node.errors) ? node.errors : null;
+    // AggregateError 只是「几个地址都没连上」的壳（happy-eyeballs 逐个失败），信息在每个子错误里
+    if (!children) {
+      // 只认字符串形式的 code（ECONNREFUSED / UND_ERR_CONNECT_TIMEOUT）；
+      // DOMException 的 code 是数字（TimeoutError = 23），那是历史遗留编码，读不出信息。
+      const code = typeof node.code === "string" ? node.code : "";
+      const where = node.address ? `${node.address}${node.port ? `:${node.port}` : ""}` : "";
+      const detail = node.message && node.message !== message ? node.message : "";
+      if (code || where) labels.push([code, where].filter(Boolean).join(" "));
+      else if (detail && node.name && node.name !== "Error") labels.push(`${node.name}: ${detail}`);
+      else if (detail) labels.push(detail);
+    }
+
+    if (children) {
+      for (const sub of children) walk(sub, depth + 1);
+      return;
+    }
+    walk(node.cause, depth + 1);
+  };
+
+  walk(error.cause, 1);
+  return labels.length ? `${message} (${labels.join(", ")})` : message;
 }
 
 async function withSourceTimeout(task, sourceName, timeoutMs) {
@@ -2652,21 +2879,82 @@ async function withSourceTimeout(task, sourceName, timeoutMs) {
 }
 
 // 有界并发度：与 source-health-check.js 的 CONCURRENCY 对齐。
-// 这些源都是不同网站，并发 5 不会触发反爬；慢源/超时不再拖垮整批采集时长。
+// 慢源/超时不再拖垮整批采集时长。
 const DEFAULT_CONCURRENCY = Number(process.env.COLLECTOR_CONCURRENCY) || 5;
+
+// 同主机限速：并发 5 只保证「不超过 5 个请求在飞」，并不保证「同一站不会被同时打」——
+// 池子里 245 个源分布在 184 个主机上，37 个主机挂了 2 个以上源（douban.com 9 个，
+// 按真实分批最多 4 个并发打同一站）。Eventbrite 26 个源 + 活动行 16 个源就是被整站反爬
+// 拦掉后停采的（见 RETIRED_SOURCE_NAMES 注释），所以对同一 host 改成
+// 「串行 + 相邻两次请求至少间隔 minIntervalMs」，把 burst 摊平。
+// ⚠️ 只管页面请求（列表页 + 详情页）；robots.txt 每轮每 origin 只有 1 次，保持原样。
+// 关闭方式：COLLECTOR_HOST_MIN_INTERVAL_MS=0。
+const configuredHostInterval = Number(process.env.COLLECTOR_HOST_MIN_INTERVAL_MS);
+const DEFAULT_HOST_MIN_INTERVAL_MS =
+  Number.isFinite(configuredHostInterval) && configuredHostInterval >= 0 ? configuredHostInterval : 1500;
+
+// 限速会占掉时间预算：单源最坏 1 个列表 + 12 个详情，每个至少隔 minIntervalMs，
+// 同主机还有别的源排队时更久 → 开启限速时源级超时从 45s 放宽到 90s。
+const SOURCE_TIMEOUT_MS = 45_000;
+const THROTTLED_SOURCE_TIMEOUT_MS = 90_000;
+
+function sleepMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * 按 host 串行 + 最小间隔的请求闸门。
+ * 同一 host 的请求排成一条链（并发 1），相邻两次之间至少等 minIntervalMs；
+ * 不同 host 互不影响。任务失败只影响它自己的返回值，不会卡死该 host 后面的请求。
+ */
+export function createHostThrottle({ minIntervalMs = DEFAULT_HOST_MIN_INTERVAL_MS, sleepImpl = sleepMs } = {}) {
+  const tails = new Map();
+  const finishedAt = new Map();
+
+  return function schedule(url, task) {
+    let host;
+    try {
+      host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+    } catch {
+      host = String(url);
+    }
+
+    const previous = tails.get(host) ?? Promise.resolve();
+    const result = previous.then(async () => {
+      const waitUntil = (finishedAt.get(host) ?? 0) + minIntervalMs;
+      const wait = waitUntil - Date.now();
+      if (wait > 0) await sleepImpl(wait);
+      try {
+        return await task();
+      } finally {
+        finishedAt.set(host, Date.now());
+      }
+    });
+
+    // 链尾只用来排队，吞掉失败，避免一次报错把该 host 后续请求全带崩
+    tails.set(host, result.then(() => {}, () => {}));
+    return result;
+  };
+}
 
 export async function collectEventsFromSources({
   sources = SOURCE_SEEDS,
   previousEvents = [],
+  extraEvents = [],
   fetchHtml = defaultFetchHtml,
   now = new Date(),
   concurrency = DEFAULT_CONCURRENCY,
+  hostMinIntervalMs = DEFAULT_HOST_MIN_INTERVAL_MS,
   respectRobots = process.env.COLLECTOR_RESPECT_ROBOTS !== "false",
 } = {}) {
   const { startDate, endDate, days } = toShanghaiDayWindow(now);
   const failures = [];
   const collected = [];
   const robotsSkipped = [];
+
+  const throttle = createHostThrottle({ minIntervalMs: hostMinIntervalMs });
+  const fetchWithHostLimit = (url, ...rest) => throttle(url, () => fetchHtml(url, ...rest));
+  const sourceTimeoutMs = hostMinIntervalMs > 0 ? THROTTLED_SOURCE_TIMEOUT_MS : SOURCE_TIMEOUT_MS;
 
   const collectOne = async (source) => {
     // robots 闸门：站点明示禁止抓取时跳过，记入 skipped 而非 failures，
@@ -2688,15 +2976,15 @@ export async function collectEventsFromSources({
     try {
       const parsed = await withSourceTimeout(
         async () => {
-          const html = await fetchHtml(source.url);
-          return source.parser(html, source, { fetchHtml, now, window: { startDate, endDate, days } });
+          const html = await fetchWithHostLimit(source.url);
+          return source.parser(html, source, { fetchHtml: fetchWithHostLimit, now, window: { startDate, endDate, days } });
         },
         source.name,
-        source.timeoutMs || 45_000,
+        source.timeoutMs || sourceTimeoutMs,
       );
       return { events: parsed, failure: null };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeError(error);
       return {
         events: [],
         failure: {
@@ -2719,6 +3007,10 @@ export async function collectEventsFromSources({
       else collected.push(...outcome.events);
     }
   }
+
+  // 境外源（offshore.yml 预先采好、以 artifact 交过来）在这里并入同一批：
+  // 之后统一走 filterPublishableEvents + 窗口 + 去重，口径与境内源完全一致。
+  if (extraEvents.length > 0) collected.push(...extraEvents);
 
   const events = mergeDuplicateEvents(
     filterPublishableEvents(collected)

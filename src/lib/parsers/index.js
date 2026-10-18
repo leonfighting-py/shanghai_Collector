@@ -21,6 +21,7 @@ import { parseFosunFoundation } from "./fosun.js";
 import { parseFotografiska } from "./fotografiska.js";
 import { parseGdgShanghai } from "./gdg-shanghai.js";
 import { parseGewara } from "./gewara.js";
+import { parseGovWeeklyEvents } from "./gov-weekly.js";
 import { parseIicShanghai } from "./iic-shanghai.js";
 import { parseJiadingLibraryLectures } from "./jiading-library.js";
 import { parsePowerlongMuseum } from "./powerlong-museum.js";
@@ -65,6 +66,7 @@ import { parseShanghaiConcerts } from "./shanghai-concerts.js";
 import { parseXTimeline } from "./x-timeline.js";
 import { parseWechatOfficialAccounts } from "./wechat.js";
 import { parseWestbundEvents } from "./westbund.js";
+import { parseWenhuayunEvents } from "./wenhuayun.js";
 import { parseWestBundMuseum } from "./westbundmuseum.js";
 import { parseWhlyjEvents } from "./whlyj.js";
 import { parseWinshang } from "./winshang.js";
@@ -104,6 +106,7 @@ export const PARSERS = {
   fotografiskaZh: parseFotografiskaZh,
   fosun: parseFosunFoundation,
   gdgShanghai: parseGdgShanghai,
+  govWeekly: parseGovWeeklyEvents,
   gewara: parseGewara,
   cnCmsLectures: parseCnCmsLectures,
   shlibActivity: parseShlibActivity,
@@ -141,6 +144,7 @@ export const PARSERS = {
   sufe: parseSufeEvents,
   szmuseum: parseSuzhouMuseum,
   westbund: parseWestbundEvents,
+  wenhuayun: parseWenhuayunEvents,
   westbundMuseum: parseWestBundMuseum,
   whlyj: parseWhlyjEvents,
   winshang: parseWinshang,

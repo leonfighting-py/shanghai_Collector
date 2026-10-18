@@ -4,13 +4,18 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { getAlertConfig, sendFeishuText, shanghaiTime } from "../src/lib/alerting.js";
-import { SOURCE_SEEDS, classifyFailure as classifyLegacyKind } from "../src/lib/collector.js";
+import { LAND_SOURCES, classifyFailure as classifyLegacyKind, describeError } from "../src/lib/collector.js";
 import { defaultFetchHtml } from "../src/lib/fetch-html.js";
 import { filterPublishableEvents, isInDateRange, toShanghaiDayWindow } from "../src/lib/events.js";
+import { initOutboundProxy } from "../src/lib/outbound-proxy.js";
 import { listRecentCollectionRuns } from "../src/lib/repository.js";
 
 const CONCURRENCY = 5;
 const SOURCE_TIMEOUT_MS = 60_000;
+
+// 体检要和采集用同一个出口，否则「A 类出口被拦」的源在报表里永远是红的（见 docs/offshore-sources.md）
+const proxyStatus = await initOutboundProxy();
+if (proxyStatus !== "disabled") console.log(`[proxy] 出口代理 ${proxyStatus}`);
 
 async function probeSource(source, now) {
   const startedAt = Date.now();
@@ -43,7 +48,7 @@ async function probeSource(source, now) {
       rawCount: 0,
       publishableCount: 0,
       durationMs: Date.now() - startedAt,
-      error: error instanceof Error ? error.message : String(error),
+      error: describeError(error),
     };
   }
 }
@@ -51,8 +56,8 @@ async function probeSource(source, now) {
 const now = new Date();
 const results = [];
 
-for (let index = 0; index < SOURCE_SEEDS.length; index += CONCURRENCY) {
-  const chunk = SOURCE_SEEDS.slice(index, index + CONCURRENCY);
+for (let index = 0; index < LAND_SOURCES.length; index += CONCURRENCY) {
+  const chunk = LAND_SOURCES.slice(index, index + CONCURRENCY);
   results.push(...(await Promise.all(chunk.map((source) => probeSource(source, now)))));
 }
 

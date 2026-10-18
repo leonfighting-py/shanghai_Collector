@@ -1,3 +1,5 @@
+import { resolveDispatcher } from "./proxy-registry.js";
+
 const DEFAULT_HEADERS = {
   "user-agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -30,6 +32,7 @@ function headersFor(url) {
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_BASE_MS = 600;
+const DEFAULT_TIMEOUT_MS = 12_000;
 
 function isRetryableError(error, status) {
   if (error instanceof TypeError) return true; // Node fetch 网络/连接错误
@@ -37,13 +40,19 @@ function isRetryableError(error, status) {
   return false;
 }
 
-export async function fetchWithRetry(url, { retries = DEFAULT_RETRY_COUNT, baseDelayMs = DEFAULT_RETRY_BASE_MS, fetchImpl = fetch, sleepImpl = sleep, ...options } = {}) {
+export async function fetchWithRetry(url, { retries = DEFAULT_RETRY_COUNT, baseDelayMs = DEFAULT_RETRY_BASE_MS, fetchImpl = fetch, sleepImpl = sleep, timeoutMs, signal, ...options } = {}) {
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     let response;
     let status;
     try {
-      response = await fetchImpl(url, options);
+      // 超时预算必须「每次尝试各给一份」。AbortSignal.timeout() 从创建那一刻就开始倒计时，
+      // 在循环外建一个再传进来会被三次尝试共享：2026-10-16 实测（嘉定图书馆源）第一次尝试
+      // 卡满 undici 的连接超时 10s 后才失败，第二次尝试刚起步 ~1.4s 就被这个共享 signal
+      // 中止，报 TimeoutError（不可重试）→ 第三次根本没机会跑，"重试 3 次"退化成 1 次多。
+      // 调用方给了 signal 就照旧当整段操作的预算用（不再叠加 timeoutMs）。
+      const attemptSignal = signal ?? (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined);
+      response = await fetchImpl(url, { ...options, signal: attemptSignal });
       status = response.status;
     } catch (error) {
       lastError = error;
@@ -99,11 +108,17 @@ export function decodeHtmlBytes(bytes, contentType = "") {
   }
 }
 
+// 出口代理（可选）：境外源在境内 runner 上会被 403/405（Eventbrite / 活动行 / Meetup / Lu.ma），
+// 同一 URL 换住宅 IP 或境外出口就是 200。dispatcher 由 `outbound-proxy.js` 在采集进程启动时注入
+// （见 proxy-registry.js）；没注入时 resolveDispatcher 返回 undefined，行为与改造前完全一致。
+// ⚠️ 这里不能直接 import undici：本文件也会被 Cloudflare Workers 的页面构建打包。
+
 export async function defaultFetchHtml(url) {
   const response = await fetchWithRetry(url, {
     retries: DEFAULT_RETRY_COUNT,
     headers: headersFor(url),
-    signal: AbortSignal.timeout(12_000),
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    dispatcher: resolveDispatcher(url),
     next: { revalidate: 3600 },
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -114,7 +129,8 @@ export async function defaultFetchJson(url) {
   const response = await fetchWithRetry(url, {
     retries: DEFAULT_RETRY_COUNT,
     headers: headersFor(url),
-    signal: AbortSignal.timeout(12_000),
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    dispatcher: resolveDispatcher(url),
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return response.json();

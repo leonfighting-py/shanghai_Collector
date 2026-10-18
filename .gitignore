@@ -12,6 +12,9 @@ coverage
 # 体检脚本生成的报告产物
 scripts/source-health-report.*
 scripts/probe-*.js
+
+# 境外源采集产物（offshore.yml 生成、主采集读取；只在 CI 工作目录里存在）
+offshore-events.json
 .workbuddy/
 
 # 数据库备份产物：含全量活动数据与信源池，绝不入库
