@@ -7,13 +7,26 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 // 整个采集进程以未捕获异常退出、整轮白跑。
 // 判据：10-05 / 10-08 / 10-09 三次报错行号完全一致，且 10-08 那次 06:12 失败、
 // 06:18 重跑即成功 → 这是瞬时抖动，重试能救，不是代码缺陷。
-export const DB_RETRY_ATTEMPTS = 3;
+//
+// 2026-10-21 调整（第 5 次同类：10-05/08/09/17/21）：
+// 原先只有 3 次尝试，而每次「语句发出后」失败都要等内核放弃 TCP 重传才能发现，
+// 实测 140 / 174 秒 —— 3 次尝试实际只相当于试了 3 下，pooler 抖超过 5 分钟就整轮白跑。
+// 现在改成「查询级 20 秒超时（DB_QUERY_TIMEOUT_MS）把单次失败压进 20 秒 + 8 次尝试」：
+// 同样 5 分钟内能真试 8 次，而不是 3 次。
+export const DB_RETRY_ATTEMPTS = 8;
 // 第 n 次失败后的等待毫秒数（超出数组长度就沿用最后一个值）。
-export const DB_RETRY_BACKOFF_MS = [1000, 3000];
+// 8 次尝试 + 这套退避 → 最坏窗口约 4.6 分钟（160 秒的尝试 + 117 秒的等待）。
+export const DB_RETRY_BACKOFF_MS = [1000, 3000, 8000, 15_000, 30_000];
 // 建立连接的超时。pg 默认 0 = 永远等；实测被 pooler 挂住时能拖到 ~117 秒才报错。
 export const DB_CONNECT_TIMEOUT_MS = 15_000;
+// 查询级读超时（客户端侧，pg 抛 `Query read timeout`）。
+// 没有它的时候，「语句已发出、对端已经断了但包被黑洞吞掉」只能等内核 TCP 重传放弃，
+// 实测 140–174 秒/次。⚠️ 这个错误必须算「连接坏了」，否则它会变成不可重试的硬失败。
+export const DB_QUERY_TIMEOUT_MS = 20_000;
 // 空闲连接 10 秒后回收，避免拿着一条已经被 pooler 关掉的连接去发语句。
 export const DB_IDLE_TIMEOUT_MS = 10_000;
+// TCP keepalive：默认关闭，死对端只能靠应用层超时发现。10 秒起探，配合上面的查询超时。
+export const DB_KEEPALIVE_INITIAL_DELAY_MS = 10_000;
 
 // 「连接没了」而不是「SQL 有问题」的错误集合。SQL 报错（如 42601 语法错）不该重试。
 const CONNECTION_ERROR_CODES = new Set([
@@ -27,7 +40,7 @@ const CONNECTION_ERROR_CODES = new Set([
   "ENETUNREACH",
 ]);
 const CONNECTION_ERROR_PATTERN =
-  /connection terminated|connection ended|server closed the connection|client has encountered a connection error|terminating connection due to administrator command/i;
+  /connection terminated|connection ended|server closed the connection|client has encountered a connection error|terminating connection due to administrator command|query read timeout/i;
 
 export function isRetryableConnectionError(error) {
   if (!error) return false;
@@ -193,6 +206,9 @@ function getLocalPool(config) {
       ssl: config.ssl,
       connectionTimeoutMillis: DB_CONNECT_TIMEOUT_MS,
       idleTimeoutMillis: DB_IDLE_TIMEOUT_MS,
+      query_timeout: DB_QUERY_TIMEOUT_MS,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: DB_KEEPALIVE_INITIAL_DELAY_MS,
     });
     attachPoolErrorLogger(runQuery.localPool, "");
   }
@@ -242,6 +258,9 @@ export async function runTransaction(statements, env = process.env) {
     ssl: config.ssl,
     max: 1,
     connectionTimeoutMillis: DB_CONNECT_TIMEOUT_MS,
+    query_timeout: DB_QUERY_TIMEOUT_MS,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: DB_KEEPALIVE_INITIAL_DELAY_MS,
   });
   attachPoolErrorLogger(pool, "（事务）");
 

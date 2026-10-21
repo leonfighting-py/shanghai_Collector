@@ -71,6 +71,9 @@ test("连接类错误才可重试，SQL 错误不重试", () => {
   assert.equal(isRetryableConnectionError(connectionError()), true);
   assert.equal(isRetryableConnectionError(connectionError("read ECONNRESET", "ECONNRESET")), true);
   assert.equal(isRetryableConnectionError(connectionError("timeout exceeded when trying to connect", "ETIMEDOUT")), true);
+  // pg 的查询级读超时没有 code，只有这句 message（pg/lib/client.js 的 new Error('Query read timeout')）。
+  // 不认它的话，加了 query_timeout 反而会变成「快速硬失败」，一次都不重试。
+  assert.equal(isRetryableConnectionError(connectionError("Query read timeout")), true);
   assert.equal(isRetryableConnectionError(connectionError('relation "events" does not exist', "42P01")), false);
   assert.equal(isRetryableConnectionError(connectionError("password authentication failed for user", "28P01")), false);
   assert.equal(isRetryableConnectionError(null), false);
@@ -104,15 +107,25 @@ test("拿连接失败会重试，写语句也敢重试（语句从未发出）",
 });
 
 test("拿连接连续失败到上限就抛错，不无限重试", async () => {
-  const pool = scriptedPool([
-    { connectError: connectionError() },
-    { connectError: connectionError() },
-    { connectError: connectionError() },
-    { connectError: connectionError() },
-  ]);
+  // 剧本按 DB_RETRY_ATTEMPTS 生成：次数一变，这条测试不会因为「剧本用完」假红。
+  const pool = scriptedPool(Array.from({ length: DB_RETRY_ATTEMPTS }, () => ({ connectError: connectionError() })));
 
   await assert.rejects(() => acquireWithRetry(pool, silent), /Connection terminated unexpectedly/);
   assert.equal(pool.state.connects, DB_RETRY_ATTEMPTS);
+});
+
+test("查询级读超时按连接故障处理：只读语句重试，坏连接被丢弃", async () => {
+  const pool = scriptedPool([
+    { queryError: connectionError("Query read timeout") },
+    { result: { rows: [{ n: 1 }], rowCount: 1 } },
+  ]);
+
+  const result = await runStatementWithRetry(pool, "select count(*) as n from events", [], silent);
+
+  assert.deepEqual(result.rows, [{ n: 1 }]);
+  assert.equal(pool.state.connects, 2);
+  assert.match(pool.state.releases[0].message, /Query read timeout/);
+  assert.equal(pool.state.releases[1], undefined);
 });
 
 test("非连接类错误不重试", async () => {

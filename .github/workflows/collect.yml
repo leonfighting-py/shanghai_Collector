@@ -13,7 +13,10 @@ jobs:
     # 2026-10-12：20 分钟上限会掐掉一次正常的采集。开着 LLM 富化（vars.LLM_ENRICHMENT_ENABLED=true）
     # 时实测要 18~25 分钟：10-08 成功那次 18m18s（余量仅 1m42s），10-12 手动重跑跑到 19m35s
     # 仍未完成就被 cancel，整轮不发布。自建 runner 不计费，放宽到 35 分钟。
-    timeout-minutes: 35
+    # 2026-10-21：35 分钟又被跑满（10-19 那轮 35m27s 被 cancel，没有 JSON 输出）。
+    # 那轮同时加了同主机限速、16 个新源和 offshore 合并，谁也说不清占多少 →
+    # 先放宽到 55 分钟（自建 runner 不计费），等日志能打出各阶段耗时时再收紧。
+    timeout-minutes: 55
     steps:
       # 境内 runner 无法直连 github.com 的 git/npm，统一走境内镜像重写：
       # - git: insteadOf 把 https://github.com/ 前缀替换为 gh-proxy 镜像

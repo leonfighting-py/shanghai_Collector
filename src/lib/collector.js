@@ -2889,9 +2889,12 @@ const DEFAULT_CONCURRENCY = Number(process.env.COLLECTOR_CONCURRENCY) || 5;
 // 「串行 + 相邻两次请求至少间隔 minIntervalMs」，把 burst 摊平。
 // ⚠️ 只管页面请求（列表页 + 详情页）；robots.txt 每轮每 origin 只有 1 次，保持原样。
 // 关闭方式：COLLECTOR_HOST_MIN_INTERVAL_MS=0。
+// 2026-10-21：默认值 1500 → 1000。10-19 那轮被 35 分钟 job 上限掐掉（35m27s），
+// 限速是其中一份（另有两批新增源与 offshore 合并），先把间隔压到 1 秒留出余量；
+// 要更宽松就设环境变量，不用改代码。
 const configuredHostInterval = Number(process.env.COLLECTOR_HOST_MIN_INTERVAL_MS);
 const DEFAULT_HOST_MIN_INTERVAL_MS =
-  Number.isFinite(configuredHostInterval) && configuredHostInterval >= 0 ? configuredHostInterval : 1500;
+  Number.isFinite(configuredHostInterval) && configuredHostInterval >= 0 ? configuredHostInterval : 1000;
 
 // 限速会占掉时间预算：单源最坏 1 个列表 + 12 个详情，每个至少隔 minIntervalMs，
 // 同主机还有别的源排队时更久 → 开启限速时源级超时从 45s 放宽到 90s。
