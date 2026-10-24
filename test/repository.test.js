@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import {
   buildCleanupSql,
@@ -21,8 +22,27 @@ test("schema includes source configs, raw events, collection runs, and published
   assert.match(schema, /dedupe_provider text/);
 });
 
-test("cleanup SQL deletes old event data without removing source configs", () => {
-  const cleanup = buildCleanupSql({ eventRetentionDays: 60, runRetentionDays: 90 });
+// 读路径不能拉 raw_event_ids：写入侧把整批采集的 raw id 塞进了每一行 events
+// （10-15 那轮 103 行 × 2374 个 uuid = 2.03 MB），跨境传输 33–46 秒，
+// 超过 DB_QUERY_TIMEOUT_MS 的 20 秒 → 每轮采集第一步 listEvents 必超时自锁（10-17~10-23 停更 9 天）。
+// 去掉这一列后同一查询 1.6 秒 / 69 KB。回归护栏在下面。
+test("listEvents 的 SQL 不读取 raw_event_ids", () => {
+  const source = readFileSync(new URL("../src/lib/repository.js", import.meta.url), "utf8");
+  const start = source.indexOf("export async function listEvents");
+  const end = source.indexOf("export async function publishEvents");
+  assert.ok(start > -1 && end > start, "定位不到 listEvents");
+
+  const body = source.slice(start, end);
+  const queryStart = body.indexOf("const result = await query(");
+  assert.ok(queryStart > -1, "listEvents 里的查询语句结构变了，请同步更新这条护栏");
+
+  assert.ok(
+    !body.slice(queryStart).includes("raw_event_ids"),
+    "listEvents 又把 raw_event_ids 读回来了：单次响应会涨到 2 MB 量级，采集会在 20 秒查询超时上自锁",
+  );
+});
+
+test("cleanup SQL deletes old event data without removing source configs", () => {  const cleanup = buildCleanupSql({ eventRetentionDays: 60, runRetentionDays: 90 });
 
   assert.deepEqual(
     cleanup.statements.map((statement) => statement.params),

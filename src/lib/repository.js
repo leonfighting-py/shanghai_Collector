@@ -240,10 +240,15 @@ export async function listEvents({ week, category, search } = {}) {
     filters.push(`(title ilike $${params.length} or venue ilike $${params.length} or summary ilike $${params.length})`);
   }
 
+  // 不取 raw_event_ids：写入侧把整批采集的 raw id（10-15 那轮是 2374 个 uuid）塞进了每一行，
+  // 103 行合计 2.03 MB；跨境链路（runner → us-west-2）传这块要 33–46 秒，
+  // 超过 DB_QUERY_TIMEOUT_MS 的 20 秒 → 每轮第一步 listEvents 必失败，采集自锁（10-17~10-23 停更 9 天）。
+  // 这个字段在本函数的所有消费方都没用到（Web 白名单 / API DTO / feed 都剥离它），
+  // 去掉后同一查询 1.6 秒、69 KB。要溯源请单独按需查 raw_events。
   const result = await query(
     `
       select title, start_time, end_time, venue, category, signup_url, source_name,
-             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, image_url,
+             source_url, dedupe_key, sources, dedupe_provider, summary, image_url,
              created_at, updated_at
       from events
       where ${filters.join(" and ")}
