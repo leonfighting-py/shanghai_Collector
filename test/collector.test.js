@@ -292,6 +292,13 @@ test("retired off-domain sources are excluded from the active seed set", () => {
   assert.equal(names.has("赢商网"), false);
   assert.equal(names.has("赢商网·华东"), false);
 
+  // 2026-10-28：站点本身没了，不是解析问题。
+  // · 立信科研处 kyc.lixin.edu.cn 连根路径都 403（同域 www.lixin.edu.cn 200）；
+  // · 上大英文站 en.shu.edu.cn 的 80/443 都是 ECONNREFUSED（主站 200）。
+  // 两条都由同类替代源覆盖（立信 2 个、上大 7 个），故退休。复活＝删掉停采清单里的名字。
+  assert.equal(names.has("上海立信·科研处学术活动"), false);
+  assert.equal(names.has("上海大学·学术讲座（英文站）"), false);
+
   // 反例：带"通知公告"字样的栏目**不能**整类退休 —— 池子里有十几个，
   // 其中确有带真讲座的（如"复旦智能材料学院·通知公告"）。这类只能靠标题特征过滤。
   assert.ok(
