@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>双周活动雷达 logo 方案 B：两周环</title>
+  <rect width="1024" height="1024" fill="#FBFAF8"/>
+  <g transform="scale(10.24)">
+    <circle cx="50" cy="50" r="34" fill="none" stroke="#1C1B19" stroke-width="11" stroke-dasharray="178 35.6"/>
+    <path d="M 79.4 24 Q 81.2 31.2 88.4 33 Q 81.2 34.8 79.4 42 Q 77.6 34.8 70.4 33 Q 77.6 31.2 79.4 24 Z" fill="#C4472A"/>
+  </g>
+</svg>

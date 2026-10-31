@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>双周活动雷达 logo 方案 C：双份叠卡</title>
+  <rect width="1024" height="1024" fill="#FBFAF8"/>
+  <g transform="scale(10.24)">
+    <rect x="20" y="12" width="56" height="70" rx="12" fill="#1C1B19"/>
+    <rect x="34" y="24" width="56" height="70" rx="12" fill="#FBFAF8" stroke="#1C1B19" stroke-width="8"/>
+    <path d="M 62 48 Q 63.8 56.2 72 58 Q 63.8 59.8 62 68 Q 60.2 59.8 52 58 Q 60.2 56.2 62 48 Z" fill="#C4472A"/>
+  </g>
+</svg>

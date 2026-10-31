@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>双周活动雷达 logo 方案 A：精简日历</title>
+  <rect width="1024" height="1024" fill="#FBFAF8"/>
+  <g transform="scale(10.24)">
+    <rect x="10" y="18" width="80" height="72" rx="16" fill="#1C1B19"/>
+    <rect x="20" y="32" width="60" height="44" rx="9" fill="#FBFAF8"/>
+    <rect x="20" y="47" width="14" height="14" rx="4" fill="#1C1B19"/>
+    <rect x="66" y="47" width="14" height="14" rx="4" fill="#1C1B19"/>
+    <path d="M 50 46 Q 51.6 52.4 58 54 Q 51.6 55.6 50 62 Q 48.4 55.6 42 54 Q 48.4 52.4 50 46 Z" fill="#C4472A"/>
+  </g>
+</svg>
