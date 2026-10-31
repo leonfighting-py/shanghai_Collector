@@ -23,6 +23,16 @@ const RAIL_LIMIT = 10;
 // 吸顶筛选条（类目 Tab + 日期条）的高度，单位 px，用于点日期跳转时留出偏移
 const STICKY_HEIGHT = 116;
 
+// 首屏缓存：活动两天才采集一次，先用上次结果铺满页面，请求回来再覆盖。
+// 实例缩容到 0 时 callContainer 可能要等到 15s 超时，有缓存就不至于先给人一屏空白。
+const EVENTS_CACHE_KEY = "events_cache_v1";
+// 超过这个天数的缓存不再展示：宁可走加载态，也不让用户看两周前的日程
+const EVENTS_CACHE_MAX_AGE_DAYS = 10;
+
+function cacheNoteOf(savedAt) {
+  return `上次更新 ${format.eventDate(savedAt)} ${format.eventTime(savedAt)}`;
+}
+
 Page({
   data: {
     categories: CATEGORIES,
@@ -37,6 +47,11 @@ Page({
     loading: true,
     errorMsg: "",
     errorDetail: "",
+    // 页面上的数据来自本地缓存（还没拿到本次请求的结果）
+    fromCache: false,
+    // 请求失败但缓存已经把内容铺出来了，此时只提示、不把列表换成报错屏
+    offline: false,
+    cacheNote: "",
 
     // 自定义导航：首屏是出血封面，下滑越过封面后才显示实色标题栏
     statusBarHeight: 20,
@@ -77,6 +92,9 @@ Page({
         fail: () => {},
       });
     }
+
+    // 带搜索词进来时不能用缓存：缓存存的是全量列表，和搜索结果不是一回事
+    if (!shared) this.restoreCache();
 
     this.load();
   },
@@ -141,8 +159,44 @@ Page({
     this.load().finally(() => wx.stopPullDownRefresh());
   },
 
+  // 上次成功拿到的全量列表，先渲染出来再发请求（失败时的兜底见 load 的 catch）
+  restoreCache() {
+    let cached = null;
+    try {
+      cached = wx.getStorageSync(EVENTS_CACHE_KEY);
+    } catch (error) {
+      return;
+    }
+    if (!cached || !Array.isArray(cached.events) || !cached.events.length) return;
+
+    const savedAt = Number(cached.savedAt) || 0;
+    const ageDays = (Date.now() - savedAt) / 86_400_000;
+    // 时间戳异常（未来时间、或过期太久）直接丢弃，不拿脏数据顶上
+    if (!(ageDays >= 0) || ageDays > EVENTS_CACHE_MAX_AGE_DAYS) return;
+
+    this.rawEvents = cached.events;
+    this.setData({ loading: false, fromCache: true, cacheNote: cacheNoteOf(savedAt) });
+    this.rebuild();
+  },
+
+  // 只缓存全量列表：搜索结果是过滤后的子集，写进去会把首页默认列表换成搜索结果
+  saveCache() {
+    if (this.data.searchKeyword.trim()) return;
+    try {
+      wx.setStorageSync(EVENTS_CACHE_KEY, { savedAt: Date.now(), events: this.rawEvents });
+    } catch (error) {
+      // 存储写满等异常不影响主流程
+    }
+  },
+
   load() {
-    this.setData({ loading: true, errorMsg: "", errorDetail: "" });
+    // 已经有缓存内容时不显示骨架屏，否则首屏会「闪一下骨架再变成列表」
+    this.setData({
+      loading: !this.rawEvents.length,
+      errorMsg: "",
+      errorDetail: "",
+      offline: false,
+    });
     // 分类不在服务端过滤：一次拿全量，切分类在本地重算，零延迟。
     // 只有搜索需要走服务端（要匹配 summary，本地拿不到全文）。
     const params = {};
@@ -153,10 +207,16 @@ Page({
       .fetchEvents(params)
       .then((res) => {
         this.rawEvents = res.events || [];
-        this.setData({ loading: false });
+        this.setData({ loading: false, fromCache: false, offline: false, cacheNote: "" });
         this.rebuild();
+        this.saveCache();
       })
       .catch((err) => {
+        // 缓存已经把内容铺出来了：保留列表、只加一行提示，别把用户看得见的东西换成报错屏
+        if (this.data.fromCache) {
+          this.setData({ loading: false, offline: true });
+          return;
+        }
         this.setData({
           loading: false,
           errorMsg: err.message || "加载失败，请重试",

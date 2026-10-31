@@ -14,8 +14,11 @@ COPY cloudrun/package.json ./package.json
 RUN npm install --omit=dev
 
 COPY cloudrun/server.js ./cloudrun/server.js
-# 复用主工程的纯函数逻辑（events.js 无外部依赖，dedupe.js 只依赖 events.js）
-COPY src/lib/events.js src/lib/dedupe.js ./src/lib/
+# 复用主工程的纯函数逻辑。
+# ⚠️ 这是 events.js 的完整依赖闭包，少一个就会在运行时 ERR_MODULE_NOT_FOUND（不是构建期报错）：
+#    events.js → event-classify.js（二级分类/区域）、event-duration.js（档期推断）、dedupe.js
+# cloudfunctions/events/lib 是同一批文件，改动请同步（test/cloudfunction-lib-parity.test.js 守着）
+COPY src/lib/events.js src/lib/dedupe.js src/lib/event-classify.js src/lib/event-duration.js ./src/lib/
 
 # 云托管网关默认转发到容器的 80 端口
 ENV PORT=80

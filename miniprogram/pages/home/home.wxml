@@ -31,6 +31,9 @@
   <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">清除</text>
 </view>
 
+<!-- 数据来自本地缓存：请求还没回来或失败时，用一行提示代替整屏报错 -->
+<view wx:if="{{fromCache}}" class="cache-note">{{offline ? '网络未连通，已显示缓存' : cacheNote}}</view>
+
 <!-- 骨架屏：结构与真实列表行一致，避免布局跳变 -->
 <block wx:if="{{loading}}">
   <view wx:for="{{[1, 2, 3, 4]}}" wx:key="*this" class="skeleton-row">

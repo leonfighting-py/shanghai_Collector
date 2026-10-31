@@ -1,0 +1,10 @@
+{
+  "name": "events",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小程序读活动的云函数：直连 Supabase，返回结构与云托管 /api/events 一致",
+  "main": "index.js",
+  "dependencies": {
+    "pg": "^8.21.0"
+  }
+}

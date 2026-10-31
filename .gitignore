@@ -20,3 +20,6 @@ offshore-events.json
 # 数据库备份产物：含全量活动数据与信源池，绝不入库
 .backup/
 *.dump
+
+# supabase CLI 的本地登录状态（只在迁库时产生，不属于项目产物）
+supabase/.temp/

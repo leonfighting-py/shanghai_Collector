@@ -13,7 +13,8 @@ COPY cloudrun/package.json ./package.json
 RUN npm install --omit=dev
 
 COPY cloudrun/server.js ./cloudrun/server.js
-COPY src/lib/events.js src/lib/dedupe.js ./src/lib/
+# ⚠️ events.js 的完整依赖闭包，少一个会在运行时 ERR_MODULE_NOT_FOUND（构建期看不出来）
+COPY src/lib/events.js src/lib/dedupe.js src/lib/event-classify.js src/lib/event-duration.js ./src/lib/
 
 # 云托管网关默认转发到容器的 80 端口
 ENV PORT=80

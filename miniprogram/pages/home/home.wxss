@@ -121,6 +121,14 @@
   padding: 8rpx;
 }
 
+/* 缓存提示：只在用旧数据铺页面时出现，比整屏报错轻 */
+.cache-note {
+  margin: 20rpx 32rpx 0;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
 /* ---------- 正在进行：竖版海报横滑 ---------- */
 .rail-head {
   display: flex;
