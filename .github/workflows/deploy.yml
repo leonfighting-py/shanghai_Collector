@@ -1,0 +1,52 @@
+name: Deploy
+
+# 推送到 main 时自动构建并部署前端到 Cloudflare Workers。
+# 也支持在 Actions 页面手动触发（workflow_dispatch）。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一时刻只允许一个部署任务；新的 push 会取消正在跑的旧部署，避免堆积。
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      # 部署前迁移：先把新表/新列推到线上库，再构建部署 Web。
+      # 否则读查询引用"还不存在的列"会让首页直接报错（新列原本要等下一轮采集才加上）。
+      # ensureSchema 全部是 create if not exists / add column if not exists，重复执行无副作用。
+      # backup.yml / cleanup.yml 已在托管 runner 上用同一 secret 连库，网络是通的。
+      - name: Apply schema
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: node scripts/migrate.mjs
+
+      # 先用 opennextjs-cloudflare 构建（产出 .open-next/），deploy 步骤不会自动构建。
+      - name: Build Cloudflare Worker
+        run: npm run build:cloudflare
+
+      # wrangler 通过 CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID 鉴权（无需浏览器登录）。
+      # Hyperdrive 的 localConnectionString 已写在 wrangler.jsonc 里（占位符），
+      # 用于满足 wrangler 的本地检查；生产运行时使用 Hyperdrive 云端真实配置。
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run deploy:cloudflare

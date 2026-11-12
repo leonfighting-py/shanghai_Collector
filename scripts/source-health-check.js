@@ -1,0 +1,214 @@
+// 源召回率体检：逐源 fetch + parse，输出健康报告（只读，不写数据库）
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { getAlertConfig, sendFeishuText, shanghaiTime } from "../src/lib/alerting.js";
+import { LAND_SOURCES, classifyFailure as classifyLegacyKind, describeError } from "../src/lib/collector.js";
+import { defaultFetchHtml } from "../src/lib/fetch-html.js";
+import { filterPublishableEvents, isInDateRange, toShanghaiDayWindow } from "../src/lib/events.js";
+import { initOutboundProxy } from "../src/lib/outbound-proxy.js";
+import { listRecentCollectionRuns } from "../src/lib/repository.js";
+
+const CONCURRENCY = 5;
+const SOURCE_TIMEOUT_MS = 60_000;
+// collection_runs.status 的三档（2026-11-11 起）+ 历史遗留口径的中文标签
+const STATUS_LABELS = {
+  success: "成功",
+  degraded: "降级",
+  blocked: "拦截",
+  partial: "部分失败（旧口径）",
+  running: "进行中",
+};
+
+// 体检要和采集用同一个出口，否则「A 类出口被拦」的源在报表里永远是红的（见 docs/offshore-sources.md）
+const proxyStatus = await initOutboundProxy();
+if (proxyStatus !== "disabled") console.log(`[proxy] 出口代理 ${proxyStatus}`);
+
+async function probeSource(source, now) {
+  const startedAt = Date.now();
+  const { startDate, endDate, days } = toShanghaiDayWindow(now);
+  try {
+    const html = await Promise.race([
+      defaultFetchHtml(source.url),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`fetch timed out after ${SOURCE_TIMEOUT_MS / 1000}s`)), SOURCE_TIMEOUT_MS),
+      ),
+    ]);
+    const parsed = await source.parser(html, source, { fetchHtml: defaultFetchHtml, now, window: { startDate, endDate, days } });
+    // 与发布口径对齐（collector.js 的 publishEvents 就是 filterPublishableEvents + isInDateRange 两步）。
+    // 只做前者会把这批源的「窗口外条目」也算进可发布数，报告里的数字因此虚高。
+    const publishable = filterPublishableEvents(parsed).filter((event) => isInDateRange(event, startDate, endDate));
+    return {
+      source: source.name,
+      category: source.category,
+      status: "ok",
+      rawCount: parsed.length,
+      publishableCount: publishable.length,
+      durationMs: Date.now() - startedAt,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      source: source.name,
+      category: source.category,
+      status: "error",
+      rawCount: 0,
+      publishableCount: 0,
+      durationMs: Date.now() - startedAt,
+      error: describeError(error),
+    };
+  }
+}
+
+const now = new Date();
+const results = [];
+
+for (let index = 0; index < LAND_SOURCES.length; index += CONCURRENCY) {
+  const chunk = LAND_SOURCES.slice(index, index + CONCURRENCY);
+  results.push(...(await Promise.all(chunk.map((source) => probeSource(source, now)))));
+}
+
+results.sort((left, right) => {
+  const rank = (item) => (item.status === "ok" && item.rawCount > 0 ? 0 : item.status === "ok" ? 1 : 2);
+  return rank(left) - rank(right) || left.source.localeCompare(right.source);
+});
+
+const totalRaw = results.reduce((sum, item) => sum + item.rawCount, 0);
+const totalPublishable = results.reduce((sum, item) => sum + item.publishableCount, 0);
+const okSources = results.filter((item) => item.status === "ok").length;
+const zombieSources = results.filter((item) => item.status === "ok" && item.rawCount === 0);
+const failedSources = results.filter((item) => item.status === "error");
+
+const lines = [];
+lines.push(`# 源召回率体检报告`);
+lines.push("");
+lines.push(`- 时间：${now.toISOString()}`);
+lines.push(`- 源总数：${results.length}`);
+lines.push(`- fetch 成功：${okSources} / ${results.length}`);
+lines.push(`- 僵尸源（fetch 成功但解析 0 条）：${zombieSources.length}`);
+lines.push(`- 失败源（fetch/解析报错）：${failedSources.length}`);
+lines.push(`- 原始召回总数：${totalRaw}`);
+lines.push(`- 可发布总数（窗口内，与发布口径一致）：${totalPublishable}`);
+lines.push("");
+lines.push("## 明细（按健康度排序）");
+lines.push("");
+lines.push("| 源 | 分类 | 状态 | 原始条数 | 可发布 | 耗时(ms) | 错误 |");
+lines.push("|---|---|---|---|---|---|---|");
+for (const item of results) {
+  const status = item.status === "error" ? "❌ error" : item.rawCount === 0 ? "🟡 zombie" : "✅ ok";
+  lines.push(`| ${item.source} | ${item.category} | ${status} | ${item.rawCount} | ${item.publishableCount} | ${item.durationMs} | ${item.error ? item.error.slice(0, 80) : ""} |`);
+}
+
+const report = lines.join("\n");
+const reportDir = fileURLToPath(new URL(".", import.meta.url));
+const reportPath = join(reportDir, "source-health-report.md");
+mkdirSync(reportDir, { recursive: true });
+
+// 历史失败趋势（基于 collection_runs，需要 DATABASE_URL）：与上面的实时探活互补。
+// 实时探活回答"现在挂没挂"，历史趋势回答"最近谁一直挂"——发现间歇性/持续性故障源。
+let historySummary = null;
+const historyRuns = await listRecentCollectionRuns({ limit: 10 });
+if (historyRuns.length > 0) {
+  const failCounts = new Map();
+  const kindCounts = new Map();
+  for (const run of historyRuns) {
+    const seenSources = new Set();
+    for (const f of run.failures) {
+      const name = f?.source ?? "未知";
+      if (!seenSources.has(name)) {
+        seenSources.add(name);
+        failCounts.set(name, (failCounts.get(name) || 0) + 1);
+      }
+      const kind = f?.kind ?? classifyLegacyKind(f?.message);
+      kindCounts.set(kind, (kindCounts.get(kind) || 0) + 1);
+    }
+  }
+  // 运行状态分档统计（2026-11-11 起三档：success / degraded / blocked）。
+  // 历史行还留着旧口径的 partial（不回填），一并展示，别当失败丢弃。
+  const statusCounts = {};
+  for (const run of historyRuns) {
+    const status = run.status || "unknown";
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+  }
+  const ranked = [...failCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const kindRanked = [...kindCounts.entries()].sort((a, b) => b[1] - a[1]);
+  historySummary = {
+    runs: historyRuns.length,
+    statusCounts,
+    failingSources: ranked.map(([name, count]) => ({ source: name, failedRuns: count, totalRuns: historyRuns.length })),
+    failureKinds: kindRanked.map(([kind, count]) => ({ kind, count })),
+  };
+  const statusText = Object.entries(statusCounts)
+    .map(([status, count]) => `${STATUS_LABELS[status] || status} ${count}`)
+    .join(" / ");
+  const historyLines = ["", `## 最近 ${historyRuns.length} 次采集趋势（基于 collection_runs）`, ""];
+  historyLines.push(`- 状态分布：${statusText}`);
+  if (kindRanked.length > 0) {
+    historyLines.push("", "失败类型分布：", "");
+    for (const [kind, count] of kindRanked) {
+      historyLines.push(`- ${kind}：${count}`);
+    }
+  }
+  if (ranked.length === 0) {
+    historyLines.push("- 无失败记录");
+  } else {
+    historyLines.push("", "| 源 | 失败次数 / 总次数 |", "|---|---|");
+    for (const [name, count] of ranked.slice(0, 15)) {
+      const flag = count >= Math.ceil(historyRuns.length * 0.6) ? "🔴" : count >= 2 ? "🟡" : "·";
+      historyLines.push(`| ${name} | ${flag} ${count} / ${historyRuns.length} |`);
+    }
+  }
+  writeFileSync(reportPath, `${report}\n${historyLines.join("\n")}\n`, "utf8");
+} else {
+  writeFileSync(reportPath, `${report}\n`, "utf8");
+}
+
+writeFileSync(join(reportDir, "source-health-report.json"), JSON.stringify({ sources: results, history: historySummary }, null, 2), "utf8");
+
+// 定期体检推送：把摘要（不含全量明细表）推到飞书，未配置 webhook 时静默跳过。
+const alertConfig = getAlertConfig();
+if (alertConfig.enabled) {
+  const healthLines = [
+    `【信源体检报告】${shanghaiTime(now)}`,
+    `源总数 ${results.length}｜fetch 成功 ${okSources}｜僵尸源 ${zombieSources.length}｜失败源 ${failedSources.length}`,
+    `原始召回 ${totalRaw}｜窗口内可发布 ${totalPublishable}`,
+  ];
+  if (failedSources.length > 0) {
+    healthLines.push("", `失败源（${failedSources.length}）：`);
+    for (const item of failedSources.slice(0, 15)) {
+      healthLines.push(`· ${item.source}（${item.category}）｜${item.error ? item.error.slice(0, 60) : ""}`);
+    }
+  }
+  if (zombieSources.length > 0) {
+    healthLines.push("", `僵尸源·可访问但解析 0 条（${zombieSources.length}）：`);
+    for (const item of zombieSources.slice(0, 15)) {
+      healthLines.push(`· ${item.source}（${item.category}）`);
+    }
+  }
+  if (historySummary) {
+    const statusText = Object.entries(historySummary.statusCounts)
+      .map(([status, count]) => `${STATUS_LABELS[status] || status} ${count}`)
+      .join(" / ");
+    healthLines.push("", `最近 ${historySummary.runs} 次采集：${statusText}`);
+    if (historySummary.failingSources.length > 0) {
+      healthLines.push("历史失败次数最多的源：");
+      for (const item of historySummary.failingSources.slice(0, 10)) {
+        healthLines.push(`· ${item.source}｜${item.failedRuns}/${item.totalRuns} 次`);
+      }
+    }
+  }
+  healthLines.push("", "→ 僵尸源需修解析规则，失败源需补源或降级");
+  try {
+    const sent = await sendFeishuText(healthLines.join("\n"), {
+      webhookUrl: alertConfig.webhookUrl,
+      secret: alertConfig.secret,
+    });
+    console.log(`[alert] ${sent.sent ? "体检报告已推送" : `未推送（${sent.reason}）`}`);
+  } catch (error) {
+    console.log(`[alert] 推送失败：${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+console.log(report);
+console.log(`\n报告已写入: ${reportPath}`);

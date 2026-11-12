@@ -1,0 +1,29 @@
+name: Test
+
+# PR 前置测试：npm test 本来只在 deploy.yml（push 到 main 之后）里跑，
+# 也就是问题要先进主干才被发现。这里补上合入前的闸门：
+#   · pull_request：每个 PR 都跑
+#   · push 到非 main 分支：直接在特性分支上迭代时也能看到测试结果
+# 不需要任何 secret，纯本地测试（node --test，约 2 秒，不发真实网络/数据库请求）。
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
