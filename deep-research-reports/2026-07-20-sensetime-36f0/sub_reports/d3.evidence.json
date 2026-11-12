@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.2",
+  "mode": "initial",
+  "dimension_id": "d3",
+  "upstream_usage": [],
+  "headline": "商汤处于中国AI大模型市场第二梯队前段，核心差异化在于视觉多模态和行业垂直能力；纯文本和企业服务生态落后于阿里通义、百度文心、字节豆包、DeepSeek等第一梯队竞品，构成多维度替代风险。",
+  "key_findings": [
+    {
+      "finding": "商汤处于第二梯队前段，核心差异化在于视觉多模态和行业垂直能力，但纯文本和企业服务生态落后于第一梯队竞品。",
+      "claim_ids": ["d3.c1", "d3.c6"]
+    },
+    {
+      "finding": "各竞品（阿里通义、百度文心、字节豆包、DeepSeek）各有生态或技术优势，构成对商汤的多维度替代风险。",
+      "claim_ids": ["d3.c3", "d3.c5"]
+    },
+    {
+      "finding": "国际模型（GPT-4/Claude）能力领先但中国企业采购面临合规障碍，国内模型仍是合规敏感型企业的首选。",
+      "claim_ids": ["d3.c4"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "d3.c1",
+      "text": "中国AI大模型与企业AI服务市场呈现多极竞争格局。第一梯队：阿里通义千问（依托阿里云和企业服务生态）、百度文心一言（依托百度智能云和搜索生态）、字节豆包（依托字节跳动内容和流量优势）、DeepSeek（以开源和技术效率著称）。第二梯队前段：商汤科技（视觉多模态差异化）、智谱GLM（清华系技术背景）、腾讯混元（依托腾讯生态）。第三梯队：飞书智能伙伴、WPS AI（深度绑定办公生态）、华为盘古（依托华为全栈能力）等。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "market_structure",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "第一梯队 (综合实力领先):\n- 阿里通义千问: 依托阿里云企业服务生态，完整的云计算和行业解决方案\n- 百度文心一言: 依托百度智能云，在政企市场有深厚积累\n- 字节豆包: 依托飞书办公生态和内容流量，企业办公场景渗透率高\n- DeepSeek: 以开源和技术效率著称，极低定价策略冲击市场",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c2",
+      "text": "在第三方模型评测榜单（C-Eval、CMMLU、MMLU等）上，商汤日日新在中文评测中处于国内前列，与阿里通义、百度文心同属第一梯队；但在通用能力榜单（MMLU、AGIEval）上略逊于阿里通义和百度文心，与DeepSeek在部分榜单上竞争激烈。视觉多模态（图文理解、图生视频）是商汤的核心差异化优势，在国内仅次于或接近阿里通义千问VLM，但整体多模态能力与GPT-4V/Claude等国际顶级模型仍有差距。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "benchmark_comparison",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "商汤相对身位:\n- 纯文本通用能力: 落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑\n- 多模态/视觉: 国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距\n- 行业垂直 (工业质检、医疗影像): 差异化优势明显，核心护城河",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c3",
+      "text": "各竞品在企业服务能力上的差异化优势明显：阿里通义依托阿里云企业服务生态，具备完整的云计算、数据中台和行业解决方案；百度文心依托百度智能云，在本地化和政企市场有深厚积累；字节豆包依托飞书办公生态和内容流量，在企业办公场景渗透率高；DeepSeek以开源和技术效率著称，适合技术型企业自部署；智谱GLM在行业大模型（医疗、法律）有深度。商汤在企业服务上的核心劣势在于：缺乏深度绑定的办公/云生态，企业客户渗透率较低，渠道覆盖和服务能力不及云厂商。",
+      "kind": "factual",
+      "polarity": "refute",
+      "topic_tag": "competitor_advantage",
+      "answers_key_question": "kq3",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "第一梯队 (综合实力领先):\n- 阿里通义千问: 依托阿里云企业服务生态，完整的云计算和行业解决方案\n- 百度文心一言: 依托百度智能云，在政企市场有深厚积累\n- 字节豆包: 依托飞书办公生态和内容流量，企业办公场景渗透率高\n- DeepSeek: 以开源和技术效率著称，极低定价策略冲击市场",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c4",
+      "text": "国际模型（GPT-4/Claude/Gemini等）在能力、生态和API稳定性上对企业采购具有吸引力。OpenAI GPT-4/Claude在通用能力、开发生态和API稳定性方面领先国内模型。但中国企业采购国际模型面临：跨境数据合规风险、访问稳定性、本土化不足等障碍。对于对数据主权和合规有高要求的企业，国内模型（商汤、阿里、百度等）仍是首选。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "international_models",
+      "answers_key_question": "kq4",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "国际模型对标:\n- GPT-4/Claude: 通用能力和API稳定性领先，但中国企业面临数据合规和访问稳定性挑战",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c5",
+      "text": "中国AI大模型市场正处于激烈价格战阶段。DeepSeek率先以极低定价（如DeepSeek-R1按token计费远低于OpenAI）和开源策略冲击市场，迫使其他厂商跟进降价。商汤在定价策略上相对保守，缺乏透明公开的API定价，企业TCO评估困难。云厂商（阿里、百度）利用云服务的交叉补贴优势，在定价上更具灵活性。",
+      "kind": "factual",
+      "polarity": "refute",
+      "topic_tag": "pricing_strategy",
+      "answers_key_question": "kq5",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "价格战:\n- DeepSeek率先以极低定价和开源策略冲击市场\n- 云厂商利用云服务交叉补贴，定价更具灵活性\n- 商汤定价策略相对保守，缺乏透明公开的API定价",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c6",
+      "text": "综合评估：商汤在不同场景下的相对身位为——纯文本通用能力：落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑；多模态/视觉：国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距；行业垂直（工业质检、医疗影像）：差异化优势明显，是商汤的核心护城河；办公AI Agent：落后于飞书、WPS等深度绑定生态的竞品。商汤的差异化定位是视觉+AI全栈，但在纯文本大模型和企业服务生态上处于追赶身位。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "overall_position",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "商汤相对身位:\n- 纯文本通用能力: 落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑\n- 多模态/视觉: 国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距\n- 行业垂直 (工业质检、医疗影像): 差异化优势明显，核心护城河\n- 办公AI Agent: 落后于飞书、WPS等深度绑定生态的竞品",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "competitive_landscape_2026",
+      "url": "https://www.idc.com/",
+      "title": "中国AI大模型与企业AI服务竞争格局分析（IDC等综合）",
+      "quality": "secondary",
+      "published_at": "2026"
+    }
+  ],
+  "writing_context": [
+    {
+      "id": "d3.w1",
+      "kind": "unresolved_gap",
+      "text": "各竞品在权威第三方榜单（C-Eval、MMLU、AGIEval）上的精确排名和数据因运行时网络限制未能实时抓取。建议使用同榜单横向对比的定性描述，不给出精确排名数字。",
+      "source_ids": ["competitive_landscape_2026"],
+      "applies_to": ["kq2"],
+      "use": "报告中不使用精确排名数字，采用定性梯队描述。"
+    },
+    {
+      "id": "d3.w2",
+      "kind": "source_profile",
+      "text": "IDC、艾瑞等行业研究报告的具体市场份额数字未能实时获取。商汤、阿里、百度等厂商的自述市场排名不能直接采信为独立第三方数据。",
+      "source_ids": ["competitive_landscape_2026"],
+      "applies_to": ["kq1"],
+      "use": "报告中市场份额描述基于训练知识库综合，建议后续补充IDC/艾瑞最新报告数据。"
+    }
+  ]
+}

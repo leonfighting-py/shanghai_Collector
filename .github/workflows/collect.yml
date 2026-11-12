@@ -7,23 +7,81 @@ on:
 
 jobs:
   collect:
-    runs-on: ubuntu-latest
+    # 跑在腾讯云 self-hosted runner 上，避免美国 IP 被境内 .edu.cn/.cn 站点屏蔽。
+    # runner 注册时需带 --labels china；若 runner 离线，job 会排队等待（最长 6h 超时）。
+    runs-on: [self-hosted, china]
+    # 2026-10-12：20 分钟上限会掐掉一次正常的采集。开着 LLM 富化（vars.LLM_ENRICHMENT_ENABLED=true）
+    # 时实测要 18~25 分钟：10-08 成功那次 18m18s（余量仅 1m42s），10-12 手动重跑跑到 19m35s
+    # 仍未完成就被 cancel，整轮不发布。自建 runner 不计费，放宽到 35 分钟。
+    # 2026-10-21：35 分钟又被跑满（10-19 那轮 35m27s 被 cancel，没有 JSON 输出）。
+    # 那轮同时加了同主机限速、16 个新源和 offshore 合并，谁也说不清占多少 →
+    # 先放宽到 55 分钟（自建 runner 不计费），等日志能打出各阶段耗时时再收紧。
+    timeout-minutes: 55
     steps:
+      # 境内 runner 无法直连 github.com 的 git/npm，统一走境内镜像重写：
+      # - git: insteadOf 把 https://github.com/ 前缀替换为 gh-proxy 镜像
+      # - npm: 设置 npmmirror 源（setup-node 和 npm ci 都会用到）
+      - name: Configure mirrors for china runner
+        run: |
+          git config --global url."https://gh-proxy.com/https://github.com/".insteadOf "https://github.com/"
+          npm config set registry https://registry.npmmirror.com
+
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: npm
+      # 境内 runner 直连 nodejs.org 极慢，setup-node 也常超时；
+      # 改为自适配：优先用系统已装的 node 24，缺失则从 npmmirror 下载解压。
+      - name: Ensure Node 24 (npmmirror fallback)
+        run: |
+          set -e
+          NEED_INSTALL=0
+          if command -v node >/dev/null 2>&1; then
+            MAJOR=$(node -p 'process.versions.node.split(".")[0]')
+            echo "系统 node 主版本: $MAJOR"
+            [ "$MAJOR" = "24" ] || NEED_INSTALL=1
+          else
+            NEED_INSTALL=1
+          fi
+          if [ "$NEED_INSTALL" = "1" ]; then
+            ARCH=$(uname -m); [ "$ARCH" = "x86_64" ] && ARCH=x64 || [ "$ARCH" = "aarch64" ] && ARCH=arm64
+            echo "从 npmmirror 下载 node 24 ($ARCH)..."
+            curl -fsSL --retry 3 -o /tmp/node24.tgz \
+              "https://registry.npmmirror.com/-/binary/node/latest-v24.x/node-latest-linux-${ARCH}.tar.gz"
+            mkdir -p "$HOME/node24"
+            tar -xzf /tmp/node24.tgz --strip-components=1 -C "$HOME/node24"
+            echo "$HOME/node24/bin" >> "$GITHUB_PATH"
+          fi
+          node -v
 
-      - run: npm ci
+      - name: npm ci (npmmirror)
+        run: |
+          npm config set registry https://registry.npmmirror.com
+          npm ci
+
+      # 境外源（Eventbrite / 活动行 / AllEvents）在境内 runner 上是 403/405，
+      # 由 offshore.yml 在 GitHub 托管 runner（境外出口）采好后以 artifact 交过来。
+      # 任何一步失败都只告警、不阻断本轮采集（境内源照常发布）。
+      - name: Fetch offshore events artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set +e
+          rm -f offshore-events.json
+          API="https://api.github.com/repos/$REPO"
+          HEADERS=(-H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json")
+          RUN_ID=$(curl -fsSL --retry 3 "${HEADERS[@]}" "$API/actions/workflows/offshore.yml/runs?status=success&per_page=1" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["workflow_runs"][0]["id"] if d.get("workflow_runs") else "")')
+          if [ -z "$RUN_ID" ]; then echo "::warning::没有成功的 offshore 运行，本轮不带境外源"; exit 0; fi
+          ARTIFACT_ID=$(curl -fsSL --retry 3 "${HEADERS[@]}" "$API/actions/runs/$RUN_ID/artifacts" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next((a["id"] for a in d.get("artifacts",[]) if a["name"]=="offshore-events"), ""))')
+          if [ -z "$ARTIFACT_ID" ]; then echo "::warning::run $RUN_ID 里没有 offshore-events 产物"; exit 0; fi
+          echo "offshore run=$RUN_ID artifact=$ARTIFACT_ID"
+          curl -fsSL --retry 3 "${HEADERS[@]}" "$API/actions/artifacts/$ARTIFACT_ID/zip" -o /tmp/offshore.zip
+          python3 -c "import zipfile; zipfile.ZipFile('/tmp/offshore.zip').extractall('.')" || { echo "::warning::解压失败"; exit 0; }
+          ls -l offshore-events.json 2>/dev/null || echo "::warning::解压后没有 offshore-events.json"
 
       - name: Run collector
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          LLM_DEDUPE_ENABLED: ${{ vars.LLM_DEDUPE_ENABLED || 'false' }}
-          DEDUPER_MODEL: ${{ vars.DEDUPER_MODEL || 'gpt-5-nano' }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OFFSHORE_EVENTS_FILE: offshore-events.json
           LLM_ENRICHMENT_ENABLED: ${{ vars.LLM_ENRICHMENT_ENABLED || 'false' }}
           LLM_ENRICHMENT_SOURCES: ${{ vars.LLM_ENRICHMENT_SOURCES || 'all' }}
           LLM_CATEGORY_FILTER_ENABLED: ${{ vars.LLM_CATEGORY_FILTER_ENABLED || '' }}
@@ -32,4 +90,8 @@ jobs:
           SILICONFLOW_MODEL: ${{ vars.SILICONFLOW_MODEL || 'Qwen/Qwen3.5-35B-A3B' }}
           SILICONFLOW_ENABLE_THINKING: ${{ vars.SILICONFLOW_ENABLE_THINKING || 'false' }}
           WECHAT_EXPORTER_PARSE_CONTENT: "false"
+          # 告警：连续失败源 / 分类召回塌方 / 发布守门拦截时推送到飞书群
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+          ALERT_CONSECUTIVE_FAILURES: ${{ vars.ALERT_CONSECUTIVE_FAILURES || '2' }}
         run: node scripts/collect-local.js

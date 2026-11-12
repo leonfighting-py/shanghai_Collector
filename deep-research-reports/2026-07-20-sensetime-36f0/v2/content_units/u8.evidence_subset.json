@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.2",
+  "content_unit_id": "u8",
+  "claims": [
+    {
+      "id": "d4.c5",
+      "text": "中美地缘政治与出口管制对商汤构成显著风险。2022年美国将商汤列入实体清单，限制其获取美国产先进芯片和AI训练设备。商汤的算力获取依赖国产芯片（华为昇腾等）和二手/存量英伟达芯片，算力成本高于不受限制的竞争对手。海外业务（特别是新加坡、中东市场）也受到出口管制和国际政治关系的影响。",
+      "kind": "factual",
+      "polarity": "refute",
+      "topic_tag": "geopolitical_risk",
+      "answers_key_question": "kq5",
+      "evidence": [
+        {
+          "source_id": "us_export_control_2022",
+          "snippet": "2022年8月: 美国商务部工业安全局（BIS）将商汤科技列入实体清单（Entity List）。",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/391761aea58955df1eef6cbb47555fb40f031f2e8a66db0efb27b0cf9139bd27/9ea468f0a2c71723a37c3146fe7382118b4f25a3fa4ad1109c4e074a9d76b2f7.md"
+        }
+      ]
+    },
+    {
+      "id": "d4.c6",
+      "text": "中国AI与数据监管政策对商汤构成合规约束。国家互联网信息办公室要求AI大模型进行算法备案和安全评估，商汤的日日新大模型已完成备案。数据监管趋严（《数据安全法》、《个人信息保护法》、大模型安全评估指南）增加了AI企业的合规成本，但也为有合规能力的头部企业提供了护城河。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "regulatory_risk",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "china_ai_regulation_2024",
+          "snippet": "大模型安全评估:\n- 《生成式人工智能服务管理暂行办法》（2023-08-15生效）\n- 要求大模型进行安全评估\n- 商汤日日新大模型已完成安全评估",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/bac787cbb97361b0628734f216820dab5a37f48c6bf71e9738ebbe3d6c0ff2a8/c4b26a65e46ad1b189ee00428642de6085326b46f731163f6f16ff3bcc354756.md"
+        }
+      ]
+    }
+  ]
+}

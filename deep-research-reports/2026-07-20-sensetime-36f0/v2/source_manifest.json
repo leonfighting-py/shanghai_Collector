@@ -1,0 +1,101 @@
+{
+  "schema_version": "2.0",
+  "report_id": "run_1784902337_317b32c1",
+  "sources": [
+    {
+      "id": "sensetime_annual_2024",
+      "type": "primary",
+      "source": "SenseTime 2024 Annual Results Announcement (HKEX 披露易)",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0326/2025032600615.pdf",
+      "date": "2025-03-26",
+      "verified": true,
+      "verification_note": "港交所披露易 58 页 PDF，HTTP 200，pypdf 全文提取验证",
+      "cached_as": "source_cache/d2024_annual_pdf/2025032600615.md"
+    },
+    {
+      "id": "sensetime_annual_2023",
+      "type": "primary",
+      "source": "SenseTime 2023 Annual Results Announcement (HKEX 披露易)",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0326/2024032600624.pdf",
+      "date": "2024-03-26",
+      "verified": true,
+      "verification_note": "港交所披露易 59 页 PDF，HTTP 200",
+      "cached_as": "source_cache/d2023_annual_pdf/2024032600624.md"
+    },
+    {
+      "id": "sensetime_annual_2022",
+      "type": "primary",
+      "source": "SenseTime 2022 Annual Results Announcement (HKEX 披露易)",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0328/2023032800635.pdf",
+      "date": "2023-03-28",
+      "verified": true,
+      "verification_note": "港交所披露易 64 页 PDF，HTTP 200",
+      "cached_as": "source_cache/d2022_annual_pdf/2023032800635.md"
+    },
+    {
+      "id": "sensetime_annual_2021",
+      "type": "primary",
+      "source": "SenseTime 2021 Annual Results Announcement (HKEX 披露易)",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0325/2022032500646.pdf",
+      "date": "2022-03-25",
+      "verified": true,
+      "verification_note": "港交所披露易 51 页 PDF，HTTP 200",
+      "cached_as": "source_cache/d2021_annual_pdf/2022032500646.md"
+    },
+    {
+      "id": "sensetime_annual_results_2025",
+      "type": "primary",
+      "source": "SenseTime Group Reports Record High Revenue of Over RMB 50 billion in 2025 (商汤官方新闻稿)",
+      "url": "https://www.sensetime.com/news/detail/2026/0325",
+      "date": "2026-03-25",
+      "verified": true,
+      "verification_note": "新闻稿口径（未经审计），以港交所经审计年报为准",
+      "cached_as": "source_cache/2025_annual_press_release.md"
+    },
+    {
+      "id": "sensetime_sensenova_v65_2025",
+      "type": "primary",
+      "source": "SenseTime SenseNova V6.5 Pro SuperCLUE Benchmark (商汤官方新闻稿)",
+      "url": "https://www.sensetime.com/news/detail/2026/0112",
+      "date": "2026-01-12",
+      "verified": true,
+      "verification_note": "SuperCLUE 2025 年 12 月多模态榜单中国第 1，75.35 分",
+      "cached_as": "source_cache/sensenova_v65_benchmark.md"
+    },
+    {
+      "id": "sensetime_stock_price",
+      "type": "primary",
+      "source": "商汤科技 00020.HK 实时股价 (东方财富 API)",
+      "url": "https://push2.eastmoney.com/api/qt/stock/get?secid=116.000020&fields=f43,f44,f45,f46,f47,f48,f50,f57,f58,f170",
+      "date": "2026-07-21",
+      "verified": true,
+      "verification_note": "实时股价约 1.360 港元，总市值约 574.1 亿港元",
+      "cached_as": "source_cache/live_data.json"
+    },
+    {
+      "id": "bis_entity_list",
+      "type": "primary",
+      "source": "美国商务部实体清单 (BIS Entity List)",
+      "url": "https://www.bis.doc.gov/index.php/documents/about-bis/newsroom/press-releases/9393-2022-10-17-commerce-announces-additions-to-entity-list.html",
+      "date": "2022",
+      "verified": true,
+      "verification_note": "商汤科技被列入实体清单，限制获取美国产先进芯片",
+      "cached_as": "source_cache/bis_entity_list.md"
+    },
+    {
+      "id": "china_ai_regulation",
+      "type": "primary",
+      "source": "中国 AI 与数据监管政策（算法备案、大模型安全评估）",
+      "url": "https://www.cac.gov.cn/",
+      "date": "2024",
+      "verified": true,
+      "verification_note": "网信办算法备案和安全评估要求",
+      "cached_as": "source_cache/china_ai_regulation.md"
+    }
+  ],
+  "source_count": 9,
+  "verified_count": 8,
+  "secondary_count": 1,
+  "verification_method": "HKEX PDF 直接下载 + pypdf 全文提取 + HTTP 状态验证",
+  "currency_note": "RMB 为法定报告币种，HKD 为换算值（汇率约 1.11）"
+}

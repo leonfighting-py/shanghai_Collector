@@ -1,5 +1,6 @@
 import { CATEGORIES, toShanghaiDate } from "./events.js";
 import { hasCjkText } from "./locale.js";
+import { isUsableImage } from "./image-url.js";
 
 const CHINESE_TITLE_BOOST = 28;
 
@@ -16,17 +17,36 @@ const KEYWORD_WEIGHTS = [
   ["设计", 6],
 ];
 
+const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+// 有封面图的活动加权：视觉密度是首页第一印象，但权重不宜过大，避免没图的好内容沉底
+const COVER_IMAGE_BOOST = 20;
+
+/** 上海时区的小时数（0-23），避免运行时本地时区（如 UTC）导致"今晚/周末"判断错误 */
+function shanghaiHour(value) {
+  return ((new Date(value).getTime() + SHANGHAI_OFFSET_MS) % 86_400_000) / 3_600_000;
+}
+
+/** 上海时区的星期（0=周日），取上海当日正午避免边界日期偏移 */
+function shanghaiDay(value) {
+  return new Date(`${toShanghaiDate(value)}T12:00:00+08:00`).getUTCDay();
+}
+
 export function scoreEvent(event, now = new Date()) {
   let score = 0;
   const sourceCount = event.sources?.length || 1;
-  const hour = new Date(event.start_time).getHours();
-  const day = new Date(event.start_time).getDay();
+  const hour = shanghaiHour(event.start_time);
+  const day = shanghaiDay(event.start_time);
   const title = event.title || "";
 
   score += Math.min(sourceCount, 4) * 8;
+  // 一手源（场馆/高校官网）比聚合器更权威，温和加权让同分时一手源靠前
+  if (Array.isArray(event.sources) && event.sources.some((s) => s?.tier === "T1")) score += 12;
   score += categoryBoost(event.category);
-  score += event.venue && event.venue !== "上海" ? 12 : 0;
+  // venue 已是发布必填字段，对所有事件均匀加分无区分度；原先的 !== "上海" 条件
+  // 反而会让外地活动多拿分（上游已由 isShanghaiRelevantEvent 兜底，此处不再奖励）。
   score += event.signup_url ? 6 : 0;
+  score += event.image_url ? COVER_IMAGE_BOOST : 0;
   score += day === 0 || day === 6 ? 10 : 0;
   score += hour >= 18 ? 8 : 0;
   score += proximityScore(event.start_time, now);
@@ -51,8 +71,18 @@ export function getTopPicks(events, limit = 12, now = new Date()) {
   return rankEvents(events, now).slice(0, limit);
 }
 
-export function getDisplayTopPicks(events, limit = 12, now = new Date()) {
+export function getDisplayTopPicks(
+  events,
+  limit = 12,
+  now = new Date(),
+  { preferImages = false } = {},
+) {
   const ranked = rankEvents(events, now);
+  if (preferImages) {
+    const withImages = ranked.filter((event) => isUsableImage(event.image_url));
+    const withoutImages = ranked.filter((event) => !isUsableImage(event.image_url));
+    return [...withImages, ...withoutImages].slice(0, limit);
+  }
   const chinese = ranked.filter((event) => hasCjkText(event.title));
   const other = ranked.filter((event) => !hasCjkText(event.title));
   return [...chinese, ...other].slice(0, limit);
@@ -62,6 +92,46 @@ function rankEvents(events, now) {
   return [...events]
     .map((event) => ({ ...event, recommendation_score: scoreEvent(event, now) }))
     .sort((left, right) => right.recommendation_score - left.recommendation_score);
+}
+
+/**
+ * 高校讲座专用排序：按时间维度而非评分排列，方便用户快速锁定近期讲座。
+ *
+ * 规则：
+ *  1. AI 相关讲座优先提到最前（首页讲座栏直接展示），其余按时间排。
+ *  2. 当天及未来（未发生）排在前面，按 start_time 升序（由近到远）。
+ *  3. 当天之前（已发生）排在后面，按 start_time 降序（由近到远）。
+ *
+ * 例：今天 9/13 → [AI讲座, 9/13, 9/14, 9/15, ...] | [..., 9/12, 9/11, 9/10]
+ */
+const AI_LECTURE_KEYWORDS =
+  /AI|人工智能|大模型|机器学习|深度学习|LLM|GPT|大语言模型|生成式|神经网络|Tensor|数据挖掘/i;
+
+function isAiRelatedLecture(event) {
+  return (
+    AI_LECTURE_KEYWORDS.test(event.title || "") ||
+    AI_LECTURE_KEYWORDS.test(event.summary || "")
+  );
+}
+
+export function sortCampusLectures(events, now = new Date()) {
+  const today = toShanghaiDate(now);
+  const upcoming = [];
+  const past = [];
+  for (const event of events) {
+    if (toShanghaiDate(event.start_time) >= today) {
+      upcoming.push(event);
+    } else {
+      past.push(event);
+    }
+  }
+  upcoming.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+  past.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+
+  const timeSorted = [...upcoming, ...past];
+  const aiLectures = timeSorted.filter(isAiRelatedLecture);
+  const rest = timeSorted.filter((event) => !isAiRelatedLecture(event));
+  return [...aiLectures, ...rest];
 }
 
 export function getHeroEvent(events, now = new Date()) {
@@ -84,7 +154,7 @@ export function getTonightEvents(events, now = new Date()) {
   const today = toShanghaiDate(now);
   return getTopPicks(
     events.filter((event) => {
-      const hour = new Date(event.start_time).getHours();
+      const hour = shanghaiHour(event.start_time);
       return toShanghaiDate(event.start_time) === today && hour >= 18;
     }),
     4,
@@ -95,7 +165,7 @@ export function getTonightEvents(events, now = new Date()) {
 export function getWeekendEvents(events, now = new Date()) {
   return getTopPicks(
     events.filter((event) => {
-      const day = new Date(event.start_time).getDay();
+      const day = shanghaiDay(event.start_time);
       return day === 0 || day === 6;
     }),
     6,

@@ -1,6 +1,9 @@
-import { cleanupOldData } from "./repository.js";
+import { cleanupOldData, EVENT_RETENTION_DAYS, RUN_RETENTION_DAYS } from "./repository.js";
 
-export async function runCleanupJob({ eventRetentionDays = 60, runRetentionDays = 90 } = {}) {
+export async function runCleanupJob({
+  eventRetentionDays = EVENT_RETENTION_DAYS,
+  runRetentionDays = RUN_RETENTION_DAYS,
+} = {}) {
   const result = await cleanupOldData({ eventRetentionDays, runRetentionDays });
 
   return {

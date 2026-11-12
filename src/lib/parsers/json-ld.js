@@ -47,6 +47,16 @@ function eventFromJsonLd(candidate, source) {
     end_time: candidate.endDate,
     venue,
     signup_url: candidate.url || candidate.offers?.url || source.url,
+    // schema.org Event.image：URL 或 ImageObject
+    image_url: normalizeJsonLdImage(candidate.image),
     source,
   });
+}
+
+function normalizeJsonLdImage(image) {
+  if (!image) return null;
+  if (typeof image === "string") return image;
+  if (typeof image?.url === "string") return image.url;
+  if (Array.isArray(image) && image.length > 0) return normalizeJsonLdImage(image[0]);
+  return null;
 }

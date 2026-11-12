@@ -1,0 +1,64 @@
+<view wx:if="{{event}}" class="detail">
+  <image
+    wx:if="{{event.image_url && !imageFailed}}"
+    class="hero"
+    src="{{event.image_url}}"
+    mode="aspectFill"
+    binderror="onImageError"
+  />
+
+  <view class="main">
+    <view class="category">{{event.category}}</view>
+    <view class="title serif">{{event.title}}</view>
+
+    <view class="info">
+      <view class="info-row">
+        <view class="info-label">时间</view>
+        <view class="info-value">
+          <view>{{period}}</view>
+          <view wx:if="{{periodNote}}" class="muted">{{periodNote}}</view>
+        </view>
+      </view>
+      <view class="info-row">
+        <view class="info-label">场馆</view>
+        <view class="info-value">{{event.venue}}</view>
+      </view>
+      <view class="info-row">
+        <view class="info-label">来源</view>
+        <view class="info-value">{{event.source_name}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{event.summary}}" class="block">
+    <view class="block-title serif">活动简介</view>
+    <view class="summary">{{event.summary}}</view>
+  </view>
+
+  <view wx:if="{{sourceList.length > 1}}" class="block">
+    <view class="block-title serif">数据来源（{{sourceList.length}}）</view>
+    <view
+      wx:for="{{sourceList}}"
+      wx:key="name"
+      class="source-item"
+      data-url="{{item.url}}"
+      bindtap="onCopySource"
+    >
+      <text>{{item.name}}</text>
+      <text wx:if="{{item.tier === 'T1'}}" class="tier">官方源</text>
+      <text class="source-copy">复制链接</text>
+    </view>
+  </view>
+
+  <view class="signup-hint">活动链接将复制到剪贴板，可在浏览器中打开查看详情</view>
+
+  <!-- 底部固定操作栏 -->
+  <view class="actions">
+    <button class="btn-plain action-fav {{favorited ? 'action-fav-on' : ''}}" bindtap="onToggleFavorite">
+      {{favorited ? "★ 已收藏" : "☆ 收藏"}}
+    </button>
+    <button class="btn-primary action-signup" bindtap="onSignup">
+      {{targetPlatform ? "去" + targetPlatform + "查看" : "复制活动链接"}}
+    </button>
+  </view>
+</view>

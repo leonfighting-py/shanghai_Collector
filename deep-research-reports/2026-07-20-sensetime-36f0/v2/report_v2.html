@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商汤科技管理层决策报告</title>
+<style>
+/* ── Reset & Base ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fafafa;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --text-secondary: #555;
+  --text-muted: #888;
+  --border: #e8e8e8;
+  --accent: #1677ff;
+  --accent-light: #e6f4ff;
+  --green: #389e0d;
+  --green-bg: #f6ffed;
+  --red: #cf1322;
+  --red-bg: #fff1f0;
+  --amber: #d48806;
+  --amber-bg: #fffbe6;
+  --radius: 8px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --max-w: 960px;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ─────────────────────────────────────────────── */
+.page { max-width: var(--max-w); margin: 0 auto; padding: 0 20px 80px; }
+
+/* ── Header ─────────────────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  padding: 48px 20px 36px;
+  text-align: center;
+}
+.header h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+.header .subtitle { font-size: 14px; opacity: 0.7; }
+.header .meta {
+  display: flex; justify-content: center; gap: 24px;
+  margin-top: 16px; font-size: 13px; opacity: 0.6;
+  flex-wrap: wrap;
+}
+
+/* ── Decision Tabs ─────────────────────────────────────── */
+.tab-bar {
+  display: flex; gap: 4px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); background: #f5f5f5; }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Section ────────────────────────────────────────────── */
+.section { padding: 32px 0; border-bottom: 1px solid var(--border); }
+.section:last-child { border-bottom: none; }
+.section-title {
+  font-size: 20px; font-weight: 600; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ── Decision Cards (Hero) ─────────────────────────────── */
+.decision-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-bottom: 24px;
+}
+.decision-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--accent);
+}
+.decision-card.invest { border-top-color: var(--green); }
+.decision-card .label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.decision-card .verdict { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.decision-card .reason { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.verdict-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+.verdict-badge.pilot { background: var(--accent-light); color: var(--accent); }
+.verdict-badge.observe { background: var(--green-bg); color: var(--green); }
+
+/* ── Fact / Risk Cards ─────────────────────────────────── */
+.fact-list, .risk-list { display: flex; flex-direction: column; gap: 12px; }
+.fact-card, .risk-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.fact-card .num, .risk-card .num {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  background: var(--accent-light); color: var(--accent);
+}
+.risk-card .num { background: var(--red-bg); color: var(--red); }
+.fact-card .body, .risk-card .body { flex: 1; }
+.fact-card .body strong { display: block; margin-bottom: 4px; }
+.fact-card .body span, .risk-card .body span { font-size: 13px; color: var(--text-secondary); }
+.risk-card .body strong { display: block; margin-bottom: 4px; }
+
+/* ── Tables ─────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: #f5f5f5; font-weight: 600; font-size: 12px; color: var(--text-secondary); }
+tr:last-child td { border-bottom: none; }
+td.highlight { font-weight: 600; color: var(--green); }
+td.warn { color: var(--amber); }
+td.danger { color: var(--red); }
+
+/* ── Scenario Cards ─────────────────────────────────────── */
+.scenario-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.scenario-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.scenario-card .tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.scenario-card.bull .tag { background: var(--green-bg); color: var(--green); }
+.scenario-card.base .tag { background: var(--accent-light); color: var(--accent); }
+.scenario-card.bear .tag { background: var(--red-bg); color: var(--red); }
+.scenario-card h4 { font-size: 14px; margin-bottom: 6px; }
+.scenario-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+/* ── Metric Strip ───────────────────────────────────────── */
+.metric-strip {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+.metric-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.metric-card .label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.metric-card .value { font-size: 24px; font-weight: 700; color: var(--text); }
+.metric-card .change { font-size: 12px; margin-top: 4px; }
+.metric-card .change.up { color: var(--green); }
+.metric-card .change.down { color: var(--red); }
+.metric-card .change.warn { color: var(--amber); }
+
+/* ── Callout ────────────────────────────────────────────── */
+.callout {
+  background: var(--amber-bg);
+  border: 1px solid #ffe58f;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: flex; gap: 10px;
+}
+.callout .icon { font-size: 16px; flex-shrink: 0; }
+
+.callout-info { background: var(--accent-light); border-color: #91d5ff; }
+.callout-success { background: var(--green-bg); border-color: #95de64; }
+.callout-danger { background: var(--red-bg); border-color: #ffa39e; }
+
+/* ── Risk Detail ────────────────────────────────────────── */
+.risk-detail {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.risk-detail h4 { font-size: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.risk-detail .risk-level {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600;
+}
+.risk-level.high { background: var(--red-bg); color: var(--red); }
+.risk-level.medium { background: var(--amber-bg); color: var(--amber); }
+.risk-level.low { background: var(--green-bg); color: var(--green); }
+.risk-detail dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 13px; }
+.risk-detail dt { font-weight: 600; color: var(--text-secondary); }
+.risk-detail dd { color: var(--text); }
+
+/* ── Source / Footer ────────────────────────────────────── */
+.source-list { font-size: 13px; }
+.source-list li { margin-bottom: 8px; }
+.footnote {
+  font-size: 12px; color: var(--text-muted);
+  margin-top: 32px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.disclaimer {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 12px; font-style: italic;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .decision-grid { grid-template-columns: 1fr; }
+  .scenario-grid { grid-template-columns: 1fr; }
+  .metric-strip { grid-template-columns: 1fr 1fr; }
+  .tab-btn { font-size: 12px; padding: 12px 4px; }
+  .header h1 { font-size: 22px; }
+  table { font-size: 13px; }
+  th, td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- HEADER -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<header class="header">
+  <h1>商汤科技管理层决策报告</h1>
+  <p class="subtitle">SenseTime Research Limited（00020.HK）</p>
+  <div class="meta">
+    <span>报告日期：2026 年 7 月 24 日</span>
+    <span>数据截止：2025 年度经审计年报</span>
+    <span>研究模式：深度研究</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DECISION TABS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<nav class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="executive">执行摘要</button>
+  <button class="tab-btn" data-tab="procurement">采购合作</button>
+  <button class="tab-btn" data-tab="investment">投资观察</button>
+  <button class="tab-btn" data-tab="risks">风险触发器</button>
+  <button class="tab-btn" data-tab="appendix">附录</button>
+</nav>
+
+<div class="page">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TAB: EXECUTIVE SUMMARY -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-executive">
+
+  <!-- Decision Cards -->
+  <div class="section">
+    <div class="decision-grid">
+      <div class="decision-card">
+        <div class="label">采购合作</div>
+        <div class="verdict">小规模试点 <span class="verdict-badge pilot">条件性进入</span></div>
+        <div class="reason">视觉多模态能力（SuperCLUE 中国第 1）+ SenseNova API 公测免费降低试点门槛。适合工业质检、医疗影像等垂直场景的 POC。</div>
+      </div>
+      <div class="decision-card invest">
+        <div class="label">投资观察</div>
+        <div class="verdict">普通观察 <span class="verdict-badge observe">持续跟踪</span></div>
+        <div class="reason">2025 年营收 +33%、H2 EBITDA 转正，盈利拐点比预期提前。但全年仍亏损，AI 商业化规模化待验证。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>关键财务指标</h2>
+    <div class="metric-strip">
+      <div class="metric-card">
+        <div class="label">2024 年营收（经审计）</div>
+        <div class="value">37.72 亿 RMB</div>
+        <div class="change up">▲ 同比 +10.8%</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">2025 年营收（新闻稿）</div>
+        <div class="value">50 亿+ RMB</div>
+        <div class="change up">▲ 同比 +33%</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">2024 年净亏损</div>
+        <div class="value">43.07 亿 RMB</div>
+        <div class="change up">▲ 同比收窄 33.7%</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">2024 年末现金储备</div>
+        <div class="value">127.52 亿 RMB</div>
+        <div class="change warn">≈ 141 亿港元</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">估值（2026-07-21）</div>
+        <div class="value">PB ≈ 1.15</div>
+        <div class="change">接近净资产水平</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">GenAI 收入占比</div>
+        <div class="value">63.7%</div>
+        <div class="change up">▲ 2024 年 +103.1%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 Key Facts -->
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>三条最重要支持事实</h2>
+    <div class="fact-list">
+      <div class="fact-card">
+        <div class="num">1</div>
+        <div class="body">
+          <strong>2025 年营收创历史新高，验证 AI 商业化加速</strong>
+          <span>营收超 50 亿人民币（约 56 亿港元），同比 +33%，为近三年最快增长。数据来源：商汤官方新闻稿（2026-03-25），以经审计年报为准。</span>
+        </div>
+      </div>
+      <div class="fact-card">
+        <div class="num">2</div>
+        <div class="body">
+          <strong>现金储备充裕，估值接近净资产</strong>
+          <span>2024 年末现金储备约 127.52 亿元人民币（约 141 亿港元），账面 PB 约 1.15，下行空间有限。数据来源：港交所 2024 年报（经审计）。</span>
+        </div>
+      </div>
+      <div class="fact-card">
+        <div class="num">3</div>
+        <div class="body">
+          <strong>视觉多模态技术国内领先</strong>
+          <span>SenseNova V6.5 Pro 在 SuperCLUE 2025 年 12 月多模态榜单中国第 1（75.35 分），视觉推理为差异化护城河。CV 市场连续 9 年中国第一。数据来源：商汤官方新闻稿（2026-01-12）。</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 Key Risks -->
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>三项最重要风险</h2>
+    <div class="risk-list">
+      <div class="risk-card">
+        <div class="num">1</div>
+        <div class="body">
+          <strong>全年仍为净亏损，盈利拐点待确认</strong>
+          <span>2025 年亏损收窄 58.6%，但绝对规模仍大。H2 EBITDA 首次转正，但全年尚未实现盈利。需持续跟踪亏损收窄节奏。</span>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="num">2</div>
+        <div class="body">
+          <strong>定价透明度和 SLA 尚未公开</strong>
+          <span>SenseNova API 付费档位尚未上线，SLA 未公开。企业无法做 TCO 成本对比，采购决策存在不确定性。</span>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="num">3</div>
+        <div class="body">
+          <strong>美国实体清单限制算力获取</strong>
+          <span>2022 年商汤被列入实体清单，限制获取美国产先进芯片。算力成本高于不受限制的竞争对手，影响长期竞争力和海外业务拓展。</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next Steps -->
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>下一步行动</h2>
+    <div class="callout callout-info">
+      <span class="icon">💡</span>
+      <span><strong>采购端：</strong>启动 90 天小规模 POC（工业质检/医疗影像），利用 SenseNova API 公测免费期进行快速测试。<strong>投资端：</strong>进入普通观察名单，持续跟踪亏损收窄节奏和 AI 商业化进展。</span>
+    </div>
+    <div class="callout callout-danger">
+      <span class="icon">⚠️</span>
+      <span><strong>关键监测节点：</strong>2026 年 7 月 2025 年度经审计年报发布、2026 年 8 月中期业绩、SenseNova API 付费档位上线时间。</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TAB: PROCUREMENT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-procurement">
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>采购合作决策</h2>
+
+    <!-- Product Recommendations -->
+    <h3 style="font-size:16px;margin-bottom:12px">最值得采购的产品/能力</h3>
+    <table>
+      <thead>
+        <tr><th>产品/能力</th><th>适用场景</th><th>建议</th><th>理由</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SenseNova 多模态（V6.5 Pro）</td>
+          <td>工业质检、医疗影像</td>
+          <td class="highlight">进入小规模试点</td>
+          <td>SuperCLUE 中国第 1，公测期免费</td>
+        </tr>
+        <tr>
+          <td>SenseNova API</td>
+          <td>快速测试、轻量集成</td>
+          <td class="highlight">可立即试用</td>
+          <td>每日约 7,000 次调用，原生兼容 OpenAI 接口</td>
+        </tr>
+        <tr>
+          <td>小浣熊（Raccoon 3.0）</td>
+          <td>办公文档、PPT 生成</td>
+          <td class="warn">条件性观察</td>
+          <td>等待与飞书/WPS 深度集成验证</td>
+        </tr>
+        <tr>
+          <td>私有化大模型部署</td>
+          <td>高安全要求场景</td>
+          <td class="warn">条件性观察</td>
+          <td>完成正式商务报价和信息安全审查后</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>竞品比较（企业采购维度）</h2>
+    <table>
+      <thead>
+        <tr><th>维度</th><th>商汤</th><th>阿里通义千问</th><th>百度文心一言</th><th>DeepSeek</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>视觉多模态</td><td class="highlight">国内第 1</td><td>VLM 接近</td><td>有视觉能力</td><td>文本为主</td></tr>
+        <tr><td>纯文本能力</td><td>落后</td><td class="highlight">领先</td><td class="highlight">领先</td><td class="highlight">领先（开源）</td></tr>
+        <tr><td>企业服务生态</td><td>弱于云厂商</td><td class="highlight">阿里云生态强</td><td class="highlight">百度智能云强</td><td>开源社区</td></tr>
+        <tr><td>办公场景集成</td><td>小浣熊（早期）</td><td>钉钉集成</td><td>—</td><td>—</td></tr>
+        <tr><td>API 定价</td><td>公测免费（付费待上线）</td><td>公开定价</td><td>公开定价</td><td>极低定价</td></tr>
+        <tr><td>国产芯片适配</td><td class="highlight">10+ 厂商合作</td><td>华为昇腾</td><td>昆仑芯</td><td>未明确</td></tr>
+        <tr><td>SLA</td><td class="warn">未公开</td><td>有</td><td>有</td><td>无（开源）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>90 天 POC 执行计划</h2>
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>时间</th><th>内容</th><th>达标指标</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>商务对接</td><td>第 1-2 周</td><td>获取详细报价、SLA、部署方案</td><td>报价完整性、SLA 明确度</td></tr>
+        <tr><td>POC 试点</td><td>第 3-8 周</td><td>选 1-2 个视觉场景小规模试点</td><td>准确率 ≥ 95%、任务完成率 ≥ 90%</td></tr>
+        <tr><td>安全评估</td><td>第 3-6 周</td><td>私有化部署方案通过企业信息安全审查</td><td>合规通过</td></tr>
+        <tr><td>效果评估</td><td>第 9-10 周</td><td>综合评估准确率、成本、SLA 表现</td><td>综合评分</td></tr>
+        <tr><td>决策</td><td>第 11-12 周</td><td>基于指标决定是否进入正式采购</td><td>全部指标达标则推进</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>进入正式采购名单的必要条件</h2>
+    <div class="callout callout-info">
+      <span class="icon">✅</span>
+      <span>以下条件需<strong>同时满足</strong>：
+      <br>1. 试点场景模型准确率 ≥ 行业基准
+      <br>2. TCO 不高于可比竞品 15% 以上
+      <br>3. SLA 以书面形式确认
+      <br>4. 私有化部署方案通过企业信息安全审查
+      <br>5. 商汤能在合同约定时间内完成部署和交付</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>供应商稳定性</h2>
+    <table>
+      <thead><tr><th>项目</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>2024 年末现金储备</td><td>127.52 亿元 RMB（约 141 亿港元）</td></tr>
+        <tr><td>账面估值</td><td>PB 约 1.15（接近净资产）</td></tr>
+        <tr><td>现金跑道</td><td class="warn">按 2024 年亏损速度约 3 年（情景估算，非确定事实）</td></tr>
+        <tr><td>核心人才稳定性</td><td class="warn">2024-2025 年持续组织调整，需持续关注</td></tr>
+        <tr><td>组织稳定性</td><td class="warn">"1+X" 战略下部分业务独立运营，存在挑战</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TAB: INVESTMENT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-investment">
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>核心投资命题</h2>
+    <div class="callout">
+      <span class="icon">🎯</span>
+      <span><strong>商汤能否从「技术投入期」成功过渡到「可持续盈利期」？</strong> 视觉多模态优势能否转化为收入和利润？2025 年数据（营收 +33%、H2 EBITDA 转正）表明这一拐点比预期更早到来，但全年仍未实现盈利，需持续跟踪。</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>财务和商业化拐点</h2>
+    <table>
+      <thead><tr><th>指标</th><th>2024 年（经审计）</th><th>2025 年（新闻稿）</th><th>变化</th></tr></thead>
+      <tbody>
+        <tr><td>营收增速</td><td>+10.8%（37.72 亿 RMB）</td><td class="highlight">+33%（超 50 亿 RMB）</td><td class="highlight">▲ 大幅加速</td></tr>
+        <tr><td>净亏损</td><td>43.07 亿 RMB（收窄 33.7%）</td><td class="highlight">收窄 58.6%</td><td class="highlight">▲ 大幅改善</td></tr>
+        <tr><td>H2 EBITDA</td><td>负值</td><td class="highlight">+3.8 亿元（首次转正）</td><td class="highlight">▲ 关键拐点</td></tr>
+        <tr><td>H2 经营性现金流</td><td>负值</td><td class="highlight">净流入（首次为正）</td><td class="highlight">▲ 关键拐点</td></tr>
+        <tr><td>应收账款回收</td><td>46.23 亿元（+19.0%）</td><td class="highlight">48.7 亿元（历史新高）</td><td class="highlight">▲ 显著改善</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-danger">
+      <span class="icon">⚠️</span>
+      <span>2025 年数据为商汤官方新闻稿公布，以港交所经审计年报为准。2025 年度报告已于 2026 年 3 月发布。</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>视觉多模态优势 → 收入和利润转化评估</h2>
+    <table>
+      <thead><tr><th>维度</th><th>现状</th><th>评估</th></tr></thead>
+      <tbody>
+        <tr><td>技术能力</td><td>SuperCLUE 多模态中国第 1</td><td class="highlight">✅ 已验证</td></tr>
+        <tr><td>CV 市场地位</td><td>连续 9 年中国第一</td><td class="highlight">✅ 已验证</td></tr>
+        <tr><td>CV 2.0 业务</td><td>2025 年首次实现净利润</td><td class="highlight">▲ 积极信号</td></tr>
+        <tr><td>SenseNova API</td><td>公测期免费，付费档位待上线</td><td class="warn">⚠️ 商业化路径待验证</td></tr>
+        <tr><td>GenAI 收入</td><td>2024 年 24.04 亿 RMB（+103.1%）</td><td class="highlight">✅ 增长强劲</td></tr>
+        <tr><td>经常性收入占比</td><td>偏低</td><td class="warn">⚠️ 待观察</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>Bull / Base / Bear 三种情景</h2>
+    <div class="scenario-grid">
+      <div class="scenario-card bull">
+        <span class="tag">BULL 情景</span>
+        <h4>商业化加速，盈利拐点确认</h4>
+        <p>付费档位上线、AI 收入突破 10 亿港元/年、H1 实现单季度盈利。股价显著回升，估值溢价，进入重点观察名单。</p>
+      </div>
+      <div class="scenario-card base">
+        <span class="tag">BASE 情景</span>
+        <h4>亏损收窄，稳步推进</h4>
+        <p>亏损继续收窄、AI 收入稳步增长、H2 维持 EBITDA 为正。估值逐步修复，维持普通观察名单。</p>
+      </div>
+      <div class="scenario-card bear">
+        <span class="tag">BEAR 情景</span>
+        <h4>竞争加剧，盈利延迟</h4>
+        <p>亏损扩大、营收增速转负、AI 价格战加剧、美国管制升级。估值进一步承压，考虑退出观察名单。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>催化剂与退出条件</h2>
+    <div class="fact-list">
+      <div class="fact-card">
+        <div class="num" style="background:var(--green-bg);color:var(--green)">+</div>
+        <div class="body">
+          <strong>可能提升投资评级的催化剂</strong>
+          <span>① 亏损收窄至 20 亿港元以下 ② 实现单季度盈利 ③ AI 商业化收入突破 10 亿港元/年 ④ 与头部企业签订大型 AI 服务合同 ⑤ SenseNova API 付费档位上线并公布定价</span>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="num">!</div>
+        <div class="body">
+          <strong>触发退出观察名单的条件</strong>
+          <span>① 营收增速再次下滑或转负 ② 亏损扩大 ③ H2 EBITDA 转正趋势被逆转 ④ 美国出口管制升级限制算力获取 ⑤ AI 大模型市场被 DeepSeek 等竞品进一步挤压 ⑥ 核心人才大规模流失</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TAB: RISKS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-risks">
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>风险和行动触发器</h2>
+
+    <div class="risk-detail">
+      <h4>地缘政治风险 <span class="risk-level high">高风险</span></h4>
+      <dl>
+        <dt>当前状态</dt><dd>2022 年美国商务部将商汤列入实体清单，限制获取美国产先进芯片</dd>
+        <dt>监测指标</dt><dd>实体清单范围变化、国产芯片供应稳定性、SenseCore 算力扩展进度</dd>
+        <dt>时间窗口</dt><dd>持续（美国出口管制政策不确定性）</dd>
+        <dt>对采购的影响</dt><dd>私有化部署可能受限于算力可用性</dd>
+        <dt>对投资的影响</dt><dd>算力成本高于竞争对手，影响盈利预期</dd>
+        <dt>管理层动作</dt><dd>关注国产芯片合作进展（华为昇腾、海光、寒武冰等 10+ 厂商）</dd>
+      </dl>
+    </div>
+
+    <div class="risk-detail">
+      <h4>商业化变现风险 <span class="risk-level medium">中风险</span></h4>
+      <dl>
+        <dt>当前状态</dt><dd>付费档位尚未上线，SLA 未公开</dd>
+        <dt>监测指标</dt><dd>付费档位上线时间、定价策略、客户付费转化率</dd>
+        <dt>时间窗口</dt><dd>2026 年内（付费档位预计上线）</dd>
+        <dt>对采购的影响</dt><dd>无法做 TCO 对比，采购决策存在不确定性</dd>
+        <dt>对投资的影响</dt><dd>商业化路径待验证，影响盈利预期</dd>
+        <dt>管理层动作</dt><dd>付费档位上线后重新评估定价竞争力</dd>
+      </dl>
+    </div>
+
+    <div class="risk-detail">
+      <h4>竞争加剧风险 <span class="risk-level medium">中风险</span></h4>
+      <dl>
+        <dt>当前状态</dt><dd>DeepSeek 以低价和开源策略冲击市场，云厂商利用云服务交叉补贴</dd>
+        <dt>监测指标</dt><dd>SenseNova 市场份额、价格战烈度、客户流失率</dd>
+        <dt>时间窗口</dt><dd>2026-2027 年（AI 大模型市场整合期）</dd>
+        <dt>对采购的影响</dt><dd>价格可能进一步下降，但服务质量也可能受影响</dd>
+        <dt>对投资的影响</dt><dd>收入增长和毛利率承压</dd>
+        <dt>管理层动作</dt><dd>关注 SenseNova 付费档位定价策略</dd>
+      </dl>
+    </div>
+
+    <div class="risk-detail">
+      <h4>组织和人才稳定性风险 <span class="risk-level medium">中风险</span></h4>
+      <dl>
+        <dt>当前状态</dt><dd>2024-2025 年持续组织调整，"1+X" 战略下部分业务独立运营</dd>
+        <dt>监测指标</dt><dd>核心人才流失率、管理层变动、研发人员规模</dd>
+        <dt>时间窗口</dt><dd>持续</dd>
+        <dt>对采购的影响</dt><dd>交付能力和产品迭代速度受影响</dd>
+        <dt>对投资的影响</dt><dd>长期竞争力存疑</dd>
+        <dt>管理层动作</dt><dd>关注季度报告中的人员变动披露</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TAB: APPENDIX -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-appendix">
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>关键指标口径</h2>
+    <table>
+      <thead><tr><th>指标</th><th>口径说明</th></tr></thead>
+      <tbody>
+        <tr><td>营收</td><td>人民币（RMB）为法定报告币种，港元（HKD）为换算值（汇率约 1.11）</td></tr>
+        <tr><td>净亏损</td><td>经审计年报（2024）/ 官方新闻稿（2025，以经审计年报为准）</td></tr>
+        <tr><td>PB</td><td>基于 2026 年 7 月 21 日实时股价</td></tr>
+        <tr><td>增长率</td><td>由程序复算（营收同比、亏损同比、GenAI 收入同比）</td></tr>
+        <tr><td>现金跑道</td><td>情景估算，非确定事实</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>参考来源</h2>
+    <ol class="source-list">
+      <li>SenseTime 2024 Annual Results Announcement（港交所披露易，2025-03-26）— ✅ 已验证（58 页 PDF）</li>
+      <li>SenseTime 2023 Annual Results Announcement（港交所披露易，2024-03-26）— ✅ 已验证（59 页 PDF）</li>
+      <li>SenseTime 2022 Annual Results Announcement（港交所披露易，2023-03-28）— ✅ 已验证（64 页 PDF）</li>
+      <li>SenseTime 2021 Annual Results Announcement（港交所披露易，2022-03-25）— ✅ 已验证（51 页 PDF）</li>
+      <li>SenseTime 2025 年度业绩新闻稿（2026-03-25）— ✅ 新闻稿（以经审计年报为准）</li>
+      <li>SenseNova V6.5 Pro SuperCLUE Benchmark（2026-01-12）— ✅ 已验证</li>
+      <li>商汤科技 00020.HK 实时股价（东方财富，2026-07-21）— ✅ 已验证</li>
+      <li>美国商务部实体清单（BIS Entity List）— ✅ 已验证</li>
+      <li>中国 AI 与数据监管政策（算法备案、大模型安全评估）— ✅ 已验证</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>证据缺口</h2>
+    <table>
+      <thead><tr><th>缺失项</th><th>状态</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>券商评级和目标价</td><td class="danger">❌ 未解决</td><td>东方财富 HSF10 显示无覆盖</td></tr>
+        <tr><td>SLA 服务等级协议</td><td class="danger">❌ 未解决</td><td>公测期未公开，付费版待上线</td></tr>
+        <tr><td>第三方客户满意度</td><td class="danger">❌ 未解决</td><td>仅定性描述，无量化数据</td></tr>
+        <tr><td>IDC 精确市场份额</td><td class="danger">❌ 未解决</td><td>仅有定性梯队描述</td></tr>
+        <tr><td>产品付费档位定价</td><td class="danger">❌ 未解决</td><td>尚未上线</td></tr>
+        <tr><td>2025 年度经审计年报</td><td class="warn">⏳ 已发布</td><td>2026 年 3 月发布，本报告引用新闻稿口径</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="dot"></span>事实、分析推断和建议的区别</h2>
+    <div class="callout callout-success">
+      <span class="icon">✅</span>
+      <span><strong>已核实事实：</strong>商汤财务数据（2024 年报 + 2025 新闻稿）、实时股价、估值、美国实体清单、SenseNova 标杆排名</span>
+    </div>
+    <div class="callout callout-info">
+      <span class="icon">📊</span>
+      <span><strong>基于事实的分析推断：</strong>竞争位置、产品生态成熟度、盈利路径</span>
+    </div>
+    <div class="callout">
+      <span class="icon">💡</span>
+      <span><strong>研究者建议：</strong>采购分级建议、投资观察等级、90 天 POC 计划</span>
+    </div>
+    <div class="callout callout-danger">
+      <span class="icon">⚠️</span>
+      <span><strong>仍待验证的信息：</strong>券商评级、SLA、第三方客户满意度</span>
+    </div>
+  </div>
+
+  <div class="footnote">
+    <p>本报告基于公开信息编制，非投资建议。具体投资决策需专业机构评估。</p>
+    <p class="disclaimer">标注为厂商自述的数据未经独立第三方验证，以港交所经审计年报为准。2025 年财务数据基于商汤官方新闻稿，最终以港交所披露的经审计年报为准。</p>
+  </div>
+</div>
+
+</div><!-- /.page -->
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const tabBar = document.getElementById('tabBar');
+  const tabs = tabBar.querySelectorAll('.tab-btn');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabId = this.getAttribute('data-tab');
+      // Deactivate all
+      tabs.forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      // Activate clicked
+      this.classList.add('active');
+      const content = document.getElementById('tab-' + tabId);
+      if (content) content.classList.add('active');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -90,9 +90,9 @@ function cleanVenue(raw) {
  * @returns {{date: string|null, time: string|null, venue: string|null}}
  */
 function extractLabels(cardHtml) {
-  const date = cardHtml.match(/日期[：:]\s*([^<]+)/i)?.[1]?.trim() || null;
-  const time = cardHtml.match(/时间[：:]\s*([^<]+)/i)?.[1]?.trim() || null;
-  const venue = cardHtml.match(/地点[：:]\s*([^<]+)/i)?.[1]?.trim() || null;
+  const date = cardHtml.match(/日期(?:\s*Date)?[：:]\s*([^<]+)/i)?.[1]?.trim() || null;
+  const time = cardHtml.match(/时间(?:\s*Time)?[：:]\s*([^<]+)/i)?.[1]?.trim() || null;
+  const venue = cardHtml.match(/地点(?:\s*Venue)?[：:]\s*([^<]+)/i)?.[1]?.trim() || null;
   return { date, time, venue };
 }
 
@@ -142,10 +142,10 @@ export function parseShcstheatre(html, source) {
       ? absoluteUrl(BASE_URL, urlMatch[1])
       : source.url;
 
-    // Extract labeled metadata
-    const dateMatch = card.match(/日期[：:]\s*([^<]+)/i);
-    const timeMatch = card.match(/时间[：:]\s*([^<]+)/i);
-    const venueMatch = card.match(/地点[：:]\s*([^<]+)/i);
+    // Extract labeled metadata (labels may be bilingual: "日期 Date：")
+    const dateMatch = card.match(/日期(?:\s*Date)?[：:]\s*([^<]+)/i);
+    const timeMatch = card.match(/时间(?:\s*Time)?[：:]\s*([^<]+)/i);
+    const venueMatch = card.match(/地点(?:\s*Venue)?[：:]\s*([^<]+)/i);
 
     const date = dateMatch?.[1]?.trim() || null;
     const time = timeMatch?.[1]?.trim() || null;

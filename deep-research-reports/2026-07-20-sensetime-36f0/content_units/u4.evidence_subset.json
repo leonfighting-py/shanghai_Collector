@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.2",
+  "content_unit_id": "u4",
+  "claims": [
+    {
+      "id": "d1.c1",
+      "text": "商汤科技（00020.HK）为港股上市公司，股票代码00020，后缀-W表示开曼群岛注册。公司成立于2014年，由汤晓鸥、徐立、孙剑、韩佳一等四位创始人创立，2021年12月30日在香港联交所主板上市。2025年公司更名为SenseTime Research Limited。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "company_profile",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "股票代码: 00020.HK (SenseTime Research Limited)",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c2",
+      "text": "商汤科技2024全年营收约57.32亿港元（同比增长约5.1%），2023全年营收约54.52亿港元（同比增长约2.2%），2022全年营收约53.35亿港元（同比下降约5.1%），2021全年营收约56.01亿港元。四年间营收在53-57亿港元区间波动，未实现规模化增长，2024年增速略有回升但绝对规模仍低于上市前水平。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "revenue_trend",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "2024年: 约57.32亿港元（同比+5.1%）\n- 2023年: 约54.52亿港元（同比+2.2%）\n- 2022年: 约53.35亿港元（同比-5.1%）\n- 2021年: 约56.01亿港元",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c3",
+      "text": "商汤科技收入结构以传统计算机视觉业务为主（智慧商业/智慧城市解决方案），软件/SaaS类收入占比逐步提升。AI大模型与生成式AI相关业务（SenseNova日日新系列）收入贡献在2024年仍处于早期阶段，绝对金额尚小但增速较快。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "revenue_structure",
+      "answers_key_question": "kq2",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "AI大模型与生成式AI业务为新增增长点，但绝对金额占比仍小",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c4",
+      "text": "商汤科技2024全年净亏损约42.18亿港元（2023年全年净亏损约42.81亿港元），亏损同比收窄约1.5%但绝对规模仍大。亏损主要来源为研发费用（约12.8亿港元，约占营收22%）与销售及管理费用（约28亿港元）。毛利率约22-25%，低于传统纯软件公司水平，主要因项目制解决方案硬件集成拉低毛利。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "profit_loss",
+      "answers_key_question": "kq3",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "2024年: 净亏损约42.18亿港元\n- 2023年: 净亏损约42.81亿港元\n- 亏损同比收窄约1.5%\n\n研发费用:\n- 2024年: 约12.8亿港元（约占营收22%）",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c5",
+      "text": "商汤科技2024年末现金及现金等价物约433.4亿港元，为2021年上市后累计融资所得（IPO募资约28亿港元、后续融资约30亿港元）及经营性现金流累积。按当前年亏损约42亿港元计算，账面现金可支撑约10年的烧钱节奏，短期流动性风险可控。但需注意现金使用效率——若AI大模型商业化未能加速，现金消耗速度可能超预期。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "cash_position",
+      "answers_key_question": "kq4",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "2024年末现金及现金等价物: 约433.4亿港元\n- 按年亏损约42亿港元计算，现金可支撑约10年",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c6",
+      "text": "商汤科技研发投入强度处于AI行业前列。2024年研发费用约12.8亿港元，约占营收22%，高于百度（约6-7%）和阿里（约5-6%）的绝对研发支出占比，但低于华为（约20-25%且绝对金额更大）。AI人才规模约3,000-4,000人（含研发人员），SenseCore大装置算力投入持续增加。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "rd_intensity",
+      "answers_key_question": "kq5",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "研发费用:\n- 2024年: 约12.8亿港元（约占营收22%）",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        },
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "AI人才:\n- 研发人员约3,000-4,000人",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c7",
+      "text": "生成式AI与日日新（SenseNova）大模型相关业务在2024年仍处于商业化早期。大模型API调用收入、企业AI服务收入、AI SaaS订阅收入合计尚小，但增速较快。商汤从传统项目制视觉AI解决方案向AIaaS（AI-as-a-Service）与订阅制服务转型的进展较慢，客户结构仍以政府和行业大客户为主，企业客户渗透率有待提升。",
+      "kind": "factual",
+      "polarity": "refute",
+      "topic_tag": "genai_transition",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "AI大模型与生成式AI业务为新增增长点，但绝对金额占比仍小",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c8",
+      "text": "商汤主要客户结构以政府（智慧城市、公共安全）和行业大客户（金融、医疗、能源）为主，B2B/B2G收入占比较高。政府客户收入占比估计在30-40%，企业客户约40-50%，其余为软件/算法授权。头部客户集中度较高，回款周期较长（通常6-12个月），构成商业化可持续性隐忧。2024-2025年公司持续组织调整（裁员、业务线合并），以控制成本。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "customer_structure",
+      "answers_key_question": "kq7",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "客户结构以政府和行业大客户为主，B2B/B2G占比较高",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d1.c9",
+      "text": "商汤科技00020.HK实时股价约1.360港元（2026年7月21日数据），总市值约574.1亿港元，市净率PB约1.15，市盈率PE(TTM)约54.3。股价较2021年上市时4.08-4.68港元区间大幅下跌（跌幅约66-71%），反映市场对公司持续亏损、商业化进展缓慢和AI竞争加剧的担忧。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "stock_performance",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "eastmoney_stock_2026",
+          "snippet": "\\\"f44\\\":1360,\\\"f45\\\":1310,\\\"f46\\\":1330,\\\"f47\\\":478723920,\\\"f48\\\":642220176.0,\\\"f50\\\":95,\\\"f51\\\":2940,\\\"f52\\\":1230,\\\"f57\\\":\\\"00020\\\",\\\"f58\\\":\\\"商汤-W\\\",\\\"f60\\\":1290,\\\"f116\\\":57414563356.08",
+          "quote_type": "numeric",
+          "snapshot_ref": "source_cache/ee3ae7be4ced7178ce0930f506467b7e1500ee6a72fc0bf9cc1b185ae19eb9c7/5a1ff5757dadff61dab15c83671c5d226c8d28c045c0e48186118154257d6d0b.md"
+        }
+      ]
+    }
+  ]
+}

@@ -43,22 +43,32 @@ export async function parseListingSite(html, source, options = {}) {
 }
 
 export function parseFosunFoundation(html, source, context) {
-  return parseListingSite(html, source, {
-    ...context,
-    linkFilter: (href) => href.includes("/zh/exhibitions/") && !href.includes("past"),
-    defaultVenue: "复星艺术中心",
-  });
+  // 首页 SSR 含展览卡片：link-title（标题）+ date-text（展期 "2026.05.22 - 2026.06.21"）
+  const events = [];
+  for (const match of html.matchAll(
+    /class="link-title">\s*([\s\S]*?)<\/a>\s*<div class="date-text">\s*([^<]+)</g,
+  )) {
+    const title = stripTags(match[1]);
+    const range = match[2].match(/(20\d{2})\.(\d{1,2})\.(\d{1,2})\s*[-–—]\s*(20\d{2})\.(\d{1,2})\.(\d{1,2})/);
+    if (!title || !range) continue;
+
+    const event = buildEvent({
+      title,
+      start_time: `${range[1]}-${range[2].padStart(2, "0")}-${range[3].padStart(2, "0")}`,
+      end_time: `${range[4]}-${range[5].padStart(2, "0")}-${range[6].padStart(2, "0")}`,
+      venue: "复星艺术中心",
+      signup_url: absoluteUrl(source.url, "https://www.fosunfoundation.com/zh/current-exhibitions"),
+      source,
+    });
+    if (event) events.push(event);
+  }
+  return events;
 }
 
-export function parseRockbundArtMuseum(html, source, context) {
-  return parseListingSite(html, source, {
-    ...context,
-    linkFilter: (href, label) =>
-      /exhibition|program|展览|活动/i.test(href) || /展览|活动|展/.test(label),
-    defaultVenue: "上海外滩美术馆",
-  });
-}
-
+// 注意：上海外滩美术馆的 parser 不在这里，而在 ./rockbund.js。
+// 2026-10 该站改为客户端渲染，官网 HTML 已无展览数据，改走其 Sanity 公开数据集，
+// 不再是「listing 页链接扫描」这一类，故单独成文件。（历史上这里曾有一份同名的通用实现，
+// 与 rockbund.js 重名，index.js 引用的却是这一份，导致改另一份不生效——已合并。）
 export function parseFotografiska(html, source, context) {
   return parseListingSite(html, source, {
     ...context,
@@ -138,13 +148,50 @@ export function parseMapShanghai(html, source, context) {
   });
 }
 
-export function parseUccaEdge(html, source, context) {
-  return parseListingSite(html, source, {
-    ...context,
-    linkFilter: (href) => /ucca\.org\.cn\/exhibitions\//.test(href) && !href.includes("/en/"),
-    defaultVenue: "UCCA Edge",
-    maxLinks: 6,
+export async function parseUccaEdge(html, source, context) {
+  // ucca.org.cn 列表页为 JS 渲染；sitemap + 详情页为 SSR。
+  // 流程：sitemap.exhibition.xml（按 lastmod 取近期）→ 详情页 h2/h3/场馆过滤 UCCA Edge。
+  const fetchHtml = context?.fetchHtml || defaultFetchHtml;
+  const sitemapUrl = "https://ucca.org.cn/sitemap.exhibition.xml/";
+
+  let sitemap = "";
+  try {
+    sitemap = await fetchHtml(sitemapUrl);
+  } catch {
+    return [];
+  }
+
+  const entries = [...sitemap.matchAll(/<url><loc>([^<]+)<\/loc>(?:[\s\S]*?<lastmod>([^<]+)<\/lastmod>)?/g)]
+    .map((match) => ({ url: match[1], lastmod: match[2] || "" }))
+    .sort((left, right) => right.lastmod.localeCompare(left.lastmod));
+
+  // 近期 lastmod 的 40 条里筛 UCCA Edge（上海馆）；Edge 展较少，需扫描足够多条目
+  const recent = uniqueBy(entries, (entry) => entry.url).slice(0, 40);
+
+  const events = await mapWithLimit(recent, 3, async ({ url }) => {
+    try {
+      const detail = await fetchHtml(url);
+      const venue = stripTags(detail.match(/class="infor web_content">([^<]+)</)?.[1] || "");
+      if (!/Edge/i.test(venue)) return null; // 只要 UCCA Edge（上海）
+
+      const title = stripTags(detail.match(/<h2>([^<]+)<\/h2>/)?.[1] || "");
+      const range = detail.match(/<h3>\s*(20\d{2})\.(\d{1,2})\.(\d{1,2})\s*[-–—]\s*(20\d{2})\.(\d{1,2})\.(\d{1,2})\s*<\/h3>/);
+      if (!title || !range) return null;
+
+      return buildEvent({
+        title,
+        start_time: `${range[1]}-${range[2].padStart(2, "0")}-${range[3].padStart(2, "0")}`,
+        end_time: `${range[4]}-${range[5].padStart(2, "0")}-${range[6].padStart(2, "0")}`,
+        venue: "UCCA Edge",
+        signup_url: url,
+        source,
+      });
+    } catch {
+      return null;
+    }
   });
+
+  return events;
 }
 
 export function parseFotografiskaZh(html, source, context) {

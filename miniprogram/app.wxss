@@ -1,0 +1,106 @@
+page {
+  /* ============================================================
+     设计 token —— 「素白」杂志编辑风，与 Web 端同一套
+     唯一真源：src/app/styles.css 顶部的 :root
+     纯色纸底 + 墨色文字 + 细线分隔 + 一个取自封面插画的珊瑚橙强调色。
+     没有卡片、玻璃、模糊、圆角；层次只靠字号、字重和线。
+     深浅色跟随系统（app.json 的 darkmode + theme.json）。
+     ============================================================ */
+  --paper: #fbfaf7;
+  --paper-2: #f0eeea;
+  --ink: #191817;
+  --ink-2: #5f5d59;
+  --ink-3: #918e89;
+  --hair: rgba(25, 24, 23, 0.14);
+  --accent: #c4472a;
+  --skeleton: rgba(25, 24, 23, 0.07);
+
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    --paper: #201f1d;
+    --paper-2: #2e2c2a;
+    --ink: #efede8;
+    --ink-2: #aba8a2;
+    --ink-3: #77746f;
+    --hair: rgba(239, 237, 232, 0.16);
+    --accent: #f08a5d;
+    --skeleton: rgba(239, 237, 232, 0.08);
+  }
+}
+
+/* 标题与日期数字用系统宋体。iOS 有 Songti SC；
+   没有宋体的 Android 机型会回落到系统黑体，版式不受影响。 */
+.serif {
+  font-family: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "STSong", serif;
+}
+
+.muted {
+  color: var(--ink-2);
+}
+
+.eyebrow {
+  font-size: 20rpx;
+  letter-spacing: 0.18em;
+  color: var(--ink-2);
+}
+
+.state {
+  padding: 96rpx 32rpx;
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 26rpx;
+}
+
+/* 按钮：直角。主按钮墨底纸字，次按钮墨色描边 */
+.btn-primary,
+.btn-plain {
+  border-radius: 0;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 92rpx;
+  height: 92rpx;
+  padding: 0;
+  text-align: center;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-plain {
+  background: transparent;
+  color: var(--ink);
+  border: 2rpx solid var(--ink);
+}
+
+.btn-primary::after,
+.btn-plain::after {
+  border: none;
+}
+
+/* ============================================================
+   骨架屏
+   ============================================================ */
+@keyframes wb-shimmer {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton {
+  background: var(--skeleton);
+  animation: wb-shimmer 1.4s ease-in-out infinite;
+}

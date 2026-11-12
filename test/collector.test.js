@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { collectEventsFromSources, SOURCE_SEEDS } from "../src/lib/collector.js";
+import { collectEventsFromSources, createHostThrottle, SOURCE_SEEDS, classifyFailure, describeError } from "../src/lib/collector.js";
 import { SAMPLE_EVENTS } from "../src/lib/sample-events.js";
 
 test("source seeds cover each required category with enough recall depth", () => {
@@ -14,7 +14,8 @@ test("source seeds cover each required category with enough recall depth", () =>
   assert.ok(counts["展览"] >= 8);
   assert.ok(counts["线下活动"] >= 6);
   assert.ok(counts["高校讲座"] >= 4);
-  assert.ok(counts["AI聚会"] >= 5);
+  // AI聚会 4 个源（原第 5 个 OpenClaw 与 Lu.ma Shanghai 同 URL，纯重复已删，2026-08）
+  assert.ok(counts["AI聚会"] >= 4);
 });
 
 test("source seeds include a strong Chinese primary layer", () => {
@@ -68,9 +69,240 @@ test("collector keeps last published data when every source fails", async () => 
     previousEvents: previous,
     fetchHtml: async () => "<html></html>",
     now: "2026-05-22T08:00:00+08:00",
+    hostMinIntervalMs: 0,
   });
 
   assert.equal(result.events, previous);
   assert.equal(result.ok, false);
   assert.equal(result.failures.length, 1);
+});
+
+test("collector runs sources with bounded concurrency and still isolates failures", async () => {
+  let running = 0;
+  let maxRunning = 0;
+  const makeSource = (name) => ({
+    name,
+    url: `https://example.test/${name}`,
+    category: "线下活动",
+    parser: async () => {
+      running += 1;
+      maxRunning = Math.max(maxRunning, running);
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      running -= 1;
+      return [];
+    },
+  });
+
+  const result = await collectEventsFromSources({
+    sources: ["a", "b", "c", "d", "e", "f"].map(makeSource),
+    fetchHtml: async () => "<html></html>",
+    now: "2026-05-22T08:00:00+08:00",
+    concurrency: 3,
+    hostMinIntervalMs: 0,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.failures.length, 0);
+  assert.ok(maxRunning <= 3, `并发度不应超过 3，实际峰值 ${maxRunning}`);
+  assert.ok(maxRunning >= 2, `应观察到并发执行，峰值仅 ${maxRunning}`);
+});
+
+// 池子里 37 个主机挂了 2 个以上源（douban.com 9 个，同批最多 4 个并发打同一站），
+// Eventbrite 26 个源 + 活动行 16 个源就是被整站反爬拦掉后停采的 → 同一 host 必须串行 + 限速。
+test("hostThrottle: 同一 host 串行且相邻请求至少隔 minIntervalMs，不同 host 互不等待", async () => {
+  const schedule = createHostThrottle({ minIntervalMs: 40 });
+  const marks = [];
+  const task = (label, ms) => async () => {
+    marks.push({ label: `start:${label}`, at: Date.now() });
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    marks.push({ label: `end:${label}`, at: Date.now() });
+    return label;
+  };
+
+  // 注意第一条带 www. 前缀：www.a.test 与 a.test 必须算同一个 host
+  const results = await Promise.all([
+    schedule("https://www.a.test/1", task("a1", 10)),
+    schedule("https://a.test/2", task("a2", 10)),
+    schedule("https://b.test/1", task("b1", 40)),
+  ]);
+
+  assert.deepEqual(results, ["a1", "a2", "b1"]);
+  assert.deepEqual(
+    marks.filter((item) => /a[12]$/.test(item.label)).map((item) => item.label),
+    ["start:a1", "end:a1", "start:a2", "end:a2"],
+    "同一 host 的请求不能重叠",
+  );
+
+  const at = (label) => marks.find((item) => item.label === label).at;
+  assert.ok(at("start:a2") - at("end:a1") >= 30, `间隔应 ≥40ms，实际 ${at("start:a2") - at("end:a1")}ms`);
+  assert.ok(at("start:b1") - marks[0].at < 30, `不同 host 应并行，b1 却等了 ${at("start:b1") - marks[0].at}ms`);
+});
+
+test("hostThrottle: 前一个请求失败不会卡住该 host 后续请求", async () => {
+  const schedule = createHostThrottle({ minIntervalMs: 0 });
+  await assert.rejects(
+    () =>
+      schedule("https://c.test/1", async () => {
+        throw new Error("boom");
+      }),
+    /boom/,
+  );
+  assert.equal(await schedule("https://c.test/2", async () => "ok"), "ok");
+});
+
+test("collector: 同 host 的源串行、跨 host 并行，详情请求也走同一条队列", async () => {
+  const peakInFlight = async (urls) => {
+    let inFlight = 0;
+    let peak = 0;
+    const fetchHtml = async () => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      inFlight -= 1;
+      return "<html></html>";
+    };
+    const sources = urls.map((url, index) => ({
+      name: `s${index}`,
+      url,
+      category: "线下活动",
+      // 每个源再抓一个详情页：列表页和详情页共用同一条 host 队列
+      parser: async (html, source, { fetchHtml: detailFetch }) => {
+        await detailFetch(`${source.url}/detail`);
+        return [];
+      },
+    }));
+    await collectEventsFromSources({
+      sources,
+      fetchHtml,
+      now: "2026-05-22T08:00:00+08:00",
+      concurrency: 2,
+      hostMinIntervalMs: 20,
+      respectRobots: false,
+    });
+    return peak;
+  };
+
+  assert.equal(await peakInFlight(["https://same.test/a", "https://same.test/b"]), 1, "同一 host 同时只应有 1 个请求");
+  assert.equal(await peakInFlight(["https://x.test/a", "https://y.test/b"]), 2, "不同 host 应并行，不该被一起排队");
+});
+
+test("collector tags failures with structured kind", async () => {
+  const result = await collectEventsFromSources({
+    sources: [
+      {
+        name: "Timeout",
+        url: "https://example.test/timeout",
+        category: "展览",
+        parser: () => {
+          const error = new Error("Timeout timed out after 45s");
+          throw error;
+        },
+        timeoutMs: 50,
+      },
+      {
+        name: "NotFound",
+        url: "https://example.test/missing",
+        category: "展览",
+        parser: () => {
+          throw new Error("HTTP 404");
+        },
+      },
+    ],
+    fetchHtml: async () => "<html></html>",
+    now: "2026-05-22T08:00:00+08:00",
+    hostMinIntervalMs: 0,
+  });
+
+  assert.equal(result.failures.length, 2);
+  const byName = Object.fromEntries(result.failures.map((f) => [f.source, f]));
+  assert.equal(byName.Timeout.kind, "timeout");
+  assert.equal(byName.NotFound.kind, "http_4xx");
+});
+
+test("classifyFailure buckets error messages reliably", () => {
+  const cases = [
+    ["Connection timed out after 45s", "timeout"],
+    ["timed out", "timeout"],
+    ["超时", "timeout"],
+    ["HTTP 429", "rate_limited"],
+    ["HTTP 403", "http_4xx"],
+    ["HTTP 404 Not Found", "http_4xx"],
+    ["HTTP 502 Bad Gateway", "http_5xx"],
+    ["fetch failed", "network"],
+    ["getaddrinfo ENOTFOUND example.com", "network"],
+    ["Unexpected token < in JSON", "parse"],
+    ["无法解析页面", "parse"],
+    ["some weird error", "unknown"],
+  ];
+  for (const [message, expected] of cases) {
+    assert.equal(classifyFailure(message), expected, `classifyFailure(${JSON.stringify(message)})`);
+  }
+});
+
+// 2026-10-13 / 10-15 嘉定图书馆源连续两轮告警的 message 只有「fetch failed」，
+// 分不清是连接被丢包、端口被拒还是 IPv6 无路由 —— 单靠这条信息没法决定是补源还是改解析。
+test("describeError: 把 undici 藏在 cause 里的失败机制拼进 message", () => {
+  const error = new TypeError("fetch failed");
+  error.cause = Object.assign(new Error("Connect Timeout Error"), { code: "UND_ERR_CONNECT_TIMEOUT" });
+  assert.equal(describeError(error), "fetch failed (UND_ERR_CONNECT_TIMEOUT)");
+});
+
+test("describeError: happy-eyeballs 的 AggregateError 逐个列出地址与报错码", () => {
+  const error = new TypeError("fetch failed");
+  error.cause = new AggregateError(
+    [
+      Object.assign(new Error("connect ENETUNREACH 240e:688:400:3d8::90:80"), {
+        code: "ENETUNREACH",
+        address: "240e:688:400:3d8::90",
+        port: 80,
+      }),
+      Object.assign(new Error("connect ECONNREFUSED 58.34.40.88:80"), {
+        code: "ECONNREFUSED",
+        address: "58.34.40.88",
+        port: 80,
+      }),
+    ],
+    "All connection attempts failed",
+  );
+  assert.equal(describeError(error), "fetch failed (ENETUNREACH 240e:688:400:3d8::90:80, ECONNREFUSED 58.34.40.88:80)");
+});
+
+test("describeError: 没有 cause 保持原样，cause 无 code 退回 name: message", () => {
+  assert.equal(describeError(new Error("HTTP 403")), "HTTP 403");
+  assert.equal(describeError("非 Error 的抛出值"), "非 Error 的抛出值");
+
+  const error = new TypeError("fetch failed");
+  error.cause = new DOMException("The operation was aborted due to timeout", "TimeoutError");
+  assert.equal(describeError(error), "fetch failed (TimeoutError: The operation was aborted due to timeout)");
+});
+
+test("describeError: 循环引用不死循环，深度超限停手", () => {
+  const outer = new TypeError("fetch failed");
+  const inner = new Error("inner reason");
+  outer.cause = inner;
+  inner.cause = outer;
+  assert.equal(describeError(outer), "fetch failed (inner reason)");
+});
+
+test("retired off-domain sources are excluded from the active seed set", () => {
+  const names = new Set(SOURCE_SEEDS.map((source) => source.name));
+
+  // 赢商网是商业地产门户（notes 写明"新店开业/品牌首店资讯"），整站产出商业地产新闻，
+  // 不是活动源。2026-10 实测 16 条全部是外地项目资讯，已退休。
+  assert.equal(names.has("赢商网"), false);
+  assert.equal(names.has("赢商网·华东"), false);
+
+  // 2026-10-28：站点本身没了，不是解析问题。
+  // · 立信科研处 kyc.lixin.edu.cn 连根路径都 403（同域 www.lixin.edu.cn 200）；
+  // · 上大英文站 en.shu.edu.cn 的 80/443 都是 ECONNREFUSED（主站 200）。
+  // 两条都由同类替代源覆盖（立信 2 个、上大 7 个），故退休。复活＝删掉停采清单里的名字。
+  assert.equal(names.has("上海立信·科研处学术活动"), false);
+  assert.equal(names.has("上海大学·学术讲座（英文站）"), false);
+
+  // 反例：带"通知公告"字样的栏目**不能**整类退休 —— 池子里有十几个，
+  // 其中确有带真讲座的（如"复旦智能材料学院·通知公告"）。这类只能靠标题特征过滤。
+  assert.ok(
+    [...names].some((name) => name.includes("通知公告")),
+    "通知公告类栏目应仍有保留，靠 NEWS_TITLE_PATTERNS 做标题级剔除",
+  );
 });

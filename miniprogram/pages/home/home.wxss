@@ -1,0 +1,552 @@
+/* 首页没有系统导航栏（navigationStyle: custom），页面自己从屏幕最顶端开始画 */
+
+/* ---------- 自定义标题栏 ---------- */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: background-color 0.2s;
+}
+
+.nav-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.nav-solid {
+  background: var(--paper);
+}
+
+.nav-solid .nav-title {
+  opacity: 1;
+}
+
+/* ---------- 封面 ---------- */
+.cover {
+  position: relative;
+  height: 744rpx;
+  overflow: hidden;
+  background: #0b3039;
+  color: #fff5e8;
+}
+
+.cover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cover-scrim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(3, 23, 30, 0.94), rgba(3, 23, 30, 0.25) 55%, rgba(3, 23, 30, 0.3));
+}
+
+.cover-body {
+  position: absolute;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: 44rpx;
+}
+
+.cover-title {
+  font-size: 80rpx;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.cover-dot {
+  color: #ffb97c;
+}
+
+.cover-stats {
+  display: flex;
+  gap: 44rpx;
+  margin-top: 32rpx;
+  padding-top: 28rpx;
+  border-top: 1rpx solid rgba(255, 245, 232, 0.25);
+}
+
+.cover-stat {
+  font-size: 22rpx;
+  color: #c6d2cb;
+}
+
+.cover-num {
+  display: block;
+  font-size: 44rpx;
+  line-height: 1.1;
+  font-weight: 500;
+  color: #fff5e8;
+}
+
+/* ---------- 搜索 ---------- */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 32rpx 32rpx 0;
+  padding: 0 28rpx;
+  background: var(--paper-2);
+}
+
+.search-input {
+  flex: 1;
+  height: 80rpx;
+  font-size: 26rpx;
+}
+
+.search-ph {
+  color: var(--ink-3);
+}
+
+.search-clear {
+  color: var(--ink-2);
+  font-size: 24rpx;
+  padding: 8rpx;
+}
+
+/* 缓存提示：只在用旧数据铺页面时出现，比整屏报错轻 */
+.cache-note {
+  margin: 20rpx 32rpx 0;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* ---------- 正在进行：竖版海报横滑 ---------- */
+.rail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 40rpx 32rpx 20rpx;
+}
+
+.rail-title {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.rail-count {
+  font-size: 24rpx;
+  color: var(--ink-2);
+}
+
+.rail {
+  white-space: nowrap;
+  padding-left: 32rpx;
+  box-sizing: border-box;
+}
+
+.poster {
+  display: inline-block;
+  width: 224rpx;
+  margin-right: 24rpx;
+  vertical-align: top;
+  white-space: normal;
+}
+
+/* 封面槽：底下垫类目字样，图盖在上面 —— 无图 / 裂图时不留空白洞 */
+.poster-cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 298rpx;
+  background: var(--paper-2);
+}
+
+.poster-fallback {
+  font-size: 32rpx;
+  letter-spacing: 0.2em;
+  color: var(--ink-3);
+}
+
+.poster-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.poster-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.poster-meta {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+/* ---------- 吸顶筛选条 ---------- */
+.sticky {
+  position: sticky;
+  z-index: 20;
+  margin-top: 36rpx;
+  background: var(--paper);
+  border-top: 1rpx solid var(--hair);
+  border-bottom: 2rpx solid var(--ink);
+}
+
+.tabs-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.tabs {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 0 0 0 32rpx;
+  box-sizing: border-box;
+}
+
+/* 「筛选」入口：打开二级分类 + 区域面板，角标是已选个数 */
+.filter-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 0 28rpx;
+  border-left: 1rpx solid var(--hair);
+  font-size: 26rpx;
+  color: var(--ink-2);
+}
+
+.filter-btn-on {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.filter-count {
+  font-size: 22rpx;
+}
+
+.tab {
+  display: inline-block;
+  margin-right: 44rpx;
+  padding: 26rpx 0 20rpx;
+  font-size: 34rpx;
+  color: var(--ink-2);
+  border-bottom: 4rpx solid transparent;
+}
+
+.tab-on {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.chips {
+  white-space: nowrap;
+  border-top: 1rpx solid var(--hair);
+}
+
+.chip {
+  display: inline-block;
+  width: 100rpx;
+  padding: 12rpx 0 16rpx;
+  text-align: center;
+  border-right: 1rpx solid var(--hair);
+  vertical-align: top;
+}
+
+.chip-week {
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.chip-day {
+  font-size: 34rpx;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.chip-weekend .chip-week {
+  color: var(--accent);
+}
+
+/* 填充 = 当前滚动到的那一天（跟着页面走）；「今天」只用强调色数字标记 */
+.chip-today .chip-day {
+  color: var(--accent);
+}
+
+.chip-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.chip-active .chip-week {
+  color: var(--paper);
+  opacity: 0.7;
+}
+
+.chip-active .chip-day {
+  color: var(--paper);
+}
+
+
+
+.chip-empty {
+  opacity: 0.35;
+}
+
+/* ---------- 日程表 ---------- */
+.day {
+  padding: 0 32rpx;
+}
+
+.day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16rpx;
+  padding: 44rpx 0 12rpx;
+}
+
+.day-num {
+  font-size: 80rpx;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.day-week {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.day-meta {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+
+.day-head-today .day-num,
+.day-head-today .day-week {
+  color: var(--accent);
+}
+
+.fold {
+  display: flex;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-top: 1rpx solid var(--hair);
+  font-size: 24rpx;
+  color: var(--ink-2);
+}
+
+/* ---------- 「展期中」底部面板 ---------- */
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(10, 10, 9, 0.5);
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 80vh;
+  background: var(--paper);
+  border-top: 6rpx solid var(--ink);
+}
+
+.drawer-head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 32rpx 32rpx 24rpx;
+  border-bottom: 2rpx solid var(--ink);
+}
+
+.drawer-title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.drawer-day {
+  margin-right: 16rpx;
+  font-size: 72rpx;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.drawer-meta {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--ink-2);
+}
+
+.drawer-close {
+  flex: none;
+  padding: 12rpx 24rpx;
+  border: 2rpx solid var(--ink);
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.drawer-body {
+  flex: 1;
+  height: 0;
+  padding: 0 32rpx;
+  box-sizing: border-box;
+}
+
+.drawer-end {
+  height: 48rpx;
+}
+
+/* ---------- 加载 / 错误 ---------- */
+.skeleton-row {
+  display: flex;
+  gap: 24rpx;
+  margin: 0 32rpx;
+  padding: 28rpx 0;
+  border-top: 1rpx solid var(--hair);
+}
+
+.skeleton-row:first-of-type {
+  margin-top: 40rpx;
+}
+
+.skeleton-time {
+  width: 84rpx;
+  height: 32rpx;
+}
+
+.skeleton-body {
+  flex: 1;
+}
+
+.skeleton-line {
+  height: 36rpx;
+}
+
+.skeleton-line-short {
+  width: 55%;
+  height: 24rpx;
+  margin-top: 16rpx;
+}
+
+.skeleton-thumb {
+  width: 128rpx;
+  height: 128rpx;
+}
+
+.retry {
+  width: 240rpx;
+  margin: 32rpx auto 0;
+}
+
+/* 排查期展示服务端返回体，不换行过长则自动折行 */
+.err-detail {
+  margin-top: 16rpx;
+  padding: 0 32rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: var(--ink-2);
+  word-break: break-all;
+}
+
+/* ---------- 筛选面板（二级分类 + 区域） ---------- */
+.filter-drawer {
+  height: 62vh;
+}
+
+.filter-label {
+  padding: 36rpx 0 16rpx;
+  font-size: 22rpx;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.fchip {
+  padding: 12rpx 26rpx;
+  border: 1rpx solid var(--hair);
+  font-size: 26rpx;
+  color: var(--ink-2);
+}
+
+.fchip-on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.filter-note {
+  margin-top: 40rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.filter-actions {
+  flex: none;
+  display: flex;
+  border-top: 2rpx solid var(--ink);
+}
+
+.filter-reset,
+.filter-done {
+  flex: 1;
+  padding: 28rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.filter-reset {
+  color: var(--ink-2);
+  border-right: 1rpx solid var(--hair);
+}
+
+.filter-done {
+  background: var(--ink);
+  color: var(--paper);
+}

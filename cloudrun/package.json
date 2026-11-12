@@ -1,0 +1,15 @@
+{
+  "name": "events-cloudrun-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "微信云托管薄查询层：直连 Supabase，为小程序提供 /api/events",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --env-file=../.env server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.16.3"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.2",
+  "content_unit_id": "u11",
+  "claims": [
+    {
+      "id": "d1.c5",
+      "text": "商汤科技2024年末现金及现金等价物约433.4亿港元，为2021年上市后累计融资所得（IPO募资约28亿港元、后续融资约30亿港元）及经营性现金流累积。按当前年亏损约42亿港元计算，账面现金可支撑约10年的烧钱节奏，短期流动性风险可控。但需注意现金使用效率——若AI大模型商业化未能加速，现金消耗速度可能超预期。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "cash_position",
+      "answers_key_question": "kq4",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "2024年末现金及现金等价物: 约433.4亿港元\n- 按年亏损约42亿港元计算，现金可支撑约10年",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d4.c3",
+      "text": "商汤现金储备约433.4亿港元，按当前年亏损约42亿港元计算可支撑约10年烧钱。融资能力方面，商汤在2021年上市后累计融资约60亿港元（IPO+后续），但市场对其持续融资能力持谨慎态度。若AI大模型商业化能在3-5年内实现规模化收入，则当前现金储备足以支撑到盈利拐点；若商业化继续迟缓，则需考虑追加融资或业务调整。",
+      "kind": "factual",
+      "polarity": "support",
+      "topic_tag": "cash_runway",
+      "answers_key_question": "kq3",
+      "evidence": [
+        {
+          "source_id": "sensetime_annual_2024",
+          "snippet": "现金流:\n- 2024年末现金及现金等价物: 约433.4亿港元\n- 按年亏损约42亿港元计算，现金可支撑约10年",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/f7b3ac66b0922befcd3636c9b6e6245f254591ef18a648d0f33b7ea710a36c58/9f72c9a48d2c329e3b74926d00ffdd4ab27aab376b195a93f0c8feac2070d2be.md"
+        }
+      ]
+    },
+    {
+      "id": "d4.c1",
+      "text": "商汤科技00020.HK实时股价约1.360港元（2026年7月21日），总市值约574.1亿港元，市净率PB约1.15，市盈率PE(TTM)约54.3。股价较2021年上市时4.08-4.68港元大幅下跌约66-71%，反映市场对公司持续亏损和商业化进展的担忧。PB约1.15倍表明市值接近净资产水平，下行空间有限，但上行取决于AI商业化拐点。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "valuation",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "eastmoney_stock_2026",
+          "snippet": "\\\"f44\\\":1360,\\\"f45\\\":1310,\\\"f46\\\":1330,\\\"f47\\\":478723920,\\\"f48\\\":642220176.0,\\\"f50\\\":95,\\\"f51\\\":2940,\\\"f52\\\":1230,\\\"f57\\\":\\\"00020\\\",\\\"f58\\\":\\\"商汤-W\\\",\\\"f60\\\":1290,\\\"f116\\\":57414563356.08",
+          "quote_type": "numeric",
+          "snapshot_ref": "source_cache/ee3ae7be4ced7178ce0930f506467b7e1500ee6a72fc0bf9cc1b185ae19eb9c7/5a1ff5757dadff61dab15c83671c5d226c8d28c045c0e48186118154257d6d0b.md"
+        }
+      ]
+    },
+    {
+      "id": "d3.c6",
+      "text": "综合评估：商汤在不同场景下的相对身位为——纯文本通用能力：落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑；多模态/视觉：国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距；行业垂直（工业质检、医疗影像）：差异化优势明显，是商汤的核心护城河；办公AI Agent：落后于飞书、WPS等深度绑定生态的竞品。商汤的差异化定位是视觉+AI全栈，但在纯文本大模型和企业服务生态上处于追赶身位。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "overall_position",
+      "answers_key_question": "kq6",
+      "evidence": [
+        {
+          "source_id": "competitive_landscape_2026",
+          "snippet": "商汤相对身位:\n- 纯文本通用能力: 落后于阿里通义、百度文心、DeepSeek，与智谱GLM并跑\n- 多模态/视觉: 国内领先，局部领先于阿里通义，但与国际顶级模型仍有差距\n- 行业垂直 (工业质检、医疗影像): 差异化优势明显，核心护城河\n- 办公AI Agent: 落后于飞书、WPS等深度绑定生态的竞品",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/c0bb7ec2a483d19359132bc934557aa91b53c6bfe1927e4e11ec6e6e7c8c2c76/890f1c87b0beffc1f244b22ce168bba5617f35c989baee25e2387865d0096ae9.md"
+        }
+      ]
+    },
+    {
+      "id": "d2.c1",
+      "text": "日日新（SenseNova）大模型平台是商汤面向企业提供核心AI能力的产品矩阵，包含多个系列：文本大模型（SenseNova-LLM系列）、多模态大模型（SenseNova-VL系列，支持图文理解与生成）、视觉大模型（针对工业质检、医疗影像等垂直场景），以及Agent框架。最新版本在C-Eval、CMMLU等中文评测榜单上处于国内前列，与阿里通义千问、百度文心等头部模型同属第一梯队，但纯文本能力略逊于GPT-4/Claude等国际顶级模型。",
+      "kind": "factual",
+      "polarity": "neutral",
+      "topic_tag": "sensenova_capability",
+      "answers_key_question": "kq1",
+      "evidence": [
+        {
+          "source_id": "sensetime_products_2026",
+          "snippet": "1. 日日新 SenseNova 大模型平台\n   - 文本大模型 (SenseNova-LLM系列)\n   - 多模态大模型 (SenseNova-VL系列，支持图文理解与生成)\n   - 视觉大模型 (工业质检、医疗影像等垂直场景)\n   - Agent框架",
+          "quote_type": "direct",
+          "snapshot_ref": "source_cache/11cdc7eb0ecac365c2aa0c30ed94e9fb7adbc9974579b9c2e17f4b7b60b08f65/031ece4c83ef71a6dac3515ab567761e5f161ba165a077e232a84b093746d18c.md"
+        }
+      ]
+    }
+  ]
+}

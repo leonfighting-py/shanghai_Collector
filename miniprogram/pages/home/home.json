@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "@bgTxt",
+  "usingComponents": {
+    "event-row": "/components/event-row/event-row"
+  }
+}

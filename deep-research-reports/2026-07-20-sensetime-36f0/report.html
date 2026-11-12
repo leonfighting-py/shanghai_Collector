@@ -1,0 +1,2773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商汤科技 00020.HK · 深度研究报告</title>
+<meta name="description" content="商汤科技（SenseTime Research Limited）深度研究报告：公司基本面、产品矩阵、竞争格局、财务分析与投资价值。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #070b14;
+  --surface: #0e1420;
+  --surface-2: #151c2c;
+  --text: #e6e1d4;
+  --text-2: #c4bdb0;
+  --muted: #6a7388;
+  --muted-2: #4a5366;
+  --line: #1a2336;
+  --line-2: #243049;
+  --accent: #e8a317;
+  --accent-dim: #b07a10;
+  --positive: #3fa66a;
+  --negative: #c43c4e;
+  --cool: #4a8fd4;
+
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  --step-0: 11px;
+  --step-1: 13px;
+  --step-2: 15px;
+  --step-3: 17px;
+  --step-4: 21px;
+  --step-5: 28px;
+  --step-6: 36px;
+  --step-7: 48px;
+  --step-8: 60px;
+
+  --s1: 8px;
+  --s2: 16px;
+  --s3: 24px;
+  --s4: 32px;
+  --s6: 48px;
+  --s8: 64px;
+  --s12: 96px;
+
+  --measure: 640px;
+  --wide: 1120px;
+  --page-pad: 40px;
+  --nav-width: 220px;
+
+  --radius: 2px;
+  --line-w: 1px;
+  --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --dur: 0.35s;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--step-2);
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(rgba(232, 163, 23, 0.03) 0.6px, transparent 0.6px),
+    linear-gradient(rgba(74, 143, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 143, 212, 0.03) 1px, transparent 1px);
+  background-size: 3px 3px, 56px 56px, 56px 56px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * { position: relative; z-index: 1; }
+
+::selection { background: var(--accent); color: var(--bg); }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.text-muted { color: var(--muted); }
+.text-accent { color: var(--accent); }
+.text-positive { color: var(--positive); }
+.text-negative { color: var(--negative); }
+.text-cool { color: var(--cool); }
+
+/* nav 为 fixed；main / footer 必须上下排列，不能与 nav 并排成三栏 */
+.app {
+  display: block;
+  min-height: 100vh;
+}
+
+/* —— Nav —— */
+.nav-rail {
+  position: fixed;
+  left: 0; top: 0;
+  width: var(--nav-width);
+  height: 100vh;
+  background: rgba(7, 11, 20, 0.94);
+  backdrop-filter: blur(14px);
+  border-right: var(--line-w) solid var(--line);
+  padding: var(--s4) var(--s2) var(--s3);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.nav-brand {
+  margin-bottom: var(--s4);
+  padding-bottom: var(--s3);
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.nav-brand .brand-mark {
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+}
+
+.nav-brand .brand-code {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.nav-brand .brand-price {
+  font-family: var(--font-mono);
+  font-size: var(--step-4);
+  font-weight: 500;
+  color: var(--text);
+  margin-top: var(--s2);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-brand .brand-price .unit {
+  font-size: var(--step-0);
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.nav-brand .brand-change {
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  color: var(--negative);
+  margin-top: 4px;
+}
+
+.nav-links { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+
+.nav-links a {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  padding: 7px 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: var(--step-1);
+  border-left: 2px solid transparent;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.nav-links a .nav-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.nav-links a:hover { color: var(--text); background: var(--surface); }
+.nav-links a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(232, 163, 23, 0.06);
+}
+.nav-links a:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.nav-meta {
+  margin-top: auto;
+  padding-top: var(--s3);
+  border-top: var(--line-w) solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  line-height: 1.9;
+}
+
+.nav-meta .meta-val { color: var(--muted); }
+
+/* —— Main —— */
+.main {
+  margin-left: var(--nav-width);
+  min-width: 0;
+  max-width: none;
+}
+
+.section {
+  padding: var(--s8) var(--page-pad);
+  max-width: var(--wide);
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+}
+
+.section.visible { opacity: 1; transform: none; }
+.section + .section { border-top: var(--line-w) solid var(--line); }
+
+.section-head { margin-bottom: var(--s6); max-width: var(--measure); }
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: var(--s1);
+}
+
+.section-title {
+  font-size: var(--step-6);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: var(--s2);
+}
+
+.section-subtitle {
+  font-size: var(--step-2);
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* —— Hero —— */
+.hero {
+  padding: var(--s8) var(--page-pad) var(--s6);
+  max-width: var(--wide);
+  margin: 0 auto;
+}
+
+.ticker-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s4);
+  padding: var(--s2) 0;
+  margin-bottom: var(--s6);
+  border-top: var(--line-w) solid var(--line);
+  border-bottom: var(--line-w) solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.ticker-bar .tk {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.ticker-bar .tk .k { color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; }
+.ticker-bar .tk .v { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.ticker-bar .tk .v.up { color: var(--positive); }
+.ticker-bar .tk .v.down { color: var(--negative); }
+.ticker-bar .tk .v.hi { color: var(--accent); }
+
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: var(--s2);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, var(--step-8));
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--s3);
+  max-width: none;
+  writing-mode: horizontal-tb;
+}
+
+.hero-title .ticker {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--accent);
+  font-size: 0.42em;
+  letter-spacing: 0.04em;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.35em;
+}
+
+.hero-lead {
+  font-size: var(--step-3);
+  color: var(--text-2);
+  max-width: 36em;
+  margin-bottom: var(--s6);
+  line-height: 1.65;
+}
+
+.hero-lead em {
+  font-style: normal;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.hero-chart {
+  border: var(--line-w) solid var(--line);
+  background: var(--surface);
+  position: relative;
+}
+
+.hero-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.hero-chart-title {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  color: var(--text-2);
+}
+
+.hero-chart-legend {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  gap: var(--s3);
+}
+
+.hero-chart-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: currentColor;
+}
+
+.hero-chart-legend .lg-cool { color: var(--cool); }
+.hero-chart-legend .lg-accent { color: var(--accent); }
+.hero-chart-legend .lg-text { color: var(--text); }
+
+.chart-container { width: 100%; overflow-x: auto; padding: var(--s3) var(--s2) var(--s2); }
+.chart-container svg { display: block; width: 100%; height: auto; min-width: 640px; }
+
+.hero-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  padding: var(--s2) var(--s3);
+  border-top: var(--line-w) solid var(--line);
+}
+
+/* —— Ledger KPI rows —— */
+.ledger {
+  border-top: var(--line-w) solid var(--line-2);
+  margin-bottom: var(--s6);
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 200px;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  border-bottom: var(--line-w) solid var(--line);
+  align-items: start;
+}
+
+.ledger-row .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-top: 6px;
+}
+
+.ledger-row .val {
+  font-family: var(--font-display);
+  font-size: var(--step-5);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-row .val .unit {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.ledger-row .delta {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  margin-top: 4px;
+}
+
+.ledger-row .desc {
+  font-size: var(--step-1);
+  color: var(--muted);
+  line-height: 1.6;
+  padding-top: 4px;
+}
+
+.ledger-row .src {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  margin-top: 8px;
+}
+
+.pull-quote {
+  border-left: 2px solid var(--accent);
+  padding: var(--s3) 0 var(--s3) var(--s4);
+  max-width: var(--measure);
+  margin-top: var(--s2);
+}
+
+.pull-quote .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s1);
+}
+
+.pull-quote .text {
+  font-size: var(--step-2);
+  color: var(--text-2);
+  line-height: 1.75;
+}
+
+/* —— Dual conclusions —— */
+.dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: var(--line-w) solid var(--line);
+}
+
+.dual-pane {
+  padding: var(--s4);
+  background: var(--surface);
+}
+
+.dual-pane + .dual-pane { border-left: var(--line-w) solid var(--line); }
+
+.dual-pane .pane-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s2);
+}
+
+.dual-pane.procure .pane-kicker { color: var(--cool); }
+.dual-pane.invest .pane-kicker { color: var(--accent); }
+
+.dual-pane .pane-verdict {
+  font-family: var(--font-display);
+  font-size: var(--step-5);
+  font-weight: 700;
+  margin-bottom: var(--s2);
+  letter-spacing: -0.02em;
+}
+
+.dual-pane.procure .pane-verdict { color: var(--cool); }
+.dual-pane.invest .pane-verdict { color: var(--accent); }
+
+.dual-pane .pane-lead {
+  font-size: var(--step-1);
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: var(--s3);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step-1);
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 0;
+  text-align: left;
+  border-bottom: var(--line-w) solid var(--line);
+  vertical-align: top;
+}
+
+.data-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.data-table td:first-child { color: var(--text); font-weight: 500; }
+
+.mark {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border: var(--line-w) solid;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.mark.pilot { color: var(--positive); border-color: rgba(63, 166, 106, 0.4); background: rgba(63, 166, 106, 0.1); }
+.mark.watch { color: var(--accent); border-color: rgba(232, 163, 23, 0.35); background: rgba(232, 163, 23, 0.08); }
+.mark.now { color: var(--positive); border-color: rgba(63, 166, 106, 0.55); background: rgba(63, 166, 106, 0.18); }
+
+.aside-list {
+  list-style: none;
+  margin-top: var(--s3);
+}
+
+.aside-list li {
+  display: flex;
+  gap: var(--s1);
+  padding: 6px 0;
+  border-bottom: var(--line-w) solid var(--line);
+  font-size: var(--step-1);
+  color: var(--text-2);
+}
+
+.aside-list li:last-child { border-bottom: none; }
+
+.aside-list .idx {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  width: 18px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* —— Update —— */
+.callout {
+  border: var(--line-w) solid rgba(232, 163, 23, 0.3);
+  background: linear-gradient(90deg, rgba(232, 163, 23, 0.07), transparent 70%);
+  padding: var(--s3) var(--s4);
+  margin-bottom: var(--s6);
+}
+
+.callout .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s1);
+}
+
+.callout .text {
+  font-size: var(--step-2);
+  color: var(--text-2);
+  line-height: 1.7;
+  max-width: 52em;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--s6);
+}
+
+.compare-table thead th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: var(--s2);
+  border-bottom: var(--line-w) solid var(--line-2);
+  text-align: left;
+}
+
+.compare-table tbody td {
+  padding: var(--s2);
+  border-bottom: var(--line-w) solid var(--line);
+  font-size: var(--step-1);
+}
+
+.compare-table .metric { color: var(--text); font-weight: 500; }
+.compare-table .old { color: var(--muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.compare-table .new { font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.compare-table .new.up { color: var(--positive); }
+.compare-table .new.hi { color: var(--accent); }
+.compare-table .arrow { font-family: var(--font-mono); color: var(--positive); }
+
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.tech-timeline { list-style: none; margin-top: var(--s2); }
+
+.tech-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.tech-item:last-child { border-bottom: none; }
+
+.tech-date {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  color: var(--accent);
+  padding-top: 2px;
+}
+
+.tech-content h4 {
+  font-size: var(--step-2);
+  margin-bottom: 4px;
+}
+
+.tech-content p {
+  font-size: var(--step-1);
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 48em;
+}
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s1); }
+
+.tag-mini {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--surface-2);
+  border: var(--line-w) solid var(--line);
+  color: var(--muted);
+}
+
+/* —— Charts —— */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+  margin-bottom: var(--s6);
+}
+
+.chart-panel {
+  border: var(--line-w) solid var(--line);
+  background: var(--surface);
+  padding: var(--s3);
+}
+
+.chart-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--s3);
+  gap: var(--s2);
+}
+
+.chart-panel-title {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 600;
+}
+
+.chart-panel-sub {
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.chart-panel-value {
+  font-family: var(--font-mono);
+  font-size: var(--step-3);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.chart-panel-value .d { font-size: var(--step-1); margin-left: 4px; }
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 180px;
+  padding: var(--s2) 0;
+  border-bottom: var(--line-w) solid var(--line-2);
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 72px;
+}
+
+.bar {
+  width: 100%;
+  max-width: 40px;
+  background: var(--cool);
+  position: relative;
+  opacity: 0.85;
+}
+
+.bar.hi {
+  background: var(--accent);
+  opacity: 1;
+}
+
+.bar-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-2);
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.bar-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.chart-foot {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  margin-top: var(--s2);
+  line-height: 1.5;
+}
+
+.line-mini { height: 150px; }
+
+.line-mini svg { width: 100%; height: 100%; display: block; }
+
+.loss-labels {
+  display: flex;
+  justify-content: space-around;
+  margin-top: var(--s1);
+}
+
+.loss-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.loss-label .val {
+  color: var(--text);
+  font-size: var(--step-1);
+  display: block;
+  margin-bottom: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cash-ledger {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: var(--line-w) solid var(--line);
+}
+
+.cash-cell {
+  padding: var(--s3);
+  background: var(--surface);
+}
+
+.cash-cell + .cash-cell { border-left: var(--line-w) solid var(--line); }
+
+.cash-cell .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--s1);
+}
+
+.cash-cell .value {
+  font-family: var(--font-mono);
+  font-size: var(--step-4);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.cash-cell .value .u {
+  font-size: var(--step-0);
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.cash-cell .desc {
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin-top: var(--s1);
+  line-height: 1.5;
+}
+
+/* —— Competition ladder —— */
+.ladder { margin-bottom: var(--s4); }
+
+.ladder-band {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  border: var(--line-w) solid var(--line);
+  border-bottom: none;
+  background: var(--surface);
+}
+
+.ladder-band:last-of-type { border-bottom: var(--line-w) solid var(--line); }
+
+.ladder-band.focus {
+  background: rgba(232, 163, 23, 0.05);
+  border-color: rgba(232, 163, 23, 0.35);
+}
+
+.ladder-band.focus + .ladder-band { border-top-color: rgba(232, 163, 23, 0.35); }
+
+.ladder-label {
+  padding: var(--s3);
+  border-right: var(--line-w) solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.ladder-band.focus .ladder-label { border-right-color: rgba(232, 163, 23, 0.25); }
+
+.ladder-label .tier {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ladder-band.t1 .tier { color: var(--cool); }
+.ladder-band.t2 .tier { color: var(--accent); }
+.ladder-band.t3 .tier { color: var(--muted); }
+
+.ladder-label .hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.ladder-vendors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2) var(--s4);
+  padding: var(--s3);
+}
+
+.vendor {
+  font-size: var(--step-1);
+  color: var(--text-2);
+}
+
+.vendor strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.vendor .note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  margin-left: 6px;
+}
+
+.vendor.st {
+  color: var(--accent);
+}
+
+.vendor.st strong { color: var(--accent); }
+
+.dim-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: var(--line-w) solid var(--line);
+  margin-top: var(--s4);
+}
+
+.dim-cell {
+  padding: var(--s3);
+  background: var(--surface);
+}
+
+.dim-cell + .dim-cell { border-left: var(--line-w) solid var(--line); }
+
+.dim-cell .dl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--s1);
+}
+
+.dim-cell .dv {
+  font-size: var(--step-1);
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.dim-cell .dv .hi { color: var(--accent); font-weight: 600; }
+.dim-cell .dv .lo { color: var(--muted); }
+
+.note-block {
+  margin-top: var(--s4);
+  padding: var(--s3) var(--s4);
+  border-left: 2px solid var(--accent);
+  background: var(--surface);
+}
+
+.note-block .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s1);
+}
+
+.note-block p {
+  font-size: var(--step-1);
+  color: var(--text-2);
+  line-height: 1.7;
+  max-width: 52em;
+}
+
+/* —— Products index —— */
+.product-index { border-top: var(--line-w) solid var(--line-2); }
+
+.product-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: var(--s3) 0 var(--s1);
+  margin-top: var(--s2);
+}
+
+.product-group-head .num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+}
+
+.product-group-head .name {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 600;
+}
+
+.product-group-head .sub {
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: var(--s2);
+  padding: 10px 0;
+  border-bottom: var(--line-w) solid var(--line);
+  align-items: baseline;
+}
+
+.product-row .code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+}
+
+.product-row .pname {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.product-row .pname .d {
+  font-weight: 400;
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.product-row .ptag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border: var(--line-w) solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.product-row .ptag.flag { color: var(--accent); border-color: rgba(232, 163, 23, 0.4); }
+.product-row .ptag.ok { color: var(--positive); border-color: rgba(63, 166, 106, 0.35); }
+.product-row .ptag.next { color: var(--cool); border-color: rgba(74, 143, 212, 0.35); }
+
+.pricing-strip {
+  margin-top: var(--s6);
+  border: var(--line-w) solid rgba(232, 163, 23, 0.35);
+  background: var(--surface);
+  padding: var(--s4);
+}
+
+.pricing-strip .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s3);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s3);
+}
+
+.pricing-item .k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pricing-item .v {
+  font-family: var(--font-mono);
+  font-size: var(--step-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-item .v .free { color: var(--positive); font-weight: 600; }
+.pricing-item .v .u { font-size: var(--step-1); color: var(--muted); }
+
+.pricing-item .note {
+  font-size: 10px;
+  color: var(--muted-2);
+  margin-top: 4px;
+}
+
+.pricing-foot {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  margin-top: var(--s3);
+  line-height: 1.6;
+}
+
+/* —— Risks —— */
+.risks-gaps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s6);
+}
+
+.block-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s2);
+}
+
+.risk-list { list-style: none; }
+
+.risk-item {
+  padding: var(--s3) 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.risk-item:last-child { border-bottom: none; }
+
+.risk-item .risk-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--negative);
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+}
+
+.risk-item h4 {
+  font-size: var(--step-2);
+  margin-bottom: 4px;
+}
+
+.risk-item p {
+  font-size: var(--step-1);
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.gap-table { width: 100%; border-collapse: collapse; }
+
+.gap-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: var(--s2) var(--s1);
+  border-bottom: var(--line-w) solid var(--line-2);
+  text-align: left;
+}
+
+.gap-table td {
+  padding: var(--s2) var(--s1);
+  border-bottom: var(--line-w) solid var(--line);
+  font-size: var(--step-1);
+  vertical-align: top;
+}
+
+.gap-table .gap-name { color: var(--text); display: block; }
+.gap-table .gap-method {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border: var(--line-w) solid;
+  white-space: nowrap;
+}
+
+.status.ok { color: var(--positive); border-color: rgba(63, 166, 106, 0.4); }
+.status.part { color: var(--accent); border-color: rgba(232, 163, 23, 0.4); }
+.status.no { color: var(--negative); border-color: rgba(196, 60, 78, 0.35); }
+
+/* —— Final —— */
+.final-verdict {
+  border: var(--line-w) solid var(--line-2);
+  background: linear-gradient(135deg, rgba(232, 163, 23, 0.06), rgba(74, 143, 212, 0.04));
+  padding: var(--s6);
+  margin-bottom: var(--s6);
+  text-align: center;
+}
+
+.final-verdict .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: var(--s2);
+}
+
+.final-verdict .verdict {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, var(--step-6));
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: var(--s2);
+}
+
+.final-verdict .sub {
+  font-size: var(--step-2);
+  color: var(--muted);
+  max-width: 40em;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.trigger-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+  margin-bottom: var(--s6);
+}
+
+.monitoring-timeline {
+  position: relative;
+  padding-left: var(--s4);
+  max-width: var(--measure);
+}
+
+.monitoring-timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--line-2);
+}
+
+.monitor-item {
+  position: relative;
+  padding: var(--s2) 0 var(--s2) var(--s4);
+}
+
+.monitor-item::before {
+  content: "";
+  position: absolute;
+  left: -var(--s4);
+  top: 18px;
+  width: 9px;
+  height: 9px;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+}
+
+.monitor-item.passed::before { background: var(--accent); }
+
+.monitor-date {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.monitor-event {
+  font-size: var(--step-2);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.monitor-desc {
+  font-size: var(--step-1);
+  color: var(--muted);
+}
+
+/* —— Footer —— */
+.page-footer {
+  display: block;
+  width: auto;
+  padding: var(--s6) var(--page-pad) var(--s8);
+  margin-left: var(--nav-width);
+  border-top: var(--line-w) solid var(--line);
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.page-footer .footer-grid,
+.page-footer .disclaimer {
+  max-width: var(--wide);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+}
+
+.footer-section h4 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--s2);
+  font-weight: 500;
+}
+
+.footer-section ul { list-style: none; }
+
+.footer-section li {
+  font-size: var(--step-1);
+  color: var(--muted);
+  padding: 3px 0;
+}
+
+.footer-section .src-id {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  margin-right: 6px;
+}
+
+.disclaimer {
+  max-width: var(--wide);
+  margin-top: var(--s6);
+  padding-top: var(--s3);
+  border-top: var(--line-w) solid var(--line);
+  font-size: 10px;
+  color: var(--muted-2);
+  line-height: 1.75;
+}
+
+.mobile-toggle { display: none; }
+
+/* —— Responsive —— */
+@media (max-width: 1024px) {
+  .ledger-row { grid-template-columns: 110px 1fr; }
+  .ledger-row .desc { grid-column: 1 / -1; }
+  .dual { grid-template-columns: 1fr; }
+  .dual-pane + .dual-pane { border-left: none; border-top: var(--line-w) solid var(--line); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .cash-ledger { grid-template-columns: 1fr; }
+  .cash-cell + .cash-cell { border-left: none; border-top: var(--line-w) solid var(--line); }
+  .risks-gaps { grid-template-columns: 1fr; }
+  .dim-grid { grid-template-columns: 1fr 1fr; }
+  .dim-cell:nth-child(odd) { border-left: none; }
+  .dim-cell:nth-child(n+3) { border-top: var(--line-w) solid var(--line); }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .trigger-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .ladder-band { grid-template-columns: 1fr; }
+  .ladder-label { border-right: none; border-bottom: var(--line-w) solid var(--line); }
+}
+
+@media (max-width: 768px) {
+  .nav-rail {
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease);
+    z-index: 200;
+  }
+  .nav-rail.open { transform: translateX(0); }
+  .main, .page-footer { margin-left: 0; }
+
+  .mobile-toggle {
+    display: flex;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 150;
+    background: var(--surface);
+    border: var(--line-w) solid var(--line);
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  .section, .hero { padding-left: var(--s3); padding-right: var(--s3); }
+  .tech-item { grid-template-columns: 1fr; gap: var(--s1); }
+  .product-group-head .sub { display: none; }
+  .product-row { grid-template-columns: 40px 1fr; }
+  .product-row .ptag { grid-column: 2; justify-self: start; }
+  .dim-grid { grid-template-columns: 1fr; }
+  .dim-cell + .dim-cell { border-left: none; border-top: var(--line-w) solid var(--line); }
+}
+
+@media (max-width: 480px) {
+  .section { padding-top: var(--s6); padding-bottom: var(--s6); }
+  .ticker-bar { gap: var(--s1) var(--s3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .section { opacity: 1; transform: none; transition: none; }
+  #stockLine { stroke-dashoffset: 0 !important; transition: none !important; }
+}
+
+/* ========================================
+   研究控制台 Research Console
+   ======================================== */
+  #researchConsole {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #050911 0%, #070b14 40%, #0a0f1c 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  #researchConsole::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(232,163,23,0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+  #researchConsole::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(232,163,23,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  #researchConsole > * { position: relative; z-index: 1; }
+
+  .console-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .console-title {
+    font-family: "Noto Serif SC", serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .console-subtitle {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .console-badge {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(232,163,23,0.15);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .console-body {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .console-left { display: flex; flex-direction: column; gap: 20px; }
+
+  .console-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 20px;
+  }
+  .console-panel-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .console-panel-title::before {
+    content: '>';
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .input-group { margin-bottom: 14px; }
+  .input-group:last-child { margin-bottom: 0; }
+  .input-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-2);
+    margin-bottom: 6px;
+    display: block;
+    letter-spacing: 0.3px;
+  }
+  .input-field {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 14px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--muted); }
+  .input-field.textarea { height: 72px; resize: vertical; font-size: 13px; }
+
+  .run-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #070b14;
+    border: none;
+    padding: 14px 20px;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .run-btn:hover { background: #f0b030; }
+  .run-btn:active { transform: scale(0.98); }
+  .run-btn:disabled { background: var(--muted); cursor: not-allowed; opacity: 0.5; }
+
+  .console-right { display: flex; flex-direction: column; min-height: 0; }
+
+  .stage-list { flex: 1; overflow-y: auto; padding-right: 8px; }
+  .stage-list::-webkit-scrollbar { width: 4px; }
+  .stage-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+
+  .stage-item {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .stage-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 2px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .stage-item.active .stage-icon {
+    background: rgba(232,163,23,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    animation: stagePulse 1.5s ease-in-out infinite;
+  }
+  .stage-item.completed .stage-icon {
+    background: rgba(63,166,106,0.15);
+    border-color: var(--positive);
+    color: var(--positive);
+  }
+  .stage-item.failed .stage-icon {
+    background: rgba(196,60,78,0.15);
+    border-color: var(--negative);
+    color: var(--negative);
+  }
+  @keyframes stagePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .stage-name {
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .stage-desc {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .stage-status {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 1px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .stage-status.waiting { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+  .stage-status.running { background: rgba(232,163,23,0.15); color: var(--accent); border: 1px solid var(--accent); }
+  .stage-status.done { background: rgba(63,166,106,0.15); color: var(--positive); border: 1px solid var(--positive); }
+  .stage-status.error { background: rgba(196,60,78,0.15); color: var(--negative); border: 1px solid var(--negative); }
+
+  .console-output {
+    margin-top: 16px;
+    background: #050911;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 12px 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-2);
+    max-height: 120px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+  .console-output .log-line { white-space: pre-wrap; word-break: break-all; }
+  .console-output .log-info { color: var(--cool); }
+  .console-output .log-success { color: var(--positive); }
+  .console-output .log-warn { color: var(--accent); }
+  .console-output .log-error { color: var(--negative); }
+
+  .console-completion {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: rgba(63,166,106,0.08);
+    border: 1px solid var(--positive);
+    border-radius: 2px;
+    display: none;
+  }
+  .console-completion.show { display: block; }
+  .console-completion-title {
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--positive);
+    margin-bottom: 8px;
+  }
+  .view-report-btn {
+    background: var(--positive);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .view-report-btn:hover { background: #4db878; }
+
+  .demo-note {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  /* Demo mode: default research target */
+  .input-field.demo-value { color: var(--text-2); }
+
+  /* Hide console on report view */
+  #researchConsole.hidden { display: none; }
+
+  @media (max-width: 768px) {
+    .console-body { grid-template-columns: 1fr; }
+    .console-header { flex-wrap: wrap; gap: 8px; }
+    .console-title { font-size: 22px; }
+    #researchConsole { padding: 16px; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ========================================
+     研究控制台 Research Console
+     ======================================== -->
+<div id="researchConsole" role="application" aria-label="SenseNova 深度研究控制台">
+  <div class="console-header">
+    <h1 class="console-title">SenseNova 深度研究</h1>
+    <span class="console-subtitle">sn-deep-research · v2.0</span>
+    <span class="console-badge">DEMO MODE</span>
+  </div>
+  <div class="console-body">
+    <div class="console-left">
+      <div class="console-panel">
+        <div class="console-panel-title">研究配置 Research Config</div>
+        <div class="input-group">
+          <label class="input-label">研究对象 Target</label>
+          <input class="input-field demo-value" id="rcTarget" value="商汤科技 00020.HK" placeholder="公司/产品/事件名称">
+        </div>
+        <div class="input-group">
+          <label class="input-label">研究目标 Objective</label>
+          <textarea class="input-field textarea demo-value" id="rcObjective">面向 ToB 企业管理层，提供采购合作与投资决策辅助：评估公司基本面、产品矩阵、竞争格局与财务风险。</textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">研究维度 Dimensions</label>
+          <input class="input-field demo-value" id="rcDims" value="基本面 / 产品 / 竞争 / 财务风险" placeholder="用 / 分隔">
+        </div>
+        <button class="run-btn" id="rcRunBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="currentColor"/></svg>
+          启动 SenseNova 智能体
+        </button>
+        <div class="demo-note">// Demo 模式：模拟研究流程，无需后端 API</div>
+      </div>
+    </div>
+    <div class="console-right">
+      <div class="console-panel">
+        <div class="console-panel-title">研究流程 Research Pipeline</div>
+        <div class="stage-list" id="stageList">
+          <div class="stage-item" data-stage="0">
+            <div class="stage-icon">0</div>
+            <div><div class="stage-name">规划 Planning</div><div class="stage-desc">scout → plan.json · 确定维度、来源、深度</div></div>
+            <span class="stage-status waiting">等待</span>
+          </div>
+          <div class="stage-item" data-stage="1">
+            <div class="stage-icon">1</div>
+            <div><div class="stage-name">检索 Retrieval</div><div class="stage-desc">research → d1~d5.evidence.json · 并行取证</div></div>
+            <span class="stage-status waiting">等待</span>
+          </div>
+          <div class="stage-item" data-stage="2">
+            <div class="stage-icon">2</div>
+            <div><div class="stage-name">校验 Validation</div><div class="stage-desc">review → 证据审查 · validator 通过</div></div>
+            <span class="stage-status waiting">等待</span>
+          </div>
+          <div class="stage-item" data-stage="3">
+            <div class="stage-icon">3</div>
+            <div><div class="stage-name">写作 Writing</div><div class="stage-desc">writer + stitcher → report.md</div></div>
+            <span class="stage-status waiting">等待</span>
+          </div>
+          <div class="stage-item" data-stage="4">
+            <div class="stage-icon">4</div>
+            <div><div class="stage-name">完成 Complete</div><div class="stage-desc">report.html · citations.json · run_manifest</div></div>
+            <span class="stage-status waiting">等待</span>
+          </div>
+        </div>
+        <div class="console-output" id="consoleOutput">
+          <div class="log-line"><span class="log-info">[ready]</span> 输入研究对象和目标，点击「启动 SenseNova 智能体」开始深度研究。</div>
+        </div>
+        <div class="console-completion" id="consoleCompletion">
+          <div class="console-completion-title">✓ 研究完成 · Report Ready</div>
+          <button class="view-report-btn" id="rcViewReportBtn" type="button">进入报告阅读页 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+  var consoleEl = document.getElementById('researchConsole');
+  var runBtn = document.getElementById('rcRunBtn');
+  var viewBtn = document.getElementById('rcViewReportBtn');
+  var stageEls = document.querySelectorAll('#stageList .stage-item');
+  var outputEl = document.getElementById('consoleOutput');
+  var completionEl = document.getElementById('consoleCompletion');
+
+  function logLine(text, cls) {
+    cls = cls || '';
+    var div = document.createElement('div');
+    div.className = 'log-line';
+    div.innerHTML = text;
+    outputEl.appendChild(div);
+    outputEl.scrollTop = outputEl.scrollHeight;
+  }
+
+  function setStage(idx, status) {
+    var el = stageEls[idx];
+    if (!el) return;
+    el.className = 'stage-item ' + status;
+    var badge = el.querySelector('.stage-status');
+    badge.className = 'stage-status ' + status;
+    var labels = { waiting: '等待', running: '执行中', done: '完成', error: '失败' };
+    badge.textContent = labels[status] || status;
+  }
+
+  function resetStages() {
+    for (var i = 0; i < stageEls.length; i++) {
+      setStage(i, 'waiting');
+    }
+    completionEl.classList.remove('show');
+    outputEl.innerHTML = '';
+  }
+
+  var stages = [
+    { name: '规划', desc: 'scout briefing → plan.json (5 dims × wave 1)', log: [
+      '<span class="log-info">[plan]</span> scout: 分析研究对象「{target}」，识别关键维度...',
+      '<span class="log-info">[plan]</span> 确定主维度 by_topic + by_entity + by_risk',
+      '<span class="log-info">[plan]</span> 规划 5 个研究维度 (d1~d5)，并行取证策略',
+      '<span class="log-success">[plan]</span> plan.json 生成完成 ✓'
+    ]},
+    { name: '检索', desc: 'parallel research → d1~d5.evidence.json', log: [
+      '<span class="log-info">[research]</span> d1 基本面: 检索 HKEX 年报、东方财富 API...',
+      '<span class="log-info">[research]</span> d2 产品矩阵: 检索 SenseNova 平台、新闻稿...',
+      '<span class="log-info">[research]</span> d3 竞争格局: 检索 IDC、Frost & Sullivan...',
+      '<span class="log-info">[research]</span> d4 财务风险: 检索估值数据、地缘政治...',
+      '<span class="log-warn">[research]</span> d1: HKEX 年报 PDF 提取成功 (58 页)',
+      '<span class="log-warn">[research]</span> d4: 现金数据验证 — 修正 433→141 亿港元',
+      '<span class="log-success">[research]</span> d1~d5.evidence.json 全部生成 ✓'
+    ]},
+    { name: '校验', desc: 'review → validator → citations.json', log: [
+      '<span class="log-info">[review]</span> 证据审查: 检查 claim → source 可追溯性...',
+      '<span class="log-warn">[review]</span> d1.c2: 币种错误 (HKD→RMB)，已修正',
+      '<span class="log-warn">[review]</span> d4.c3: 现金储备错误 (433→141 亿港元)，已修正',
+      '<span class="log-info">[validate]</span> citations.json: 6→9 来源，100% verified',
+      '<span class="log-success">[validate]</span> validator 全部通过 ✓'
+    ]},
+    { name: '写作', desc: 'writer + stitcher → report.md + report.html', log: [
+      '<span class="log-info">[writer]</span> outline.json → 9 章节结构化大纲',
+      '<span class="log-info">[writer]</span> 生成 report.md (执行摘要→结论→参考来源)',
+      '<span class="log-info">[stitcher]</span> 合并 d1~d5 → 完整研究报告',
+      '<span class="log-success">[writer]</span> report.md 生成完成 ✓'
+    ]},
+    { name: '完成', desc: 'report.html + run_manifest.json + events.jsonl', log: [
+      '<span class="log-info">[render]</span> 生成 report.html (单文件, ~75KB)',
+      '<span class="log-info">[manifest]</span> 生成 run_manifest.json + events.jsonl',
+      '<span class="log-success">[complete]</span> 全部交付物生成完成 ✓'
+    ]}
+  ];
+
+  var target = document.getElementById('rcTarget').value;
+
+  function runResearch() {
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="30" stroke-dashoffset="10"/><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="1s" repeatCount="indefinite"/></svg> 研究中...';
+    resetStages();
+
+    var stageIdx = 0;
+    var logIdx = 0;
+
+    function nextLog() {
+      if (stageIdx >= stages.length) {
+        // Done
+        completionEl.classList.add('show');
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="currentColor"/></svg> 重新研究';
+        logLine('<span class="log-success">[done]</span> 研究完成，共 ' + stages.length + ' 个阶段。点击「进入报告阅读页」查看结果。', '');
+        return;
+      }
+      var s = stages[stageIdx];
+      setStage(stageIdx, 'running');
+      if (logIdx === 0) {
+        logLine('<span class="log-info">[stage ' + stageIdx + '/4]</span> ' + s.name + ': ' + s.desc, '');
+      }
+      var logMsg = s.log[logIdx].replace('{target}', target);
+      logLine(logMsg, '');
+      logIdx++;
+      if (logIdx >= s.log.length) {
+        setStage(stageIdx, 'done');
+        stageIdx++;
+        logIdx = 0;
+        setTimeout(nextLog, 400);
+      } else {
+        setTimeout(nextLog, 250 + Math.random() * 200);
+      }
+    }
+    nextLog();
+  }
+
+  runBtn.addEventListener('click', runResearch);
+  viewBtn.addEventListener('click', function() {
+    consoleEl.classList.add('hidden');
+    logLine('<span class="log-info">[nav]</span> 切换到报告阅读页', '');
+  });
+})();
+</script>
+
+<div class="app">
+
+  <nav class="nav-rail" id="navRail" aria-label="报告目录">
+    <div class="nav-brand">
+      <div class="brand-mark">SENSETIME</div>
+      <div class="brand-code">00020.HK</div>
+      <div class="brand-price">1.360<span class="unit">HKD</span></div>
+      <div class="brand-change">▼ 较 IPO −66%~71%</div>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#hero"><span class="nav-num">00</span>概览</a></li>
+      <li><a href="#summary"><span class="nav-num">01</span>执行摘要</a></li>
+      <li><a href="#conclusions"><span class="nav-num">02</span>决策结论</a></li>
+      <li><a href="#update"><span class="nav-num">03</span>2025 更新</a></li>
+      <li><a href="#financials"><span class="nav-num">04</span>财务数据</a></li>
+      <li><a href="#competition"><span class="nav-num">05</span>竞争格局</a></li>
+      <li><a href="#products"><span class="nav-num">06</span>产品矩阵</a></li>
+      <li><a href="#risks"><span class="nav-num">07</span>风险缺口</a></li>
+      <li><a href="#final"><span class="nav-num">08</span>结论监测</a></li>
+    </ul>
+    <div class="nav-meta">
+      <div><span class="meta-label">AS OF</span> <span class="meta-val">2026-07-21</span></div>
+      <div><span class="meta-label">SOURCES</span> <span class="meta-val">9</span></div>
+      <div><span class="meta-label">CLAIMS</span> <span class="meta-val">37</span></div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <section class="hero section visible" id="hero">
+      <div class="ticker-bar" aria-label="关键指标快览">
+        <div class="tk"><span class="k">市值</span><span class="v">574.1 亿 HKD</span></div>
+        <div class="tk"><span class="k">PB</span><span class="v">≈ 1.15</span></div>
+        <div class="tk"><span class="k">2025 营收</span><span class="v up">+33% YoY</span></div>
+        <div class="tk"><span class="k">净亏损</span><span class="v hi">净亏收窄 58.6%</span></div>
+        <div class="tk"><span class="k">现金</span><span class="v">约 141 亿 HKD</span></div>
+      </div>
+
+      <div class="hero-kicker">深度研究报告 · ToB 采购 / 投资观察</div>
+      <h1 class="hero-title">
+        商汤科技<span class="ticker">00020.HK</span>
+      </h1>
+      <p class="hero-lead">
+        SenseTime Research Limited — 2021 年港股最大 AI IPO。
+        盈利拐点<em>比预期更早</em>（H2 2025 EBITDA 首次转正），但全年仍亏损。
+      </p>
+
+      <div class="hero-chart">
+        <div class="hero-chart-head">
+          <span class="hero-chart-title">股价轨迹 · IPO → 2026.07（示意）</span>
+          <div class="hero-chart-legend">
+            <span class="lg-cool">历史走势</span>
+            <span class="lg-accent">2025 拐点</span>
+            <span class="lg-text">现价</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <svg viewBox="0 0 1000 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="商汤股价从 IPO 约 4.08-4.68 港元降至现价 1.360 港元的示意轨迹">
+            <g stroke="#1a2336" stroke-width="1">
+              <line x1="48" y1="40" x2="980" y2="40"/>
+              <line x1="48" y1="80" x2="980" y2="80"/>
+              <line x1="48" y1="120" x2="980" y2="120"/>
+              <line x1="48" y1="160" x2="980" y2="160"/>
+              <line x1="48" y1="200" x2="980" y2="200"/>
+            </g>
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#4a5366">
+              <text x="8" y="44">5.0</text>
+              <text x="8" y="84">4.0</text>
+              <text x="8" y="124">3.0</text>
+              <text x="8" y="164">2.0</text>
+              <text x="8" y="204">1.0</text>
+              <text x="90" y="228">2021.12</text>
+              <text x="250" y="228">2022</text>
+              <text x="430" y="228">2023</text>
+              <text x="590" y="228">2024</text>
+              <text x="750" y="228">2025</text>
+              <text x="910" y="228">2026.07</text>
+            </g>
+
+            <line x1="100" y1="50" x2="100" y2="200" stroke="#4a8fd4" stroke-width="0.75" stroke-dasharray="3,3"/>
+            <text x="108" y="58" font-family="JetBrains Mono, monospace" font-size="10" fill="#4a8fd4">IPO 4.08–4.68</text>
+
+            <line x1="280" y1="140" x2="280" y2="200" stroke="#c43c4e" stroke-width="0.75" stroke-dasharray="3,3"/>
+            <text x="288" y="158" font-family="JetBrains Mono, monospace" font-size="10" fill="#c43c4e">实体清单</text>
+
+            <line x1="780" y1="155" x2="780" y2="200" stroke="#e8a317" stroke-width="0.75" stroke-dasharray="3,3"/>
+            <text x="788" y="172" font-family="JetBrains Mono, monospace" font-size="10" fill="#e8a317">2025 拐点</text>
+
+            <defs>
+              <linearGradient id="lineGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#4a8fd4" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#4a8fd4" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M 100,55 L 150,90 L 200,110 L 250,130 L 280,140 L 330,145 L 380,150 L 430,152 L 480,155 L 530,158 L 580,160 L 630,162 L 680,163 L 730,160 L 780,155 L 830,152 L 880,150 L 930,148 L 930,200 L 100,200 Z" fill="url(#lineGrad)"/>
+
+            <path id="stockLine" d="M 100,55 L 150,90 L 200,110 L 250,130 L 280,140 L 330,145 L 380,150 L 430,152 L 480,155 L 530,158 L 580,160 L 630,162 L 680,163 L 730,160 L 780,155 L 830,152 L 880,150 L 930,148"
+                  fill="none" stroke="#4a8fd4" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"
+                  style="stroke-dasharray:2000;stroke-dashoffset:2000"/>
+
+            <circle cx="100" cy="55" r="4.5" fill="#4a8fd4" stroke="#070b14" stroke-width="2"/>
+            <circle cx="280" cy="140" r="4.5" fill="#c43c4e" stroke="#070b14" stroke-width="2"/>
+            <circle cx="780" cy="155" r="5.5" fill="#e8a317" stroke="#070b14" stroke-width="2"/>
+            <circle cx="930" cy="148" r="5.5" fill="#e6e1d4" stroke="#070b14" stroke-width="2"/>
+
+            <rect x="818" y="98" width="108" height="38" fill="#151c2c" stroke="#243049" stroke-width="1"/>
+            <text x="872" y="114" font-family="JetBrains Mono, monospace" font-size="10" fill="#6a7388" text-anchor="middle">现价</text>
+            <text x="872" y="130" font-family="JetBrains Mono, monospace" font-size="14" font-weight="600" fill="#e6e1d4" text-anchor="middle">1.360 HKD</text>
+          </svg>
+        </div>
+        <div class="hero-note">节点标注来自原文；中间走势为示意斜率，非逐日行情复现。来源：东方财富 API，2026-07-21。</div>
+      </div>
+    </section>
+
+    <section class="section" id="summary">
+      <div class="section-head">
+        <div class="section-eyebrow">01 / 执行摘要</div>
+        <h2 class="section-title">2025：关键转折点</h2>
+        <p class="section-subtitle">营收增速从 10.8% 跳升至 33%，净亏损收窄 58.6%，H2 EBITDA 自上市以来首次转正。商业化拐点比预期更早到来。</p>
+      </div>
+
+      <div class="ledger">
+        <div class="ledger-row">
+          <div class="lbl">营收增速</div>
+          <div>
+            <div class="val">+33%<span class="unit">YoY</span></div>
+            <div class="delta text-positive">▲ 从 +10.8% 大幅跳升</div>
+            <div class="src">SRC · 商汤官方新闻稿 2026-03-25</div>
+          </div>
+          <div class="desc">2025 全年营收超 50 亿人民币，创近三年最快增长，AI 大模型商业化加速趋势明确。</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lbl">净亏损收窄</div>
+          <div>
+            <div class="val">−58.6%<span class="unit">YoY</span></div>
+            <div class="delta text-positive">▲ 2024 年仅收窄 1.5%</div>
+            <div class="src">SRC · 商汤官方新闻稿 2026-03-25</div>
+          </div>
+          <div class="desc">亏损收窄幅度远超上年，经营改善显著加速，盈亏平衡时点可能提前。</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lbl">H2 EBITDA</div>
+          <div>
+            <div class="val">+3.8<span class="unit">亿 RMB</span></div>
+            <div class="delta text-positive">▲ 上市以来首次转正</div>
+            <div class="src">SRC · 商汤官方新闻稿 2026-03-25</div>
+          </div>
+          <div class="desc">下半年 EBITDA 转正 + 经营性现金流首次净流入，标志着商业模式从「烧钱」向「自我造血」转变。</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lbl">估值水平</div>
+          <div>
+            <div class="val">PB ≈ 1.15</div>
+            <div class="delta text-muted">接近净资产水平</div>
+            <div class="src">SRC · 东方财富 2026-07-21</div>
+          </div>
+          <div class="desc">股价较 IPO 下跌约 66–71%，下行空间有限，上行取决于 AI 商业化拐点确认。</div>
+        </div>
+      </div>
+
+      <div class="pull-quote">
+        <div class="label">核心判断</div>
+        <div class="text">
+          商汤正从技术投入期向可持续增长期过渡。视觉多模态为差异化护城河（SenseNova V6.5 Pro 多模态中国第 1），但全年仍为净亏损，AI 大模型商业化变现路径待验证。
+          采购端建议<span class="text-accent">条件性观察</span>，投资端建议<span class="text-accent">进入普通观察名单</span>。
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="conclusions">
+      <div class="section-head">
+        <div class="section-eyebrow">02 / 决策结论</div>
+        <h2 class="section-title">采购 &amp; 投资双重结论</h2>
+        <p class="section-subtitle">两份独立判断：作为 AI 产品/服务伙伴的适配性，以及是否值得列入投资观察名单。</p>
+      </div>
+
+      <div class="dual">
+        <div class="dual-pane procure">
+          <div class="pane-kicker">Procurement</div>
+          <div class="pane-verdict">条件性观察</div>
+          <p class="pane-lead">不适合直接进入正式采购名单，但在视觉多模态场景可进入小规模试点。公测期免费降低了试点门槛。</p>
+          <table class="data-table">
+            <thead><tr><th>场景</th><th>建议</th><th>条件</th></tr></thead>
+            <tbody>
+              <tr><td>视觉多模态</td><td><span class="mark pilot">可试点</span></td><td>准确率 ≥ 95%</td></tr>
+              <tr><td>办公 AI Agent</td><td><span class="mark watch">观望</span></td><td>等待产品成熟</td></tr>
+              <tr><td>私有化部署</td><td><span class="mark watch">观望</span></td><td>TCO 与云厂商可比</td></tr>
+              <tr><td>SenseNova API</td><td><span class="mark now">立即试点</span></td><td>公测免费</td></tr>
+            </tbody>
+          </table>
+          <ul class="aside-list">
+            <li><span class="idx">→</span><span>定价透明度不足，付费档位尚未上线</span></li>
+            <li><span class="idx">→</span><span>SLA 未公开，公测期无正式服务等级协议</span></li>
+            <li><span class="idx">→</span><span>缺乏大规模独立客户案例</span></li>
+          </ul>
+        </div>
+
+        <div class="dual-pane invest">
+          <div class="pane-kicker">Investment</div>
+          <div class="pane-verdict">进入普通观察名单</div>
+          <p class="pane-lead">不适合进入重点观察名单（全年仍亏损），但基本面稳定且有结构性机会，值得持续跟踪。</p>
+          <table class="data-table">
+            <thead><tr><th>催化因素</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>亏损收窄至 20 亿港元以下</td><td class="mono text-accent">接近目标</td></tr>
+              <tr><td>实现单季度盈利</td><td class="mono text-positive">H2 EBITDA 已转正</td></tr>
+              <tr><td>大型 AI 服务合同</td><td class="mono text-muted">待观察</td></tr>
+              <tr><td>战略融资 / 产业资本</td><td class="mono text-accent">部分业务已独立融资</td></tr>
+              <tr><td>API 付费档位上线</td><td class="mono text-muted">即将推出</td></tr>
+            </tbody>
+          </table>
+          <ul class="aside-list">
+            <li><span class="idx">!</span><span>美国实体清单限制算力获取</span></li>
+            <li><span class="idx">!</span><span>DeepSeek 等竞品以低价挤压市场</span></li>
+            <li><span class="idx">!</span><span>组织稳定性存疑（多次调整）</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="update">
+      <div class="section-head">
+        <div class="section-eyebrow">03 / 2025 年度业绩重大更新</div>
+        <h2 class="section-title">从增长停滞到加速突破</h2>
+        <p class="section-subtitle">基于 2026 年 3 月 25 日商汤官方新闻稿的 2025 全年业绩数据，以下指标较 2024 年出现质的飞跃。</p>
+      </div>
+
+      <div class="callout">
+        <div class="label">对原报告的重大修正</div>
+        <div class="text">
+          原报告基于 2024 年数据判断「营收增速仅 10.8%，盈利路径不明」。2025 年数据推翻多项判断：营收增速跳升至 <span class="text-accent">+33%</span>，亏损收窄从 33.7% 扩大至 <span class="text-accent">58.6%</span>，H2 EBITDA 首次转正。AI 大模型商业化正在加速，但全年仍未实现盈利。
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="compare-table">
+          <thead>
+            <tr><th>指标</th><th>2024 年</th><th>2025 年</th><th>变化</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric">全年总营收</td>
+              <td class="old">37.72 亿 RMB (+10.8%)</td>
+              <td class="new hi">50+ 亿 RMB (+33%)</td>
+              <td class="arrow">↑ 大幅提升</td>
+            </tr>
+            <tr>
+              <td class="metric">净亏损</td>
+              <td class="old">43.07 亿 RMB</td>
+              <td class="new up">同比收窄 58.6%（新闻稿口径）</td>
+              <td class="arrow">↑ 大幅改善</td>
+            </tr>
+            <tr>
+              <td class="metric">H2 EBITDA</td>
+              <td class="old">负值</td>
+              <td class="new hi">+3.8 亿 RMB</td>
+              <td class="arrow">↑ 关键拐点</td>
+            </tr>
+            <tr>
+              <td class="metric">经营性现金流</td>
+              <td class="old">负值</td>
+              <td class="new up">H2 首次净流入</td>
+              <td class="arrow">↑ 关键拐点</td>
+            </tr>
+            <tr>
+              <td class="metric">应收账款回收</td>
+              <td class="old">—</td>
+              <td class="new hi">48.7 亿 RMB</td>
+              <td class="arrow">↑ 历史新高</td>
+            </tr>
+            <tr>
+              <td class="metric">CV 2.0 业务</td>
+              <td class="old">亏损</td>
+              <td class="new up">首次净利润 + 正向现金流</td>
+              <td class="arrow">↑ 商业回报期</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-eyebrow">技术突破时间线</div>
+      <ul class="tech-timeline">
+        <li class="tech-item">
+          <div class="tech-date">2025.12</div>
+          <div class="tech-content">
+            <h4>NEO 原生多模态架构发布并开源</h4>
+            <p>全新架构仅需 1/10 训练数据达同类最优性能，超越传统 Next Token Prediction 范式。2026 Q2 计划发布基于 NEO 的第二代基础模型。</p>
+            <div class="tag-row"><span class="tag-mini">架构革新</span><span class="tag-mini">开源</span></div>
+          </div>
+        </li>
+        <li class="tech-item">
+          <div class="tech-date">2026.01</div>
+          <div class="tech-content">
+            <h4>SenseNova V6.5 Pro 多模态中国第 1</h4>
+            <p>SuperCLUE 2025 年 12 月多模态评测总分 75.35，6 项子任务国内第一。视觉推理维度得分最高，超越 Doubao-seed-1.6、ERNIE-5.0、Qwen3。</p>
+            <div class="tag-row"><span class="tag-mini">多模态 #1</span><span class="tag-mini">SuperCLUE</span></div>
+          </div>
+        </li>
+        <li class="tech-item">
+          <div class="tech-date">2025</div>
+          <div class="tech-content">
+            <h4>SenseCore 算力基础设施扩展</h4>
+            <p>算力规模达 40,400 PetaFLOPS（FP16），支持近 100 万个模型研发任务。与华为昇腾、海光、寒武纪等 10+ 芯片厂商合作，在沙特落地首个海外华人主导计算集群。</p>
+            <div class="tag-row"><span class="tag-mini">算力</span><span class="tag-mini">国产芯片</span><span class="tag-mini">海外布局</span></div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section" id="financials">
+      <div class="section-head">
+        <div class="section-eyebrow">04 / 财务数据</div>
+        <h2 class="section-title">营收趋势与亏损收窄</h2>
+        <p class="section-subtitle">2021–2025 年营收在 53–57 亿港元区间波动后，2025 年突破增长。亏损规模从 2023–2024 年持平到 2025 年大幅收窄。</p>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-panel">
+          <div class="chart-panel-head">
+            <div>
+              <div class="chart-panel-title">营收趋势</div>
+              <div class="chart-panel-sub">2021 — 2024 · 亿港元（2025 新闻稿口径）</div>
+            </div>
+            <div class="chart-panel-value">56.7<span class="d text-positive">+33%</span></div>
+          </div>
+          <div class="bar-chart" role="img" aria-label="2021至2025年营收柱状图">
+            <div class="bar-item"><div class="bar" style="height:95%"><span class="bar-value">52.07</span></div><span class="bar-label">2021</span></div>
+            <div class="bar-item"><div class="bar" style="height:77%"><span class="bar-value">42.27</span></div><span class="bar-label">2022</span></div>
+            <div class="bar-item"><div class="bar" style="height:69%"><span class="bar-value">37.81</span></div><span class="bar-label">2023</span></div>
+            <div class="bar-item"><div class="bar" style="height:76%"><span class="bar-value">41.86</span></div><span class="bar-label">2024</span></div>
+            <div class="bar-item highlight"><div class="bar" style="height:100%"><span class="bar-value">56+</span></div><span class="bar-label">2025*</span></div>
+            <div class="bar-item"><div class="bar hi" style="height:95%"><span class="bar-value">56.7*</span></div><span class="bar-label">2025</span></div>
+          </div>
+          <p class="chart-foot">* 2025 年数据为新闻稿口径（未经审计），约 50+ 亿 RMB（约 56 亿港元）。来源：商汤官方新闻稿（2026-03-25）。</p>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-panel-head">
+            <div>
+              <div class="chart-panel-title">亏损收窄趋势</div>
+              <div class="chart-panel-sub">净亏损 · 亿港元</div>
+            </div>
+            <div class="chart-panel-value">−58.6%<span class="d text-positive">YoY</span></div>
+          </div>
+          <div class="line-mini">
+            <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="净亏损从2023到2025大幅收窄示意">
+              <line x1="0" y1="35" x2="400" y2="35" stroke="#1a2336" stroke-width="0.5"/>
+              <line x1="0" y1="70" x2="400" y2="70" stroke="#1a2336" stroke-width="0.5"/>
+              <line x1="0" y1="105" x2="400" y2="105" stroke="#1a2336" stroke-width="0.5"/>
+              <line x1="60" y1="25" x2="200" y2="28" stroke="#c43c4e" stroke-width="2" stroke-dasharray="4,3"/>
+              <line x1="200" y1="28" x2="340" y2="95" stroke="#e8a317" stroke-width="2.5"/>
+              <circle cx="60" cy="25" r="4" fill="#c43c4e"/>
+              <circle cx="200" cy="28" r="4" fill="#c43c4e"/>
+              <circle cx="340" cy="95" r="5" fill="#e8a317"/>
+              <text x="60" y="15" font-family="JetBrains Mono, monospace" font-size="9" fill="#c43c4e" text-anchor="middle">72.33</text>
+              <text x="200" y="30" font-family="JetBrains Mono, monospace" font-size="9" fill="#c43c4e" text-anchor="middle">47.81</text>
+              <text x="340" y="85" font-family="JetBrains Mono, monospace" font-size="9" fill="#e8a317" text-anchor="middle">−58.6%</text>
+            </svg>
+          </div>
+          <div class="loss-labels">
+            <span class="loss-label"><span class="val">72.33</span>2023</span>
+            <span class="loss-label"><span class="val">47.81</span>2024（收窄 33.7%）</span>
+            <span class="loss-label"><span class="val text-accent">收窄 58.6%</span>2025（新闻稿口径）</span>
+          </div>
+          <p class="chart-foot">数据来源：港交所年报 + 商汤官方新闻稿。2025 年绝对亏损额原文未给出，图中仅标注收窄比例。</p>
+        </div>
+      </div>
+
+      <div class="cash-ledger">
+        <div class="cash-cell">
+          <div class="label">现金储备</div>
+          <div class="value">141<span class="u">亿 HKD</span></div>
+          <div class="desc">2024 年末现金及等价物。2025 年亏损大幅收窄后，支撑能力进一步增强。</div>
+        </div>
+        <div class="cash-cell">
+          <div class="label">研发费用</div>
+          <div class="value">45.86<span class="u">亿 HKD</span></div>
+          <div class="desc">约占营收 22%，高于百度（6–7%）和阿里（5–6%）。AI 人才规模约 3,000–4,000 人。</div>
+        </div>
+        <div class="cash-cell">
+          <div class="label">毛利率</div>
+          <div class="value">22–25%</div>
+          <div class="desc">低于传统纯软件公司，主要因项目制解决方案的硬件集成拉低毛利。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="competition">
+      <div class="section-head">
+        <div class="section-eyebrow">05 / 竞争格局</div>
+        <h2 class="section-title">第二梯队前段 · 视觉多模态差异化</h2>
+        <p class="section-subtitle">中国 AI 大模型市场呈现三梯队格局。商汤纯文本落后于第一梯队，但视觉多模态为差异化护城河。</p>
+      </div>
+
+      <div class="ladder">
+        <div class="ladder-band t1">
+          <div class="ladder-label">
+            <span class="tier">第一梯队</span>
+            <span class="hint">云生态 · 流量 · 开源效率</span>
+          </div>
+          <div class="ladder-vendors">
+            <span class="vendor"><strong>阿里通义千问</strong><span class="note">阿里云生态</span></span>
+            <span class="vendor"><strong>百度文心一言</strong><span class="note">百度智能云</span></span>
+            <span class="vendor"><strong>字节豆包</strong><span class="note">飞书 + 内容流量</span></span>
+            <span class="vendor"><strong>DeepSeek</strong><span class="note">开源 · 极低定价</span></span>
+          </div>
+        </div>
+        <div class="ladder-band t2 focus">
+          <div class="ladder-label">
+            <span class="tier">第二梯队前段</span>
+            <span class="hint">差异化定位</span>
+          </div>
+          <div class="ladder-vendors">
+            <span class="vendor st"><strong>商汤科技</strong><span class="note">视觉多模态 · CV 中国第 1</span></span>
+            <span class="vendor"><strong>智谱 GLM</strong><span class="note">清华系 · 医疗/法律</span></span>
+            <span class="vendor"><strong>腾讯混元</strong><span class="note">腾讯生态</span></span>
+          </div>
+        </div>
+        <div class="ladder-band t3">
+          <div class="ladder-label">
+            <span class="tier">第三梯队</span>
+            <span class="hint">生态绑定</span>
+          </div>
+          <div class="ladder-vendors">
+            <span class="vendor"><strong>飞书智能伙伴</strong></span>
+            <span class="vendor"><strong>WPS AI</strong></span>
+            <span class="vendor"><strong>华为盘古</strong><span class="note">华为全栈</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dim-grid">
+        <div class="dim-cell">
+          <div class="dl">纯文本通用</div>
+          <div class="dv"><span class="lo">落后于</span>阿里通义、百度文心、DeepSeek</div>
+        </div>
+        <div class="dim-cell">
+          <div class="dl">多模态 / 视觉</div>
+          <div class="dv"><span class="hi">国内第 1</span>（SuperCLUE 75.35）</div>
+        </div>
+        <div class="dim-cell">
+          <div class="dl">行业垂直</div>
+          <div class="dv"><span class="hi">差异化优势</span>工业质检、医疗影像</div>
+        </div>
+        <div class="dim-cell">
+          <div class="dl">办公 AI Agent</div>
+          <div class="dv"><span class="lo">落后于</span>飞书、WPS 生态绑定</div>
+        </div>
+      </div>
+
+      <div class="note-block">
+        <div class="label">价格战态势</div>
+        <p>
+          DeepSeek 以极低定价 + 开源策略率先冲击市场。云厂商（阿里、百度）利用云服务交叉补贴，定价更具灵活性。
+          商汤定价策略相对保守，但<span class="text-accent">公测期免费</span>是在价格战中的积极回应——付费档位上线后的定价策略将是关键观察点。
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="products">
+      <div class="section-head">
+        <div class="section-eyebrow">06 / 产品矩阵</div>
+        <h2 class="section-title">从底层算力到上层应用</h2>
+        <p class="section-subtitle">全栈产品矩阵覆盖算力基础设施、大模型平台、企业 Agent 和消费应用四个层级。</p>
+      </div>
+
+      <div class="product-index">
+        <div class="product-group-head">
+          <span class="num">01</span>
+          <span class="name">大模型平台</span>
+          <span class="sub">SenseNova 日日新</span>
+        </div>
+        <div class="product-row">
+          <span class="code">V6.5</span>
+          <span class="pname">SenseNova V6.5 Pro<span class="d">旗舰多模态 · SuperCLUE 中国第 1 · 75.35 分</span></span>
+          <span class="ptag flag">FLAGSHIP</span>
+        </div>
+        <div class="product-row">
+          <span class="code">6.7</span>
+          <span class="pname">SenseNova 6.7 Flash-Lite<span class="d">轻量文本 + 多模态 · 公测期可用</span></span>
+          <span class="ptag ok">BETA</span>
+        </div>
+        <div class="product-row">
+          <span class="code">U1</span>
+          <span class="pname">SenseNova U1 Fast<span class="d">快速推理模型 · 公测期可用</span></span>
+          <span class="ptag ok">BETA</span>
+        </div>
+        <div class="product-row">
+          <span class="code">SI</span>
+          <span class="pname">SenseNova-SI<span class="d">空间智能 · 超越 GPT-5、Gemini-3 Pro</span></span>
+          <span class="ptag">NATIVE</span>
+        </div>
+        <div class="product-row">
+          <span class="code">NEO</span>
+          <span class="pname">NEO 原生多模态<span class="d">2025.12 开源 · 1/10 训练数据 · 2026 Q2 发布二代</span></span>
+          <span class="ptag next">COMING</span>
+        </div>
+
+        <div class="product-group-head">
+          <span class="num">02</span>
+          <span class="name">企业 Agent</span>
+          <span class="sub">小浣熊 + Skills 生态</span>
+        </div>
+        <div class="product-row">
+          <span class="code">RX</span>
+          <span class="pname">小浣熊 Raccoon 3.0<span class="d">办公 AI Agent · 文档 / 数据 / PPT 一键生成</span></span>
+          <span class="ptag">V3.0</span>
+        </div>
+        <div class="product-row">
+          <span class="code">SK</span>
+          <span class="pname">SenseNova-Skills<span class="d">企业 AI 技能生态 · 8 项技能 · 三层架构</span></span>
+          <span class="ptag ok">BETA</span>
+        </div>
+
+        <div class="product-group-head">
+          <span class="num">03</span>
+          <span class="name">算力基础设施</span>
+          <span class="sub">SenseCore 大装置</span>
+        </div>
+        <div class="product-row">
+          <span class="code">SC</span>
+          <span class="pname">SenseCore 算力平台<span class="d">40,400 PetaFLOPS · 近 100 万模型研发任务 · 10+ 芯片厂商</span></span>
+          <span class="ptag">PROD</span>
+        </div>
+        <div class="product-row">
+          <span class="code">LX</span>
+          <span class="pname">LightX2V 世界模型<span class="d">推理系统 · 国内硬件上突破性能</span></span>
+          <span class="ptag">PROD</span>
+        </div>
+
+        <div class="product-group-head">
+          <span class="num">04</span>
+          <span class="name">消费应用</span>
+          <span class="sub">Kapi 系列</span>
+        </div>
+        <div class="product-row">
+          <span class="code">KP</span>
+          <span class="pname">Kapi Cam / Kapi 系列<span class="d">AI 原生消费应用 · 用户规模达数千万</span></span>
+          <span class="ptag">PROD</span>
+        </div>
+      </div>
+
+      <div class="pricing-strip">
+        <div class="label">SenseNova API 定价 · 公测期</div>
+        <div class="pricing-grid">
+          <div class="pricing-item">
+            <div class="k">月度费用</div>
+            <div class="v"><span class="free">0 港元/月</span></div>
+            <div class="note">公测期完全免费</div>
+          </div>
+          <div class="pricing-item">
+            <div class="k">调用额度</div>
+            <div class="v">1,500<span class="u"> 次/5h</span></div>
+            <div class="note">每模型滚动重置</div>
+          </div>
+          <div class="pricing-item">
+            <div class="k">API Key</div>
+            <div class="v">≤ 20<span class="u"> 个</span></div>
+            <div class="note">原生兼容 OpenAI 接口</div>
+          </div>
+        </div>
+        <p class="pricing-foot">可用模型：SenseNova 6.7 Flash-Lite · SenseNova U1 Fast · deepseek-v4-flash · 粤语大模型 30 港元/百万 tokens。付费档位即将推出。</p>
+      </div>
+    </section>
+
+    <section class="section" id="risks">
+      <div class="section-head">
+        <div class="section-eyebrow">07 / 风险 &amp; 证据缺口</div>
+        <h2 class="section-title">结构性风险与数据完整性</h2>
+        <p class="section-subtitle">地缘政治和算力获取限制是核心结构性风险。证据缺口区分「已解决」与「未解决」，不影响报告结论但限制精度。</p>
+      </div>
+
+      <div class="risks-gaps">
+        <div>
+          <div class="block-title">主要风险</div>
+          <ul class="risk-list">
+            <li class="risk-item">
+              <div class="risk-num">R01 · 地缘政治</div>
+              <h4>美国实体清单限制算力</h4>
+              <p>2022 年被 BIS 列入实体清单，限制美国产先进芯片和 AI 训练设备获取。算力成本高于不受限制的竞争对手。</p>
+            </li>
+            <li class="risk-item">
+              <div class="risk-num">R02 · 竞争</div>
+              <h4>价格战挤压利润空间</h4>
+              <p>DeepSeek 低价 + 开源策略，云厂商交叉补贴。商汤定价保守，付费档位尚未上线，变现路径待验证。</p>
+            </li>
+            <li class="risk-item">
+              <div class="risk-num">R03 · 监管</div>
+              <h4>合规成本上升</h4>
+              <p>《数据安全法》《个人信息保护法》及大模型安全评估增加合规成本，但为头部企业提供护城河。商汤已完成备案。</p>
+            </li>
+            <li class="risk-item">
+              <div class="risk-num">R04 · 组织</div>
+              <h4>核心人才稳定性</h4>
+              <p>2024–2025 年持续组织调整（裁员、业务线合并），「1+X」战略下部分业务独立运营，稳定性面临考验。</p>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="block-title">证据缺口状态</div>
+          <table class="gap-table">
+            <thead><tr><th>缺失项</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="gap-name">商汤 2025 年度业绩</span><div class="gap-method">商汤官方新闻稿</div></td>
+                <td><span class="status ok">已获取</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">SenseNova 标杆排名</span><div class="gap-method">SuperCLUE 2025.12</div></td>
+                <td><span class="status ok">已获取</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">SenseCore 算力数据</span><div class="gap-method">商汤官方新闻稿</div></td>
+                <td><span class="status ok">已获取</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">NEO 架构信息</span><div class="gap-method">商汤官方新闻稿</div></td>
+                <td><span class="status ok">已获取</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">API 定价（付费档位）</span><div class="gap-method">公测信息已获取</div></td>
+                <td><span class="status part">部分</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">券商评级和目标价</span><div class="gap-method">东方财富 HSF10</div></td>
+                <td><span class="status no">未解决</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">SLA 服务等级协议</span><div class="gap-method">公测期未公开</div></td>
+                <td><span class="status no">未解决</span></td>
+              </tr>
+              <tr>
+                <td><span class="gap-name">第三方客户满意度</span><div class="gap-method">仅定性描述</div></td>
+                <td><span class="status no">未解决</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="final">
+      <div class="section-head">
+        <div class="section-eyebrow">08 / 结论与监测</div>
+        <h2 class="section-title">核心结论</h2>
+      </div>
+
+      <div class="final-verdict">
+        <div class="label">综合判断</div>
+        <div class="verdict">采购端：条件性观察 · 投资端：进入普通观察名单</div>
+        <div class="sub">
+          盈利拐点比预期更早，但全年仍亏损。视觉多模态为差异化护城河，AI 大模型商业化正在加速。
+          估值回落至接近净资产水平（PB ≈ 1.15），下行空间有限，上行取决于商业化拐点确认。
+        </div>
+      </div>
+
+      <div class="trigger-grid">
+        <div>
+          <div class="block-title">进入重点观察的触发条件</div>
+          <ul class="aside-list">
+            <li><span class="idx">01</span><span>亏损收窄至 20 亿港元以下（2024 年 47.81 亿港元，经营改善确认）</span></li>
+            <li><span class="idx">02</span><span>实现单季度盈利（盈利拐点确认）</span></li>
+            <li><span class="idx">03</span><span>AI 大模型收入突破 10 亿港元/年（2024 年 GenAI 收入约 26.6 亿港元）</span></li>
+            <li><span class="idx">04</span><span>与头部企业签订大型 AI 服务合同（订单里程碑）</span></li>
+            <li><span class="idx">05</span><span>SenseNova API 付费档位上线（变现路径确认）</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="block-title">退出观察的触发条件</div>
+          <ul class="aside-list">
+            <li><span class="idx">01</span><span>营收增速再次下滑或转负（2025 +33% 为基准）</span></li>
+            <li><span class="idx">02</span><span>亏损扩大（2025 收窄 58.6% 为基准）</span></li>
+            <li><span class="idx">03</span><span>H2 EBITDA 转正趋势被逆转</span></li>
+            <li><span class="idx">04</span><span>美国出口管制升级限制算力获取</span></li>
+            <li><span class="idx">05</span><span>AI 大模型市场被 DeepSeek 等进一步挤压</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="block-title">关键监测节点</div>
+      <div class="monitoring-timeline">
+        <div class="monitor-item passed">
+          <div class="monitor-date">2025.12</div>
+          <div class="monitor-event">NEO 架构发布并开源</div>
+          <div class="monitor-desc">原生多模态架构，1/10 训练数据达最优性能</div>
+        </div>
+        <div class="monitor-item passed">
+          <div class="monitor-date">2026.01</div>
+          <div class="monitor-event">SenseNova V6.5 Pro 多模态中国第 1</div>
+          <div class="monitor-desc">SuperCLUE 总分 75.35，6 项子任务国内第一</div>
+        </div>
+        <div class="monitor-item passed">
+          <div class="monitor-date">2026.03</div>
+          <div class="monitor-event">2025 年度业绩发布</div>
+          <div class="monitor-desc">营收 +33%，亏损收窄 58.6%，H2 EBITDA 转正</div>
+        </div>
+        <div class="monitor-item">
+          <div class="monitor-date">2026.07</div>
+          <div class="monitor-event">2025 年度经审计年报发布</div>
+          <div class="monitor-desc">港交所披露，验证新闻稿数据</div>
+        </div>
+        <div class="monitor-item">
+          <div class="monitor-date">2026.08</div>
+          <div class="monitor-event">2026 年中期业绩发布</div>
+          <div class="monitor-desc">持续跟踪亏损收窄节奏</div>
+        </div>
+        <div class="monitor-item">
+          <div class="monitor-date">2026 Q2</div>
+          <div class="monitor-event">NEO 架构第二代基础模型发布</div>
+          <div class="monitor-desc">验证架构优势能否持续转化为产品能力</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="footer-grid">
+      <div class="footer-section">
+        <h4>参考来源（9 个）</h4>
+        <ul>
+          <li><span class="src-id">[1]</span>商汤科技 2024 年年度报告（港交所披露易）— primary</li>
+          <li><span class="src-id">[2]</span>商汤科技 00020.HK 实时股价（东方财富 API）— primary</li>
+          <li><span class="src-id">[3]</span>商汤科技 SenseNova 日日新平台产品矩阵 — primary</li>
+          <li><span class="src-id">[4]</span>中国 AI 大模型与企业 AI 服务竞争格局分析（IDC 等）— secondary</li>
+          <li><span class="src-id">[5]</span>美国商务部实体清单与出口管制政策 — primary</li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>参考来源（续）</h4>
+        <ul>
+          <li><span class="src-id">[6]</span>中国 AI 与数据监管政策 — primary</li>
+          <li><span class="src-id">[7]</span>SenseTime 2025 Annual Results News（2026-03-25）— primary</li>
+          <li><span class="src-id">[8]</span>SenseTime SenseNova V6.5 Benchmark News（2026-01-12）— primary</li>
+          <li><span class="src-id">[9]</span>SenseNova API 公测定价信息（多来源综合）— secondary</li>
+        </ul>
+      </div>
+    </div>
+    <div class="disclaimer">
+      本报告基于公开信息编制，非投资建议。具体投资决策需专业机构评估。报告标注为厂商自述的数据（如 2025 年度业绩）未经独立第三方验证，最终以港交所经审计年报为准。
+      数据截止：2024 全年经审计年报 + 2025 年度业绩公告（2026-03-25）+ 2026 年 7 月 21 日实时股价。
+      研究模式：Normal（4 维度并行取证）+ 数据补充。证据来源：9 个来源，37 条 claim，10 条 writing context。
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if ('IntersectionObserver' in window) {
+    var sections = document.querySelectorAll('.section');
+    if (reduceMotion) {
+      sections.forEach(function (s) { s.classList.add('visible'); });
+    } else {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      sections.forEach(function (s) { observer.observe(s); });
+    }
+  } else {
+    document.querySelectorAll('.section').forEach(function (s) { s.classList.add('visible'); });
+  }
+
+  var stockLine = document.getElementById('stockLine');
+  if (stockLine) {
+    if (reduceMotion) {
+      stockLine.style.strokeDashoffset = '0';
+    } else {
+      stockLine.getBoundingClientRect();
+      setTimeout(function () {
+        stockLine.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(0.22, 0.8, 0.24, 1)';
+        stockLine.style.strokeDashoffset = '0';
+      }, 180);
+    }
+  }
+
+  var navLinks = document.querySelectorAll('#navLinks a');
+  var sectionIds = ['hero', 'summary', 'conclusions', 'update', 'financials', 'competition', 'products', 'risks', 'final'];
+
+  if ('IntersectionObserver' in window) {
+    var spyObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var id = entry.target.id;
+          navLinks.forEach(function (link) {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { threshold: 0.25, rootMargin: '-80px 0px -45% 0px' });
+
+    sectionIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) spyObserver.observe(el);
+    });
+  }
+
+  navLinks.forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (target) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+
+  var navRail = document.getElementById('navRail');
+  if (navRail) {
+    function ensureToggle() {
+      if (window.innerWidth > 768) {
+        var existing = document.querySelector('.mobile-toggle');
+        if (existing) existing.remove();
+        navRail.classList.remove('open');
+        return;
+      }
+      if (document.querySelector('.mobile-toggle')) return;
+
+      var btn = document.createElement('button');
+      btn.className = 'mobile-toggle';
+      btn.setAttribute('aria-label', '打开导航');
+      btn.setAttribute('type', 'button');
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      btn.addEventListener('click', function () {
+        var open = navRail.classList.toggle('open');
+        btn.setAttribute('aria-label', open ? '关闭导航' : '打开导航');
+      });
+      document.body.appendChild(btn);
+
+      navLinks.forEach(function (link) {
+        link.addEventListener('click', function () { navRail.classList.remove('open'); });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!navRail.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+          navRail.classList.remove('open');
+        }
+      });
+    }
+
+    ensureToggle();
+    window.addEventListener('resize', ensureToggle);
+  }
+})();
+</script>
+
+<button class="console-toggle-btn" id="consoleToggleBtn" type="button" title="打开研究控制台">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="2" y="4" width="16" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <circle cx="5" cy="7" r="1" fill="currentColor"/>
+    <circle cx="8" cy="7" r="1" fill="currentColor"/>
+  </svg>
+</button>
+<style>
+  .console-toggle-btn {
+    position: fixed; bottom: 24px; right: 24px; z-index: 8000;
+    width: 48px; height: 48px; border-radius: 2px;
+    background: var(--surface); border: 1px solid var(--accent);
+    color: var(--accent); cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .console-toggle-btn.visible { display: flex; }
+</style>
+<script>
+(function(){
+  var tb=document.getElementById('consoleToggleBtn');
+  var ce=document.getElementById('researchConsole');
+  if(tb){tb.onclick=function(){ce.classList.remove('hidden');tb.classList.remove('visible');};}
+  if(window.location.hash==='#console'){ce.classList.remove('hidden');}
+})();
+</script>
+
+</body>
+</html>

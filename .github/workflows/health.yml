@@ -1,0 +1,55 @@
+name: Source Health Report
+
+on:
+  schedule:
+    # 每周一 10:00（北京时间）推送信源体检报告
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+
+jobs:
+  health:
+    # 与采集一致，跑在腾讯云 self-hosted runner 上，避免境内 .edu.cn/.cn 站点被美国 IP 屏蔽而误报失败。
+    runs-on: [self-hosted, china]
+    timeout-minutes: 30
+    steps:
+      - name: Configure mirrors for china runner
+        run: |
+          git config --global url."https://gh-proxy.com/https://github.com/".insteadOf "https://github.com/"
+          npm config set registry https://registry.npmmirror.com
+
+      - uses: actions/checkout@v4
+
+      - name: Ensure Node 24 (npmmirror fallback)
+        run: |
+          set -e
+          NEED_INSTALL=0
+          if command -v node >/dev/null 2>&1; then
+            MAJOR=$(node -p 'process.versions.node.split(".")[0]')
+            echo "系统 node 主版本: $MAJOR"
+            [ "$MAJOR" = "24" ] || NEED_INSTALL=1
+          else
+            NEED_INSTALL=1
+          fi
+          if [ "$NEED_INSTALL" = "1" ]; then
+            ARCH=$(uname -m); [ "$ARCH" = "x86_64" ] && ARCH=x64 || [ "$ARCH" = "aarch64" ] && ARCH=arm64
+            echo "从 npmmirror 下载 node 24 ($ARCH)..."
+            curl -fsSL --retry 3 -o /tmp/node24.tgz \
+              "https://registry.npmmirror.com/-/binary/node/latest-v24.x/node-latest-linux-${ARCH}.tar.gz"
+            mkdir -p "$HOME/node24"
+            tar -xzf /tmp/node24.tgz --strip-components=1 -C "$HOME/node24"
+            echo "$HOME/node24/bin" >> "$GITHUB_PATH"
+          fi
+          node -v
+
+      - name: npm ci (npmmirror)
+        run: |
+          npm config set registry https://registry.npmmirror.com
+          npm ci
+
+      - name: Run source health check
+        env:
+          # 用于读取 collection_runs 历史趋势；缺失时仅输出实时探活结果
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+        run: node scripts/source-health-check.js

@@ -1,0 +1,447 @@
+const agenda = require("../../utils/agenda.js");
+const api = require("../../utils/api.js");
+const classify = require("../../utils/classify.js");
+const format = require("../../utils/format.js");
+
+const CATEGORIES = [
+  { key: "", label: "全部" },
+  { key: "演出音乐", label: "演出" },
+  { key: "展览", label: "展览" },
+  { key: "线下活动", label: "活动" },
+  { key: "高校讲座", label: "讲座" },
+  { key: "AI聚会", label: "AI" },
+];
+const SHORT_CATEGORY = {};
+CATEGORIES.forEach((item) => {
+  if (item.key) SHORT_CATEGORY[item.key] = item.label;
+});
+
+// 每天默认露出的「当天开始 / 结束」行数，其余折叠
+const DAY_ROW_LIMIT = 5;
+// 「正在进行」海报栏最多放几张
+const RAIL_LIMIT = 10;
+// 吸顶筛选条（类目 Tab + 日期条）的高度，单位 px，用于点日期跳转时留出偏移
+const STICKY_HEIGHT = 116;
+
+// 首屏缓存：活动两天才采集一次，先用上次结果铺满页面，请求回来再覆盖。
+// 实例缩容到 0 时 callContainer 可能要等到 15s 超时，有缓存就不至于先给人一屏空白。
+const EVENTS_CACHE_KEY = "events_cache_v1";
+// 超过这个天数的缓存不再展示：宁可走加载态，也不让用户看两周前的日程
+const EVENTS_CACHE_MAX_AGE_DAYS = 10;
+
+function cacheNoteOf(savedAt) {
+  return `上次更新 ${format.eventDate(savedAt)} ${format.eventTime(savedAt)}`;
+}
+
+Page({
+  data: {
+    categories: CATEGORIES,
+    activeCategory: "",
+    // 二级分类与区域：与一级类目一样在本地重算，不走服务端（接口一次返回全量）
+    activeSubcategory: "",
+    activeDistrict: "",
+    // 「筛选」入口上的角标数字 = 二级 + 区域已选个数（一级类目是 Tab，不计入）
+    filterCount: 0,
+    filter: { open: false, subcategories: [], districts: [] },
+    searchKeyword: "",
+    loading: true,
+    errorMsg: "",
+    errorDetail: "",
+    // 页面上的数据来自本地缓存（还没拿到本次请求的结果）
+    fromCache: false,
+    // 请求失败但缓存已经把内容铺出来了，此时只提示、不把列表换成报错屏
+    offline: false,
+    cacheNote: "",
+
+    // 自定义导航：首屏是出血封面，下滑越过封面后才显示实色标题栏
+    statusBarHeight: 20,
+    navHeight: 64,
+    navSolid: false,
+
+    stats: { upcoming: 0, ongoing: 0, venues: 0 },
+    ongoing: [],
+    ongoingCount: 0,
+    chips: [],
+    days: [],
+    // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
+    activeDate: "",
+    // 「展期中」完整清单的底部面板
+    drawer: { open: false, day: "", weekday: "", items: [] },
+  },
+
+  // 接口一次返回 14 天窗口全量；setData 里只放渲染要用的精简字段，
+  // 完整事件对象留在这里按下标取（进详情页时用），避免 setData 体积过大
+  rawEvents: [],
+  pool: [],
+  // 每天折叠起来的展期中活动，展开时才 setData
+  foldedByDate: {},
+  // 每个日期分组距页面顶部的距离（px），滚动时用来判断当前滚到哪一天
+  dayTops: [],
+
+  onLoad(options) {
+    // 从朋友圈 / 会话分享链接进来时带上关键词，落地即还原筛选结果
+    const shared = options && options.search ? String(options.search) : "";
+    if (shared) this.setData({ searchKeyword: shared });
+
+    this.measureNav();
+
+    // 开放分享入口（含朋友圈）。部分基础库不支持 menus 参数，失败静默忽略即可
+    if (wx.showShareMenu) {
+      wx.showShareMenu({
+        menus: ["shareAppMessage", "shareTimeline"],
+        fail: () => {},
+      });
+    }
+
+    // 带搜索词进来时不能用缓存：缓存存的是全量列表，和搜索结果不是一回事
+    if (!shared) this.restoreCache();
+
+    this.load();
+  },
+
+  // 标题栏高度 = 状态栏 + 胶囊按钮上下留白，跟着机型走（刘海屏 / 灵动岛各不相同）
+  measureNav() {
+    try {
+      const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+      const statusBarHeight = info.statusBarHeight || 20;
+      const menu = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
+      const navHeight = menu && menu.bottom ? menu.bottom + (menu.top - statusBarHeight) : statusBarHeight + 44;
+      this.setData({ statusBarHeight, navHeight });
+    } catch (error) {
+      // 取不到就用默认值，不影响功能
+    }
+  },
+
+  onPageScroll(event) {
+    // 封面高 744rpx，滚过大半后切到实色标题栏。只在状态翻转时 setData
+    const threshold = (wx.getWindowInfo ? wx.getWindowInfo().windowWidth : 375) * 0.75;
+    const navSolid = event.scrollTop > threshold;
+    this.syncActiveDate(event.scrollTop);
+    if (navSolid === this.data.navSolid) return;
+    this.setData({ navSolid });
+    // 胶囊按钮和状态栏文字的颜色：压在封面上用白色，实色标题栏上跟随深浅色
+    const dark = (wx.getAppBaseInfo ? wx.getAppBaseInfo().theme : "") === "dark";
+    wx.setNavigationBarColor({
+      frontColor: navSolid && !dark ? "#000000" : "#ffffff",
+      backgroundColor: "#000000",
+      fail: () => {},
+    });
+  },
+
+  // 量出每个日期分组的位置。列表内容变化（切类目、展开折叠）后都要重量
+  measureDays() {
+    wx.createSelectorQuery()
+      .selectAll(".day")
+      .boundingClientRect()
+      .selectViewport()
+      .scrollOffset()
+      .exec((res) => {
+        const rects = (res && res[0]) || [];
+        const scrollTop = res && res[1] ? res[1].scrollTop : 0;
+        this.dayTops = rects.map((rect) => ({ date: rect.id.replace("day-", ""), top: rect.top + scrollTop }));
+        this.syncActiveDate(scrollTop);
+      });
+  },
+
+  // 找出「已经滚到吸顶筛选条下面」的最后一天。只在日期变化时 setData
+  syncActiveDate(scrollTop) {
+    if (!this.dayTops.length) return;
+    const line = scrollTop + this.data.navHeight + STICKY_HEIGHT + 40;
+    let current = this.dayTops[0].date;
+    for (let index = 0; index < this.dayTops.length; index += 1) {
+      if (this.dayTops[index].top > line) break;
+      current = this.dayTops[index].date;
+    }
+    if (current !== this.data.activeDate) this.setData({ activeDate: current });
+  },
+
+  onPullDownRefresh() {
+    this.load().finally(() => wx.stopPullDownRefresh());
+  },
+
+  // 上次成功拿到的全量列表，先渲染出来再发请求（失败时的兜底见 load 的 catch）
+  restoreCache() {
+    let cached = null;
+    try {
+      cached = wx.getStorageSync(EVENTS_CACHE_KEY);
+    } catch (error) {
+      return;
+    }
+    if (!cached || !Array.isArray(cached.events) || !cached.events.length) return;
+
+    const savedAt = Number(cached.savedAt) || 0;
+    const ageDays = (Date.now() - savedAt) / 86_400_000;
+    // 时间戳异常（未来时间、或过期太久）直接丢弃，不拿脏数据顶上
+    if (!(ageDays >= 0) || ageDays > EVENTS_CACHE_MAX_AGE_DAYS) return;
+
+    this.rawEvents = cached.events;
+    this.setData({ loading: false, fromCache: true, cacheNote: cacheNoteOf(savedAt) });
+    this.rebuild();
+  },
+
+  // 只缓存全量列表：搜索结果是过滤后的子集，写进去会把首页默认列表换成搜索结果
+  saveCache() {
+    if (this.data.searchKeyword.trim()) return;
+    try {
+      wx.setStorageSync(EVENTS_CACHE_KEY, { savedAt: Date.now(), events: this.rawEvents });
+    } catch (error) {
+      // 存储写满等异常不影响主流程
+    }
+  },
+
+  load() {
+    // 已经有缓存内容时不显示骨架屏，否则首屏会「闪一下骨架再变成列表」
+    this.setData({
+      loading: !this.rawEvents.length,
+      errorMsg: "",
+      errorDetail: "",
+      offline: false,
+    });
+    // 分类不在服务端过滤：一次拿全量，切分类在本地重算，零延迟。
+    // 只有搜索需要走服务端（要匹配 summary，本地拿不到全文）。
+    const params = {};
+    const keyword = this.data.searchKeyword.trim();
+    if (keyword) params.search = keyword;
+
+    return api
+      .fetchEvents(params)
+      .then((res) => {
+        this.rawEvents = res.events || [];
+        this.setData({ loading: false, fromCache: false, offline: false, cacheNote: "" });
+        this.rebuild();
+        this.saveCache();
+      })
+      .catch((err) => {
+        // 缓存已经把内容铺出来了：保留列表、只加一行提示，别把用户看得见的东西换成报错屏
+        if (this.data.fromCache) {
+          this.setData({ loading: false, offline: true });
+          return;
+        }
+        this.setData({
+          loading: false,
+          errorMsg: err.message || "加载失败，请重试",
+          // 排查期把服务端返回体一并显示出来（线上可随时删掉这一行）
+          errorDetail: err.detail ? String(err.detail).slice(0, 160) : "",
+        });
+      });
+  },
+
+  // 按当前类目重算整页：统计数字、「正在进行」海报栏、日期条、日程表
+  rebuild() {
+    const today = format.toShanghaiDate(new Date());
+    const { activeCategory, activeSubcategory, activeDistrict } = this.data;
+    this.pool = this.rawEvents
+      .filter((event) => !activeCategory || event.category === activeCategory)
+      .filter((event) => !activeSubcategory || event.subcategory === activeSubcategory)
+      // 区域识别不出时服务端下发空串，这类活动只在「全部」下出现 ——
+      // 规则宁可留空也不错标，覆盖情况与提升路径见 src/lib/event-classify.js
+      .filter((event) => !activeDistrict || event.district === activeDistrict);
+    const indexOf = new Map(this.pool.map((event, index) => [event, index]));
+
+    const split = agenda.splitByToday(this.pool, today);
+    const venues = {};
+    this.pool.forEach((event) => {
+      venues[event.venue] = true;
+    });
+
+    const built = agenda.buildAgenda(this.pool, today);
+    this.foldedByDate = {};
+
+    const days = built
+      .filter((day) => day.rows.length > 0)
+      .map((day) => {
+        this.foldedByDate[day.date] = day.folded;
+        const own = day.rows.filter((row) => row.kind !== "run").length;
+        return {
+          date: day.date,
+          day: day.day,
+          weekday: day.weekday,
+          isToday: day.isToday,
+          meta: day.startCount ? `${day.startCount} 场开始` : `${day.runningCount} 场展期中`,
+          rows: day.rows.map((row) => {
+            const labels = agenda.rowLabels(row.event, row.kind, day.date);
+            return {
+              id: indexOf.get(row.event),
+              kind: row.kind,
+              title: row.event.title,
+              venue: row.event.venue,
+              category: SHORT_CATEGORY[row.event.category] || row.event.category,
+              image: row.event.image_url || "",
+              time: labels.time,
+              range: labels.range,
+              span: labels.span,
+            };
+          }),
+          hiddenCount: Math.max(0, own - DAY_ROW_LIMIT),
+          showAll: false,
+          foldedCount: day.folded.length,
+        };
+      });
+
+    this.setData({
+      stats: { upcoming: split.upcoming.length, ongoing: split.ongoing.length, venues: Object.keys(venues).length },
+      ongoingCount: split.ongoing.length,
+      ongoing: split.ongoing.slice(0, RAIL_LIMIT).map((event) => ({
+        id: indexOf.get(event),
+        title: event.title,
+        venue: event.venue,
+        category: SHORT_CATEGORY[event.category] || event.category,
+        image: event.image_url || "",
+        until: agenda.dotDate(agenda.endDay(event)),
+      })),
+      chips: built.map((day) => ({
+        date: day.date,
+        day: day.day,
+        weekday: day.weekday,
+        isToday: day.isToday,
+        isWeekend: day.isWeekend,
+        empty: day.rows.length === 0,
+      })),
+      days,
+      activeDate: days.length ? days[0].date : "",
+    }, () => this.measureDays());
+  },
+
+  onSelectCategory(event) {
+    const category = event.currentTarget.dataset.category;
+    if (category === this.data.activeCategory) return;
+    // 二级分类挂在一级类目下，换类目后原来的二级选择必然失效，一并清掉
+    this.setData({ activeCategory: category, activeSubcategory: "" });
+    this.rebuild();
+  },
+
+  // ---------- 筛选面板：二级分类 + 区域 ----------
+  onOpenFilter() {
+    this.setData({
+      filter: {
+        open: true,
+        // 「全部」时没有二级可选（二级是类目内的细分），此时该组不渲染
+        subcategories: classify.subcategoryOptions(this.data.activeCategory),
+        districts: classify.districtOptions(),
+      },
+    });
+  },
+
+  onCloseFilter() {
+    this.setData({ "filter.open": false });
+  },
+
+  onSelectSubcategory(event) {
+    const value = event.currentTarget.dataset.value;
+    this.setData({
+      activeSubcategory: value,
+      filterCount: this.countFilters(value, this.data.activeDistrict),
+    });
+    this.rebuild();
+  },
+
+  onSelectDistrict(event) {
+    const value = event.currentTarget.dataset.value;
+    this.setData({
+      activeDistrict: value,
+      filterCount: this.countFilters(this.data.activeSubcategory, value),
+    });
+    this.rebuild();
+  },
+
+  onResetFilter() {
+    this.setData({ activeSubcategory: "", activeDistrict: "", filterCount: 0 });
+    this.rebuild();
+  },
+
+  countFilters(subcategory, district) {
+    return (subcategory ? 1 : 0) + (district ? 1 : 0);
+  },
+
+  // 点日期条 → 滚到那一天。偏移量要扣掉固定标题栏和吸顶筛选条的高度
+  onJumpDay(event) {
+    const { date, empty } = event.currentTarget.dataset;
+    if (empty) return;
+    wx.pageScrollTo({
+      selector: `#day-${date}`,
+      offsetTop: -(this.data.navHeight + STICKY_HEIGHT),
+      duration: 250,
+    });
+  },
+
+  onToggleDayRows(event) {
+    const index = event.currentTarget.dataset.index;
+    this.setData({ [`days[${index}].showAll`]: !this.data.days[index].showAll }, () => this.measureDays());
+  },
+
+  // 「展期中 · 另有 N 场」在底部面板里看。这批数据量大，打开时才 setData
+  onOpenDrawer(event) {
+    const day = this.data.days[event.currentTarget.dataset.index];
+    const items = (this.foldedByDate[day.date] || []).map((item) => {
+      const labels = agenda.rowLabels(item, "run", day.date);
+      return {
+        id: this.pool.indexOf(item),
+        title: item.title,
+        venue: item.venue,
+        category: SHORT_CATEGORY[item.category] || item.category,
+        image: item.image_url || "",
+        time: labels.time,
+        range: labels.range,
+      };
+    });
+    this.setData({
+      drawer: { open: true, day: day.day, weekday: day.weekday + (day.isToday ? " · 今天" : ""), items },
+    });
+  },
+
+  onCloseDrawer() {
+    this.setData({ drawer: { open: false, day: "", weekday: "", items: [] } });
+  },
+
+  // 占位：吞掉面板上的点击和遮罩上的滑动，避免穿透到下面的页面
+  noop() {},
+
+  onOpenEvent(event) {
+    const target = this.pool[event.currentTarget.dataset.id];
+    if (!target) return;
+    wx.navigateTo({
+      url: "/pages/detail/detail",
+      success: (res) => res.eventChannel.emit("event", target),
+    });
+  },
+
+  onPosterError(event) {
+    this.setData({ [`ongoing[${event.currentTarget.dataset.index}].image`]: "" });
+  },
+
+  onSearchInput(event) {
+    this.setData({ searchKeyword: event.detail.value });
+  },
+
+  onSearchConfirm() {
+    this.load();
+  },
+
+  onClearSearch() {
+    if (!this.data.searchKeyword) return;
+    this.setData({ searchKeyword: "" });
+    this.load();
+  },
+
+  onRetry() {
+    this.load();
+  },
+
+  // 分享当前筛选结果，而不是干巴巴一个首页
+  onShareAppMessage() {
+    const category = this.data.activeCategory ? `【${this.data.activeCategory}】` : "";
+    const keyword = this.data.searchKeyword.trim();
+    return {
+      title: `${category}上海未来两周活动${keyword ? `｜${keyword}` : ""}`,
+      path: "/pages/home/home",
+    };
+  },
+
+  onShareTimeline() {
+    const keyword = this.data.searchKeyword.trim();
+    return {
+      title: keyword ? `上海未来两周活动｜${keyword}` : "上海未来两周活动",
+      query: keyword ? `search=${encodeURIComponent(keyword)}` : "",
+    };
+  },
+});

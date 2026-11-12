@@ -8,6 +8,7 @@ import {
   getTonightEvents,
   getTopPicks,
   getWeekendEvents,
+  sortCampusLectures,
 } from "../src/lib/recommendations.js";
 
 const events = [
@@ -57,6 +58,85 @@ test("category features return one recommendation per category", () => {
 test("tonight and weekend shelves use Shanghai local dates", () => {
   assert.equal(getTonightEvents(events, "2026-05-22T12:00:00+08:00")[0].title, "音乐节开幕现场");
   assert.equal(getWeekendEvents(events).length, 3);
+});
+
+test("weekend/tonight classification is independent of runtime timezone", () => {
+  // 2026-05-23 是上海周六；UTC 表示为 05-22T16:00Z 之后。若用 getDay()（UTC 周五）会漏判。
+  const saturdayEveningShanghai = event("周六晚演出", "2026-05-23T19:00:00+08:00", "演出音乐", "上海音乐厅");
+  // 2026-05-22 是上海周五
+  const fridayNight = event("周五夜晚场", "2026-05-22T20:00:00+08:00", "演出音乐", "上海音乐厅");
+
+  const weekend = getWeekendEvents([saturdayEveningShanghai, fridayNight]);
+  assert.equal(weekend.length, 1);
+  assert.equal(weekend[0].title, "周六晚演出");
+
+  const tonight = getTonightEvents([saturdayEveningShanghai], "2026-05-23T10:00:00+08:00");
+  assert.equal(tonight.length, 1);
+  assert.equal(tonight[0].title, "周六晚演出");
+
+  // 上海周六凌晨 1 点（= UTC 周五 17 点）：不算今晚（<18 点），但算周末
+  const saturdayEarlyMorning = event("周六凌晨活动", "2026-05-23T01:00:00+08:00", "演出音乐", "上海音乐厅");
+  assert.equal(getTonightEvents([saturdayEarlyMorning], "2026-05-22T20:00:00+08:00").length, 0);
+  assert.equal(getWeekendEvents([saturdayEarlyMorning]).length, 1);
+});
+
+test("sortCampusLectures orders upcoming ascending then past descending", () => {
+  const lectures = [
+    event("远期讲座", "2026-09-16T14:00:00+08:00", "高校讲座", "上交"),
+    event("昨天讲座", "2026-09-12T10:00:00+08:00", "高校讲座", "复旦"),
+    event("后天讲座", "2026-09-15T14:00:00+08:00", "高校讲座", "同济"),
+    event("前天讲座", "2026-09-11T10:00:00+08:00", "高校讲座", "华师大"),
+    event("今天讲座", "2026-09-13T15:00:00+08:00", "高校讲座", "上财"),
+    event("明天讲座", "2026-09-14T14:00:00+08:00", "高校讲座", "华东理工"),
+    event("大前天讲座", "2026-09-10T10:00:00+08:00", "高校讲座", "上大"),
+  ];
+
+  const sorted = sortCampusLectures(lectures, "2026-09-13T08:00:00+08:00");
+
+  assert.deepEqual(
+    sorted.map((e) => e.title),
+    [
+      "今天讲座",
+      "明天讲座",
+      "后天讲座",
+      "远期讲座",
+      "昨天讲座",
+      "前天讲座",
+      "大前天讲座",
+    ],
+  );
+});
+
+test("getDisplayTopPicks with preferImages puts image events first", () => {
+  const exhibitions = [
+    { ...event("无图展览B", "2026-05-24T10:00:00+08:00", "展览", "民生美术馆") },
+    { ...event("有图展览A", "2026-05-23T10:00:00+08:00", "展览", "外滩美术馆"), image_url: "https://example.com/a.jpg" },
+    { ...event("无图展览D", "2026-05-26T10:00:00+08:00", "展览", "余德耀美术馆") },
+    { ...event("有图展览C", "2026-05-25T10:00:00+08:00", "展览", "龙美术馆"), image_url: "https://example.com/c.jpg" },
+  ];
+
+  const picks = getDisplayTopPicks(exhibitions, 4, "2026-05-22T12:00:00+08:00", {
+    preferImages: true,
+  });
+  const hasImgFlags = picks.map((e) => Boolean(e.image_url));
+  assert.deepEqual(hasImgFlags, [true, true, false, false]);
+});
+
+test("sortCampusLectures prioritizes AI-related lectures to the front", () => {
+  const lectures = [
+    event("今天普通讲座", "2026-09-13T15:00:00+08:00", "高校讲座", "上财"),
+    event("明天普通讲座", "2026-09-14T14:00:00+08:00", "高校讲座", "华东理工"),
+    { ...event("昨天AI讲座", "2026-09-12T10:00:00+08:00", "高校讲座", "复旦"), summary: "探讨大模型与机器学习" },
+    event("远期普通讲座", "2026-09-16T14:00:00+08:00", "高校讲座", "上交"),
+  ];
+
+  const sorted = sortCampusLectures(lectures, "2026-09-13T08:00:00+08:00");
+
+  assert.equal(sorted[0].title, "昨天AI讲座");
+  assert.deepEqual(
+    sorted.slice(1).map((e) => e.title),
+    ["今天普通讲座", "明天普通讲座", "远期普通讲座"],
+  );
 });
 
 function event(title, start_time, category, venue) {

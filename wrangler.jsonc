@@ -11,7 +11,8 @@
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      "id": "e700165a80e741759b6feb9c052b4f5f"
+      "id": "e700165a80e741759b6feb9c052b4f5f",
+      "localConnectionString": "postgresql://placeholder:placeholder@localhost:5432/placeholder"
     }
   ],
   "routes": [

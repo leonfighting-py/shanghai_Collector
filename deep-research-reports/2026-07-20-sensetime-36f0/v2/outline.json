@@ -1,0 +1,296 @@
+{
+  "schema_version": "2.0",
+  "paradigm": {
+    "main": "comparison",
+    "secondary": "evaluation"
+  },
+  "depth_level": "deep_analysis",
+  "global_arc": "从ToB采购和投资两个决策视角出发，先统一商汤的公司基本面和产品能力口径，再用现有证据呈现其与竞品的差异和适用边界，最后给出有条件的采购合作与投资观察建议。所有结论均基于已核验证据，证据缺口在风险章节集中呈现。",
+  "organization_decision": {
+    "opening_summary": true,
+    "toc": true,
+    "format_constraint": "结论前置、决策导向、叙事主体、辅以对比表格",
+    "language": "zh-Hans",
+    "conclusion_style": "分级建议（采购：进入正式采购名单/小规模试点名单/条件性观察/暂不进入；投资：进入重点观察名单/普通观察名单/等待关键指标改善/暂不进入）"
+  },
+  "L0_draft": "商汤科技2024年营收约57.32亿港元、净亏损约42.18亿港元，账面现金约433亿港元可支撑约10年。SenseNova日日新在中文和视觉多模态处于国内第一梯队，但小浣熊办公Agent和企业服务生态尚处早期。商汤处于AI大模型市场第二梯队前段，纯文本能力落后于阿里通义、百度文心、DeepSeek。估值已回落至接近净资产水平（PB约1.15）。综合建议：采购端为条件性观察（视觉垂直场景可试点，办公场景建议观望），投资端为普通观察名单（关注AI商业化拐点）。",
+  "style_contract": {
+    "language": "zh-Hans",
+    "tone": "决策导向、客观中立、基于证据",
+    "terminology": {
+      "PB": "市净率",
+      "PE(TTM)": "滚动市盈率",
+      "AIaaS": "AI即服务",
+      "B2B/B2G": "企业对企业/企业对政府"
+    }
+  },
+  "content_units": [
+    {
+      "id": "u1",
+      "type": "narrative",
+      "title": "执行摘要",
+      "element_claim_ids": [
+        "d1.c2",
+        "d1.c4",
+        "d1.c5",
+        "d1.c7",
+        "d2.c1",
+        "d2.c5",
+        "d3.c6",
+        "d4.c1",
+        "d4.c3",
+        "d4.c7"
+      ],
+      "order": 1,
+      "description": "商汤公司基本面、产品、竞争和投资的总体概览，一句话判断采购和合作建议。"
+    },
+    {
+      "id": "u2",
+      "type": "narrative",
+      "title": "采购合作结论",
+      "element_claim_ids": [
+        "d2.c1",
+        "d2.c2",
+        "d2.c5",
+        "d2.c6",
+        "d2.c7",
+        "d3.c3",
+        "d3.c5",
+        "d3.c6"
+      ],
+      "order": 2,
+      "description": "面向ToB采购决策者，给出进入正式采购名单/小规模试点名单/条件性观察/暂不进入的分级建议及决策条件。"
+    },
+    {
+      "id": "u3",
+      "type": "narrative",
+      "title": "投资观察结论",
+      "element_claim_ids": [
+        "d4.c1",
+        "d4.c2",
+        "d4.c3",
+        "d4.c4",
+        "d4.c5",
+        "d4.c7",
+        "d4.c8"
+      ],
+      "order": 3,
+      "description": "面向投资决策者，给出进入重点观察名单/普通观察名单/等待关键指标改善/暂不进入观察名单的分级建议及触发条件。"
+    },
+    {
+      "id": "u4",
+      "type": "narrative",
+      "title": "公司基本面与商业化进展",
+      "element_claim_ids": [
+        "d1.c1",
+        "d1.c2",
+        "d1.c3",
+        "d1.c4",
+        "d1.c5",
+        "d1.c6",
+        "d1.c7",
+        "d1.c8",
+        "d1.c9"
+      ],
+      "order": 4,
+      "description": "商汤的上市地位、股东结构、营收趋势、盈利能力、现金流、研发投入、AI商业化转型进展和客户结构。"
+    },
+    {
+      "id": "u5",
+      "type": "narrative",
+      "title": "产品矩阵与企业采购适配性",
+      "element_claim_ids": [
+        "d2.c1",
+        "d2.c2",
+        "d2.c3",
+        "d2.c4",
+        "d2.c5",
+        "d2.c6",
+        "d2.c7"
+      ],
+      "order": 5,
+      "description": "SenseNova日日新、小浣熊、SenseCore、SenseNova-Skills的产品能力、部署模式、定价和企业适配场景。"
+    },
+    {
+      "id": "u6",
+      "type": "matrix",
+      "title": "竞争格局与替代方案",
+      "element_claim_ids": [
+        "d3.c1",
+        "d3.c2",
+        "d3.c3",
+        "d3.c4",
+        "d3.c5",
+        "d3.c6"
+      ],
+      "order": 6,
+      "description": "商汤与阿里通义、百度文心、字节豆包、DeepSeek、飞书、WPS等竞品的横向对比矩阵。"
+    },
+    {
+      "id": "u7",
+      "type": "narrative",
+      "title": "财务与投资价值",
+      "element_claim_ids": [
+        "d4.c1",
+        "d4.c2",
+        "d4.c3",
+        "d4.c4"
+      ],
+      "order": 7,
+      "description": "商汤的估值水平、盈利路径、现金流可持续性和收入质量分析。"
+    },
+    {
+      "id": "u8",
+      "type": "checklist",
+      "title": "主要风险与证据缺口",
+      "element_claim_ids": [
+        "d4.c5",
+        "d4.c6"
+      ],
+      "order": 8,
+      "description": "地缘政治、监管合规、算力获取等核心风险，以及本次研究未能覆盖的证据缺口。"
+    },
+    {
+      "id": "u9",
+      "type": "narrative",
+      "title": "90天采购验证计划",
+      "element_claim_ids": [
+        "d2.c2",
+        "d2.c5",
+        "d2.c6",
+        "d3.c3"
+      ],
+      "order": 9,
+      "description": "基于产品和企业采购证据，设计90天小规模试点验证计划，包括准确率、任务完成率、人工复核成本、SLA等指标。"
+    },
+    {
+      "id": "u10",
+      "type": "checklist",
+      "title": "投资观察指标与触发条件",
+      "element_claim_ids": [
+        "d4.c7",
+        "d4.c8"
+      ],
+      "order": 10,
+      "description": "进入投资观察名单的核心监测指标和触发条件。"
+    },
+    {
+      "id": "u11",
+      "type": "narrative",
+      "title": "结论",
+      "element_claim_ids": [
+        "d1.c5",
+        "d4.c3",
+        "d4.c1",
+        "d3.c6",
+        "d2.c1"
+      ],
+      "order": 11,
+      "description": "综合采购和投资两个维度的最终结论和决策建议。"
+    }
+  ],
+  "claim_routing_table": {
+    "u1": [
+      "d1.c2",
+      "d1.c4",
+      "d1.c5",
+      "d1.c7",
+      "d2.c1",
+      "d2.c5",
+      "d3.c6",
+      "d4.c1",
+      "d4.c3",
+      "d4.c7"
+    ],
+    "u2": [
+      "d2.c1",
+      "d2.c2",
+      "d2.c5",
+      "d2.c6",
+      "d2.c7",
+      "d3.c3",
+      "d3.c5",
+      "d3.c6"
+    ],
+    "u3": [
+      "d4.c1",
+      "d4.c2",
+      "d4.c3",
+      "d4.c4",
+      "d4.c5",
+      "d4.c7",
+      "d4.c8"
+    ],
+    "u4": [
+      "d1.c1",
+      "d1.c2",
+      "d1.c3",
+      "d1.c4",
+      "d1.c5",
+      "d1.c6",
+      "d1.c7",
+      "d1.c8",
+      "d1.c9"
+    ],
+    "u5": [
+      "d2.c1",
+      "d2.c2",
+      "d2.c3",
+      "d2.c4",
+      "d2.c5",
+      "d2.c6",
+      "d2.c7"
+    ],
+    "u6": [
+      "d3.c1",
+      "d3.c2",
+      "d3.c3",
+      "d3.c4",
+      "d3.c5",
+      "d3.c6"
+    ],
+    "u7": [
+      "d4.c1",
+      "d4.c2",
+      "d4.c3",
+      "d4.c4"
+    ],
+    "u8": [
+      "d4.c5",
+      "d4.c6"
+    ],
+    "u9": [
+      "d2.c2",
+      "d2.c5",
+      "d2.c6",
+      "d3.c3"
+    ],
+    "u10": [
+      "d4.c7",
+      "d4.c8"
+    ],
+    "u11": [
+      "d1.c5",
+      "d4.c3",
+      "d4.c1",
+      "d3.c6",
+      "d2.c1"
+    ]
+  },
+  "scan_summary": {
+    "total_claims": 30,
+    "dimensions_scanned": [
+      "d1",
+      "d2",
+      "d3",
+      "d4"
+    ],
+    "key_evidence_gaps": [
+      "商汤2025年中报数据未获取",
+      "IDC/艾瑞市场份额精确数字未获取",
+      "券商研报具体评级和目标价未获取",
+      "产品公开定价和SLA条款未获取",
+      "第三方独立客户满意度调查未获取"
+    ]
+  }
+}

@@ -1,0 +1,238 @@
+<!-- 自定义标题栏：压在封面上时透明，下滑越过封面后变实色并显示标题 -->
+<view class="nav {{navSolid ? 'nav-solid' : ''}}" style="height: {{navHeight}}px; padding-top: {{statusBarHeight}}px;">
+  <text class="nav-title">城市生活雷达</text>
+</view>
+
+<!-- 封面：出血插画 + 标题 + 三个数字 -->
+<view class="cover">
+  <image class="cover-img" src="/assets/cover.jpg" mode="aspectFill" />
+  <view class="cover-scrim"></view>
+  <view class="cover-body">
+    <view class="cover-title">上海城市</view>
+    <view class="cover-title">生活雷达<text class="cover-dot">.</text></view>
+    <view class="cover-stats">
+      <view class="cover-stat"><text class="cover-num serif">{{stats.upcoming}}</text>场即将开始</view>
+      <view class="cover-stat"><text class="cover-num serif">{{stats.ongoing}}</text>场正在进行</view>
+      <view class="cover-stat"><text class="cover-num serif">{{stats.venues}}</text>个场馆</view>
+    </view>
+  </view>
+</view>
+
+<view class="search">
+  <input
+    class="search-input"
+    placeholder="搜索活动 / 场馆"
+    placeholder-class="search-ph"
+    value="{{searchKeyword}}"
+    confirm-type="search"
+    bindconfirm="onSearchConfirm"
+    bindinput="onSearchInput"
+  />
+  <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">清除</text>
+</view>
+
+<!-- 数据来自本地缓存：请求还没回来或失败时，用一行提示代替整屏报错 -->
+<view wx:if="{{fromCache}}" class="cache-note">{{offline ? '网络未连通，已显示缓存' : cacheNote}}</view>
+
+<!-- 骨架屏：结构与真实列表行一致，避免布局跳变 -->
+<block wx:if="{{loading}}">
+  <view wx:for="{{[1, 2, 3, 4]}}" wx:key="*this" class="skeleton-row">
+    <view class="skeleton skeleton-time"></view>
+    <view class="skeleton-body">
+      <view class="skeleton skeleton-line"></view>
+      <view class="skeleton skeleton-line skeleton-line-short"></view>
+    </view>
+    <view class="skeleton skeleton-thumb"></view>
+  </view>
+</block>
+
+<view wx:elif="{{errorMsg}}" class="state">
+  <view>{{errorMsg}}</view>
+  <view wx:if="{{errorDetail}}" class="err-detail">{{errorDetail}}</view>
+  <button class="btn-plain retry" bindtap="onRetry">重试</button>
+</view>
+
+<block wx:else>
+  <!-- 正在进行：已开展、未结束的展览与长档期演出 -->
+  <block wx:if="{{ongoing.length}}">
+    <view class="rail-head">
+      <text class="rail-title serif">正在进行</text>
+      <text class="rail-count">{{ongoingCount}} 场</text>
+    </view>
+    <scroll-view class="rail" scroll-x enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{ongoing}}"
+        wx:key="id"
+        class="poster"
+        data-id="{{item.id}}"
+        bindtap="onOpenEvent"
+      >
+        <view class="poster-cover">
+          <text class="poster-fallback serif">{{item.category}}</text>
+          <image
+            wx:if="{{item.image}}"
+            class="poster-img"
+            src="{{item.image}}"
+            mode="aspectFill"
+            lazy-load
+            data-index="{{index}}"
+            binderror="onPosterError"
+          />
+        </view>
+        <view class="poster-title serif">{{item.title}}</view>
+        <view class="poster-meta"><text class="accent">至 {{item.until}}</text> · {{item.venue}}</view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- 吸顶筛选条：类目 Tab + 筛选入口 + 日期条 -->
+  <view class="sticky" style="top: {{navHeight}}px;">
+    <view class="tabs-row">
+      <scroll-view class="tabs" scroll-x enhanced show-scrollbar="{{false}}">
+        <view
+          wx:for="{{categories}}"
+          wx:key="key"
+          class="tab {{item.key === activeCategory ? 'tab-on' : ''}}"
+          data-category="{{item.key}}"
+          bindtap="onSelectCategory"
+        >{{item.label}}</view>
+      </scroll-view>
+      <view class="filter-btn {{filterCount ? 'filter-btn-on' : ''}}" bindtap="onOpenFilter">
+        <text>筛选</text><text wx:if="{{filterCount}}" class="filter-count">{{filterCount}}</text>
+      </view>
+    </view>
+    <!-- scroll-into-view：当前日期滚出日期条可视范围时自动带回来 -->
+    <scroll-view class="chips" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="chip-{{activeDate}}" scroll-with-animation>
+      <view
+        wx:for="{{chips}}"
+        wx:key="date"
+        id="chip-{{item.date}}"
+        class="chip {{item.date === activeDate ? 'chip-active' : ''}} {{item.isToday ? 'chip-today' : ''}} {{item.isWeekend ? 'chip-weekend' : ''}} {{item.empty ? 'chip-empty' : ''}}"
+        data-date="{{item.date}}"
+        data-empty="{{item.empty}}"
+        bindtap="onJumpDay"
+      >
+        <view class="chip-week">{{item.weekday}}</view>
+        <view class="chip-day serif">{{item.day}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view wx:if="{{!days.length}}" class="state">
+    当前筛选下暂无活动，换个分类或关键词试试
+  </view>
+
+  <view wx:for="{{days}}" wx:for-item="day" wx:for-index="dayIndex" wx:key="date" id="day-{{day.date}}" class="day">
+    <view class="day-head {{day.isToday ? 'day-head-today' : ''}}">
+      <text class="day-num serif">{{day.day}}</text>
+      <text class="day-week">{{day.weekday}}{{day.isToday ? ' · 今天' : ''}}</text>
+      <text class="day-meta">{{day.meta}}</text>
+    </view>
+
+    <block wx:for="{{day.rows}}" wx:for-item="row" wx:for-index="rowIndex" wx:key="id">
+      <event-row
+        wx:if="{{row.kind === 'run' || day.showAll || rowIndex < 5}}"
+        title="{{row.title}}"
+        venue="{{row.venue}}"
+        category="{{row.category}}"
+        image="{{row.image}}"
+        time="{{row.time}}"
+        range="{{row.range}}"
+        span="{{row.span}}"
+        data-id="{{row.id}}"
+        bindtap="onOpenEvent"
+      />
+    </block>
+
+    <view wx:if="{{day.hiddenCount}}" class="fold" data-index="{{dayIndex}}" bindtap="onToggleDayRows">
+      <text>{{day.showAll ? '收起' : '展开当日其余 ' + day.hiddenCount + ' 场'}}</text>
+      <text>{{day.showAll ? '↑' : '↓'}}</text>
+    </view>
+
+    <view wx:if="{{day.foldedCount}}" class="fold" data-index="{{dayIndex}}" bindtap="onOpenDrawer">
+      <text>展期中 · 另有 {{day.foldedCount}} 场今天也能去</text>
+      <text>查看全部 →</text>
+    </view>
+  </view>
+
+  <view wx:if="{{days.length}}" class="state">已展示全部（未来 14 天）</view>
+</block>
+
+<!-- 「展期中」完整清单：从底部升起的面板，自己滚动，随时可关。
+     不直接摊在页面里 —— 几十行展开后要往回滑很久才能收起 -->
+<view wx:if="{{drawer.open}}" class="drawer-backdrop" bindtap="onCloseDrawer" catchtouchmove="noop">
+  <view class="drawer" catchtap="noop">
+    <view class="drawer-head">
+      <view>
+        <view class="drawer-title"><text class="drawer-day serif">{{drawer.day}}</text>{{drawer.weekday}}</view>
+        <view class="drawer-meta">展期中 · {{drawer.items.length}} 场这天也能去 · 按结束日期排序</view>
+      </view>
+      <view class="drawer-close" bindtap="onCloseDrawer">关闭 ✕</view>
+    </view>
+    <scroll-view class="drawer-body" scroll-y enhanced show-scrollbar="{{false}}">
+      <event-row
+        wx:for="{{drawer.items}}"
+        wx:key="id"
+        title="{{item.title}}"
+        venue="{{item.venue}}"
+        category="{{item.category}}"
+        image="{{item.image}}"
+        time="{{item.time}}"
+        range="{{item.range}}"
+        span
+        data-id="{{item.id}}"
+        bindtap="onOpenEvent"
+      />
+      <view class="drawer-end"></view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 筛选面板：二级分类 + 区域。与「展期中」面板同一套视觉，从底部升起。
+     二级挂在某个一级类目下，所以「全部」时该组不出现（二级是类目内的细分）。 -->
+<view wx:if="{{filter.open}}" class="drawer-backdrop" bindtap="onCloseFilter" catchtouchmove="noop">
+  <view class="drawer filter-drawer" catchtap="noop">
+    <view class="drawer-head">
+      <view>
+        <view class="drawer-title">筛选</view>
+        <view class="drawer-meta">选完点「查看结果」收起</view>
+      </view>
+      <view class="drawer-close" bindtap="onCloseFilter">关闭 ✕</view>
+    </view>
+
+    <scroll-view class="drawer-body" scroll-y enhanced show-scrollbar="{{false}}">
+      <block wx:if="{{filter.subcategories.length}}">
+        <view class="filter-label">细分 · {{activeCategory}}</view>
+        <view class="filter-group">
+          <view
+            wx:for="{{filter.subcategories}}"
+            wx:key="value"
+            class="fchip {{item.value === activeSubcategory ? 'fchip-on' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onSelectSubcategory"
+          >{{item.label}}</view>
+        </view>
+      </block>
+      <view wx:else class="filter-label">细分 · 先在上面选一个类目</view>
+
+      <view class="filter-label">区域</view>
+      <view class="filter-group">
+        <view
+          wx:for="{{filter.districts}}"
+          wx:key="value"
+          class="fchip {{item.value === activeDistrict ? 'fchip-on' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="onSelectDistrict"
+        >{{item.label}}</view>
+      </view>
+
+      <view class="filter-note">区域按场馆名与地标推断，识别不出的活动只在「全部」里出现。</view>
+      <view class="drawer-end"></view>
+    </scroll-view>
+
+    <view class="filter-actions">
+      <view class="filter-reset" bindtap="onResetFilter">清除</view>
+      <view class="filter-done" bindtap="onCloseFilter">查看结果</view>
+    </view>
+  </view>
+</view>

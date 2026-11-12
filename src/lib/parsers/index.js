@@ -6,15 +6,33 @@ import { parseChinaDrama } from "./chinadrama.js";
 import { parseDamai } from "./damai.js";
 import { parseDoubanShanghai } from "./douban.js";
 import { parseEventbrite, parseEventbriteAiTech } from "./eventbrite.js";
+import { parseEcnuLectures } from "./ecnu-lectures.js";
+import {
+  parseFudanChemistry,
+  parseSjtuNewsLectures,
+  parseShiepLectures,
+  parseShanghaitechLectures,
+  parseEcustLectures,
+  parseFudanShmcLectures,
+  parseFudanSpfduLectures,
+} from "./university-lectures.js";
+import { parseCnCmsLectures } from "./cn-cms-lectures.js";
 import { parseFosunFoundation } from "./fosun.js";
 import { parseFotografiska } from "./fotografiska.js";
+import { parseGdgShanghai } from "./gdg-shanghai.js";
 import { parseGewara } from "./gewara.js";
+import { parseGovWeeklyEvents } from "./gov-weekly.js";
+import { parseIicShanghai } from "./iic-shanghai.js";
+import { parseJiadingLibraryLectures } from "./jiading-library.js";
+import { parsePowerlongMuseum } from "./powerlong-museum.js";
+import { parseShlibActivity } from "./shlib-activity.js";
 import { parseHuodongBa } from "./huodongba.js";
 import { parseHuodongxing } from "./huodongxing.js";
 import { parseIMuseumShanghai } from "./imuseum.js";
 import { parseLongMuseum } from "./longmuseum.js";
 import { parseJsonLdEvents } from "./json-ld.js";
 import { parseLuma } from "./luma.js";
+import { parseWithLlmExtraction } from "./llm-extract.js";
 import { parseLumaAiEvents, parseMeetupAiEvents } from "./meetup-ai.js";
 import { parseMaoyan } from "./maoyan.js";
 import { parseMinshengArt } from "./minsheng.js";
@@ -25,16 +43,18 @@ import {
   parseFotografiskaZh,
   parseListingSite,
   parsePsaShanghai,
-  parseRockbundArtMuseum,
   parseShisuEvents,
   parseSjtuEvents,
   parseUccaEdge,
 } from "./listing.js";
+import { parseRockbundArtMuseum } from "./rockbund.js";
 import { parseShcstheatre } from "./shcstheatre.js";
+import { parseShlabEvents } from "./shlab.js";
 import { parseShowstart } from "./showstart.js";
 import { parseShanghaiMuseum } from "./shmuseum.js";
 import { parseShanghaiOnline } from "./shonline.js";
 import { parseShqyg } from "./shqyg.js";
+import { parseSiiCalendar } from "./sii-calendar.js";
 import { parseSmartShanghai } from "./smartshanghai.js";
 import { parseTeamlab } from "./teamlab.js";
 import { parseTimeoutShanghai } from "./timeout.js";
@@ -42,8 +62,11 @@ import { parseTongjiSeeEvents } from "./tongji-see.js";
 import { parseSnhmEvents } from "./snhm.js";
 import { parseSufeEvents } from "./sufe.js";
 import { parseSuzhouMuseum } from "./szmuseum.js";
+import { parseShanghaiConcerts } from "./shanghai-concerts.js";
+import { parseXTimeline } from "./x-timeline.js";
 import { parseWechatOfficialAccounts } from "./wechat.js";
 import { parseWestbundEvents } from "./westbund.js";
+import { parseWenhuayunEvents } from "./wenhuayun.js";
 import { parseWestBundMuseum } from "./westbundmuseum.js";
 import { parseWhlyjEvents } from "./whlyj.js";
 import { parseWinshang } from "./winshang.js";
@@ -62,15 +85,34 @@ export const PARSERS = {
   shanghaiMuseum: parseShanghaiMuseum,
   shanghaiOnline: parseShanghaiOnline,
   shcstheatre: parseShcstheatre,
+  shanghaiConcerts: parseShanghaiConcerts,
+  xTimeline: parseXTimeline,
+  shlab: parseShlabEvents,
   shqyg: parseShqyg,
   showstart: parseShowstart,
+  siiCalendar: parseSiiCalendar,
   douban: parseDoubanShanghai,
+  ecnuLectures: parseEcnuLectures,
+  fudanChemistry: parseFudanChemistry,
+  sjtuNewsLectures: parseSjtuNewsLectures,
+  shiepLectures: parseShiepLectures,
+  shanghaitechLectures: parseShanghaitechLectures,
+  ecustLectures: parseEcustLectures,
+  fudanShmcLectures: parseFudanShmcLectures,
+  fudanSpfduLectures: parseFudanSpfduLectures,
   smartshanghai: parseSmartShanghai,
   allevents: parseJsonLdEvents,
   fotografiska: parseFotografiska,
   fotografiskaZh: parseFotografiskaZh,
   fosun: parseFosunFoundation,
+  gdgShanghai: parseGdgShanghai,
+  govWeekly: parseGovWeeklyEvents,
   gewara: parseGewara,
+  cnCmsLectures: parseCnCmsLectures,
+  shlibActivity: parseShlibActivity,
+  jiadingLibrary: parseJiadingLibraryLectures,
+  powerlong: parsePowerlongMuseum,
+  iicShanghai: parseIicShanghai,
   rockbund: parseRockbundArtMuseum,
   teamlab: parseTeamlab,
   timeoutShanghai: parseTimeoutShanghai,
@@ -87,6 +129,7 @@ export const PARSERS = {
   tentimes: parseEventbrite,
   eventbriteAiTech: parseEventbriteAiTech,
   listing: parseListingSite,
+  llmExtract: parseWithLlmExtraction,
   nyu: parseNyuShanghai,
   shisu: parseShisuEvents,
   sjtu: parseSjtuEvents,
@@ -101,6 +144,7 @@ export const PARSERS = {
   sufe: parseSufeEvents,
   szmuseum: parseSuzhouMuseum,
   westbund: parseWestbundEvents,
+  wenhuayun: parseWenhuayunEvents,
   westbundMuseum: parseWestBundMuseum,
   whlyj: parseWhlyjEvents,
   winshang: parseWinshang,

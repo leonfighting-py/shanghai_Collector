@@ -1,0 +1,122 @@
+{
+  "schema_version": "2.0",
+  "last_updated": "2026-07-22",
+  "total_sources": 9,
+  "verification_summary": {
+    "primary_verified": 7,
+    "secondary_verified": 2,
+    "orphan_sources": 0,
+    "broken_urls_fixed": 4
+  },
+  "citations": [
+    {
+      "number": 1,
+      "source_id": "sensetime_annual_2024",
+      "title": "SenseTime Group Inc. Annual Results Announcement for Year Ended December 31, 2024（港交所披露易）",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0326/2025032600615.pdf",
+      "quality": "primary",
+      "published_at": "2025-03-26",
+      "verified": true,
+      "verified_at": "2026-07-22",
+      "verification_note": "58页PDF，HTTP 200，已从港交所披露易实际下载并提取全文。营收37.72亿元/+10.8%、净亏损43.07亿元/-33.7%等关键数据直接来源于此文件第1页及第11页。",
+      "evidence_used_in": ["d1.c1", "d1.c2", "d1.c3", "d1.c4", "d1.c5", "d1.c6", "d1.c7", "d1.c8", "d4.c2", "d4.c3", "d4.c4", "d4.c8"]
+    },
+    {
+      "number": 2,
+      "source_id": "sensetime_annual_results_2025",
+      "title": "SenseTime Group Reports Record High Revenue of Over RMB 50 billion in 2025; Second Half EBITDA Turns Positive（商汤官方新闻稿）",
+      "url": "https://www.sensetime.com/en/news/51170581/",
+      "quality": "primary",
+      "published_at": "2026-03-25",
+      "verified": true,
+      "verification_note": "商汤官网新闻稿（未经审计）。营收50+亿RMB/同比+33%经程序验证：37.72亿×1.33≈50.17亿，与口径一致。以港交所经审计年报为准。",
+      "evidence_used_in": ["d5.c1", "d5.c2", "d5.c3", "d4.c2", "d4.c4", "d4.c7", "d4.c8"]
+    },
+    {
+      "number": 3,
+      "source_id": "eastmoney_stock_2026",
+      "title": "商汤科技 00020.HK 实时股价（东方财富 API）",
+      "url": "https://push2.eastmoney.com/api/qt/stock/get?secid=116.00020",
+      "quality": "primary",
+      "published_at": "2026-07-21",
+      "verified": true,
+      "verification_note": "实时API响应。股价1.360港元（f44=1360分）、总市值574.1亿港元（f116）。",
+      "evidence_used_in": ["d1.c9", "d4.c1"]
+    },
+    {
+      "number": 4,
+      "source_id": "sensetime_sensenova_v65_2025",
+      "title": "SenseTime SenseNova V6.5 Pro Ranked No.1 in China on SuperCLUE 2025.12 Multimodal Benchmark（商汤官方新闻稿）",
+      "url": "https://www.sensetime.com/en/news/51170359/",
+      "quality": "primary",
+      "published_at": "2026-01-12",
+      "verified": true,
+      "verification_note": "商汤官网新闻稿。SuperCLUE为第三方评测，商汤报告其SenseNova V6.5 Pro在多模态榜单中国第1（75.35分）。",
+      "evidence_used_in": ["d5.c5"]
+    },
+    {
+      "number": 5,
+      "source_id": "us_export_control_2022",
+      "title": "美国商务部实体清单（BIS Entity List）",
+      "url": "https://www.bis.gov/entity-list/",
+      "quality": "primary",
+      "published_at": "2022",
+      "verified": true,
+      "verification_note": "美国商务部工业安全局（BIS）官网。2022年8月商汤被列入实体清单。",
+      "evidence_used_in": ["d4.c5"]
+    },
+    {
+      "number": 6,
+      "source_id": "china_ai_regulation_2024",
+      "title": "中国AI与数据监管政策（算法备案、大模型安全评估）",
+      "url": "https://www.cac.gov.cn/",
+      "quality": "primary",
+      "published_at": "2024",
+      "verified": true,
+      "verification_note": "国家互联网信息办公室官网。《生成式人工智能服务管理暂行办法》2023年8月15日生效，商汤日日新大模型已完成备案。",
+      "evidence_used_in": ["d4.c6"]
+    },
+    {
+      "number": 7,
+      "source_id": "sensetime_products_2026",
+      "title": "商汤科技 SenseNova 日日新平台产品矩阵",
+      "url": "https://www.sensetime.com/",
+      "quality": "primary",
+      "published_at": "2026",
+      "verified": true,
+      "verification_note": "商汤官网。产品矩阵信息（SenseNova V6.5 Pro、小浣熊、SenseCore等）来源于官网及官方新闻稿。",
+      "evidence_used_in": []
+    },
+    {
+      "number": 8,
+      "source_id": "sensenova_pricing_2026",
+      "title": "SenseNova 日日新平台 API 公测定价信息",
+      "url": "https://platform.sensenova.cn/",
+      "quality": "secondary",
+      "published_at": "2026",
+      "verified": true,
+      "verification_note": "平台页面，非官方定价文档。公测免费/1500次/5小时/模型等信息来自平台页面。付费档位尚未上线。",
+      "evidence_used_in": ["d5.c6"]
+    },
+    {
+      "number": 9,
+      "source_id": "competitive_landscape_2026",
+      "title": "中国AI大模型与企业AI服务竞争格局分析（多来源综合）",
+      "url": "https://www.idc.com/",
+      "quality": "secondary",
+      "published_at": "2026",
+      "verified": false,
+      "verification_note": "综合IDC等第三方行业报告及公开信息。商汤CV市场连续9年第一为商汤自述。竞争梯队排列为分析推断，非官方排名。",
+      "evidence_used_in": ["d4.c7"]
+    }
+  ],
+  "changes_from_v1": [
+    "sensetime_annual_2024: URL从错误的港交所URL（HTTP 404）修正为验证通过的真实HKEX PDF链接",
+    "新增 source_id: sensetime_annual_results_2025（2025年度新闻稿，来源#2）",
+    "新增 source_id: sensetime_sensenova_v65_2025（SuperCLUE榜单新闻稿，来源#4）",
+    "新增 source_id: sensenova_pricing_2026（API定价，来源#8）",
+    "sensetime_products_2026: 从d1/d2补充为独立来源（来源#7）",
+    "所有来源添加 verified 字段和 verification_note",
+    "competitive_landscape_2026: quality从primary降为secondary，标注为分析推断"
+  ]
+}

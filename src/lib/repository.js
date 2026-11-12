@@ -1,4 +1,4 @@
-import { runQuery } from "./db-pool.js";
+import { getDatabaseConfig, runQuery, runTransaction } from "./db-pool.js";
 import { dedupeEvents } from "./dedupe.js";
 import { isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
 import { SAMPLE_EVENTS } from "./sample-events.js";
@@ -75,15 +75,27 @@ export function buildSchemaSql() {
   `;
 }
 
-export function buildCleanupSql({ eventRetentionDays = 60, runRetentionDays = 90 } = {}) {
+// 已结束活动的存储保留天数。注意这只是「存储缓冲」，不是展示口径——
+// 展示口径见 buildEventWindowWhereSql（只出「未结束」的活动）。
+export const EVENT_RETENTION_DAYS = 7;
+export const RUN_RETENTION_DAYS = 90;
+
+export function buildCleanupSql({
+  eventRetentionDays = EVENT_RETENTION_DAYS,
+  runRetentionDays = RUN_RETENTION_DAYS,
+} = {}) {
   return {
     statements: [
       {
-        sql: "delete from raw_events where start_time is not null and start_time < now() - ($1::int * interval '1 day')",
+        // raw_events 是采集中间产物，同样按「结束时间」判定，避免长期展览的原始记录被提前清掉
+        sql: "delete from raw_events where start_time is not null and coalesce(end_time, start_time) < now() - ($1::int * interval '1 day')",
         params: [eventRetentionDays],
       },
       {
-        sql: "delete from events where start_time < now() - ($1::int * interval '1 day')",
+        // 关键：判定基准是 coalesce(end_time, start_time)，不是 start_time。
+        // 长期展览（如 7 月开幕、明年才结束）按 start_time 会被误删——这类活动仍然在展，
+        // 是有效内容。按「结束时间」判定才能既清掉过期内容、又不误伤进行中的活动。
+        sql: "delete from events where coalesce(end_time, start_time) < now() - ($1::int * interval '1 day')",
         params: [eventRetentionDays],
       },
       {
@@ -112,7 +124,9 @@ export async function ensureSchema() {
   await query(buildSchemaSql());
   await query(`
     alter table events add column if not exists summary text not null default '';
+    alter table events add column if not exists image_url text;
     alter table raw_events add column if not exists summary text;
+    alter table raw_events add column if not exists image_url text;
   `);
 }
 
@@ -178,9 +192,9 @@ export async function insertRawEvents(events, { runId = null } = {}) {
       `
         insert into raw_events (
           run_id, title, start_time, end_time, venue, category, signup_url,
-          source_name, source_url, raw_payload, publishable, rejection_reason
+          source_name, source_url, raw_payload, publishable, rejection_reason, image_url
         )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12)
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13)
         returning id
       `,
       [
@@ -196,6 +210,7 @@ export async function insertRawEvents(events, { runId = null } = {}) {
         JSON.stringify(event),
         publishable,
         publishable ? null : "missing_required_fields",
+        event.image_url || null,
       ],
     );
     rawEventIds.push(result.rows[0].id);
@@ -207,11 +222,11 @@ export async function insertRawEvents(events, { runId = null } = {}) {
 export async function listEvents({ week, category, search } = {}) {
   const { startDate, endDate } = toShanghaiDayWindow(week || new Date());
 
-  if (!process.env.DATABASE_URL) {
+  if (!getDatabaseConfig()) {
     return applyFilters(SAMPLE_EVENTS, { startDate, endDate, category, search });
   }
 
-  await ensureSchema();
+  // 读路径不执行 DDL：建表仅由采集/清理任务负责，读账号无需 CREATE/ALTER 权限
   const params = [`${startDate}T00:00:00+08:00`, `${endDate}T23:59:59+08:00`];
   const filters = [buildEventWindowWhereSql("$1", "$2")];
 
@@ -225,10 +240,15 @@ export async function listEvents({ week, category, search } = {}) {
     filters.push(`(title ilike $${params.length} or venue ilike $${params.length} or summary ilike $${params.length})`);
   }
 
+  // 不取 raw_event_ids：写入侧把整批采集的 raw id（10-15 那轮是 2374 个 uuid）塞进了每一行，
+  // 103 行合计 2.03 MB；跨境链路（runner → us-west-2）传这块要 33–46 秒，
+  // 超过 DB_QUERY_TIMEOUT_MS 的 20 秒 → 每轮第一步 listEvents 必失败，采集自锁（10-17~10-23 停更 9 天）。
+  // 这个字段在本函数的所有消费方都没用到（Web 白名单 / API DTO / feed 都剥离它），
+  // 去掉后同一查询 1.6 秒、69 KB。要溯源请单独按需查 raw_events。
   const result = await query(
     `
       select title, start_time, end_time, venue, category, signup_url, source_name,
-             source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary,
+             source_url, dedupe_key, sources, dedupe_provider, summary, image_url,
              created_at, updated_at
       from events
       where ${filters.join(" and ")}
@@ -259,21 +279,20 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
   }
 
   await ensureSchema();
-  await query("begin");
-  try {
-    await query(`delete from events where ${buildEventWindowWhereSql("$1", "$2")}`, [
-      `${startDate}T00:00:00+08:00`,
-      `${endDate}T23:59:59+08:00`,
-    ]);
 
-    for (const event of normalized) {
-      await query(
-        `
+  // 单连接事务：BEGIN/DELETE/INSERT/COMMIT 必须落在同一连接上才具备原子性
+  const statements = [
+    {
+      sql: `delete from events where ${buildEventWindowWhereSql("$1", "$2")}`,
+      params: [`${startDate}T00:00:00+08:00`, `${endDate}T23:59:59+08:00`],
+    },
+    ...normalized.map((event) => ({
+      sql: `
           insert into events (
             title, start_time, end_time, venue, category, signup_url, source_name,
-            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, updated_at
+            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, image_url, updated_at
           )
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, $13, now())
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, $13, $14, now())
           on conflict (dedupe_key) do update set
             title = excluded.title,
             start_time = excluded.start_time,
@@ -287,32 +306,30 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
             raw_event_ids = excluded.raw_event_ids,
             dedupe_provider = excluded.dedupe_provider,
             summary = excluded.summary,
+            image_url = excluded.image_url,
             updated_at = now()
-        `,
-        [
-          event.title,
-          event.start_time,
-          event.end_time,
-          event.venue,
-          event.category,
-          event.signup_url,
-          event.source_name,
-          event.source_url,
-          event.dedupe_key,
-          JSON.stringify(event.sources || []),
-          JSON.stringify(rawEventIds),
-          dedupeProvider,
-          event.summary || "",
-        ],
-      );
-    }
+      `,
+      params: [
+        event.title,
+        event.start_time,
+        event.end_time,
+        event.venue,
+        event.category,
+        event.signup_url,
+        event.source_name,
+        event.source_url,
+        event.dedupe_key,
+        JSON.stringify(event.sources || []),
+        JSON.stringify(rawEventIds),
+        dedupeProvider,
+        event.summary || "",
+        event.image_url || null,
+      ],
+    })),
+  ];
 
-    await query("commit");
-    return { inserted: normalized.length, startDate, endDate, dryRun: false };
-  } catch (error) {
-    await query("rollback");
-    throw error;
-  }
+  await runTransaction(statements);
+  return { inserted: normalized.length, startDate, endDate, dryRun: false };
 }
 
 export async function cleanupOldData(options) {
@@ -323,6 +340,35 @@ export async function cleanupOldData(options) {
     await query(statement.sql, statement.params);
   }
   return { dryRun: false };
+}
+
+// 源健康巡检：读取最近 N 次采集记录，供健康脚本聚合"持续失败/间歇失败"的源。
+// 与实时探活互补——实时探活回答"现在挂没挂"，历史趋势回答"谁一直挂"。
+export async function listRecentCollectionRuns({ limit = 10 } = {}) {
+  if (!process.env.DATABASE_URL) return [];
+  await ensureSchema();
+  const result = await query(
+    `
+      select id, status, source_count, raw_count, published_count, failure_count,
+             failures, started_at, finished_at, dedupe_provider
+      from collection_runs
+      order by started_at desc
+      limit $1
+    `,
+    [limit],
+  );
+  return result.rows.map((row) => ({
+    id: row.id,
+    status: row.status,
+    sourceCount: row.source_count,
+    rawCount: row.raw_count,
+    publishedCount: row.published_count,
+    failureCount: row.failure_count,
+    failures: Array.isArray(row.failures) ? row.failures : [],
+    startedAt: row.started_at ? toIso(row.started_at) : null,
+    finishedAt: row.finished_at ? toIso(row.finished_at) : null,
+    dedupeProvider: row.dedupe_provider,
+  }));
 }
 
 
@@ -344,14 +390,19 @@ function toIso(value) {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 }
 
+// 读窗口 = 「未结束」的活动。
+// 判定：以结束时间（缺省回退到开始时间）的「上海日期」 >= 今天的「上海日期」。
+//   - 单日活动当天全程保留（哪怕已经开场几小时），次日自然消失；
+//   - 跨日演出、长期展览只要还没结束就一直在，与 start_time 多早无关。
+//
+// 这里**不再**按分类做「展览回看 60 天 / 高校讲座回看 30 天」：那会让已经结束的活动
+// 继续出现在「未来两周」列表里，和产品定位冲突（也是"列表里混着一个月前的内容"的根因）。
+// 已结束的活动如何保留由 cleanupOldData 的 7 天存储缓冲统一负责，不进展示口径。
 export function buildEventWindowWhereSql(startParam, endParam) {
   return `(
-    (start_time >= ${startParam} and start_time <= ${endParam})
-    or (
-      category = '展览'
-      and start_time >= (${startParam}::timestamptz - interval '60 days')
-      and start_time <= ${endParam}
-    )
+    start_time <= ${endParam}
+    and (coalesce(end_time, start_time) at time zone 'Asia/Shanghai')::date
+        >= (${startParam}::timestamptz at time zone 'Asia/Shanghai')::date
   )`;
 }
 

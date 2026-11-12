@@ -1,0 +1,41 @@
+name: Production Canary
+
+# 端到端哨兵：只看生产 API 是否真的在返回数据。
+#
+# 为什么需要它（2026-10-07 生产事故）：
+#   Supabase 项目不可达后，采集任务在**第一步** listEvents 就抛错退出，告警链路
+#   根本没机会执行，生产静默停摆两天全靠人工发现。根因是结构性的 —— 采集类工作流
+#   的告警挂在采集流程上，而采集流程本身依赖数据库，两者同生共死。
+#
+# 设计约束（改动前请先读）：
+#   · 不跑 npm ci、不装任何依赖：探针必须比采集链路活得久，采集挂了它还得能跑
+#   · 不读 DATABASE_URL、不用 pg：探针不能有和被测对象相同的失效模式
+#   · 跑在 GitHub 托管 runner 上，不依赖自建 runner（自建 runner 离线时它仍然有效）
+on:
+  schedule:
+    # 每 6 小时一次。采集是每 2 天一次，探针要密得多才谈得上"及时发现"。
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: canary
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      # 异常时脚本内部会推飞书；退出码 1 让 Actions 也变红，形成第二条通知通道。
+      - name: Probe production API
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+          CANARY_MIN_EVENTS: ${{ vars.CANARY_MIN_EVENTS || '1' }}
+        run: node scripts/canary.mjs

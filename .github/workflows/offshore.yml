@@ -1,0 +1,38 @@
+name: Collect Offshore Sources
+
+# 只采「境内 runner 打不通」的源（Eventbrite / 活动行 / AllEvents）：
+# GitHub 托管 runner 本身在境外，不需要任何代理。产物通过 artifact 交给主采集合并。
+#
+# ⚠️ 这里**不写数据库、不发布**：发布是全量替换，两处都发布会互相清空（见 docs/offshore-sources.md）。
+on:
+  schedule:
+    # 主采集是 "0 1 */2 * *"（UTC）；先跑 20 分钟，留足时间把 artifact 传上去
+    - cron: "20 0 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Collect offshore sources
+        run: node scripts/collect-offshore.js offshore-events.json
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offshore-events
+          path: offshore-events.json
+          if-no-files-found: warn
+          retention-days: 7
