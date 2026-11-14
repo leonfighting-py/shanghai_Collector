@@ -48,7 +48,7 @@ export function EventBrowser({
   const [drawerDate, setDrawerDate] = useState("");
   // 筛选面板（细分 + 区域）。复用抽屉那套视觉：桌面从右侧滑出、手机从底部升起
   const [filterOpen, setFilterOpen] = useState(false);
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const { favorites, isFavorite, toggleFavorite } = useFavorites({ events });
   // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
   const [activeDate, setActiveDate] = useState(today);
   const filtersRef = useRef(null);
@@ -98,7 +98,7 @@ export function EventBrowser({
     return events.filter((event) => {
       // 一级类目 / 二级分类 / 区域：三者 AND，规则与小程序共用同一份谓词
       if (!matchesClassification(event, { category, subcategory, district })) return false;
-      if (onlyFavorites && !favorites.includes(event.dedupe_key)) return false;
+      if (onlyFavorites && !favorites.includes(event.slug)) return false;
       if (!keyword) return true;
       return [event.title, event.venue, event.summary, event.source_name].some((text) =>
         String(text || "").toLowerCase().includes(keyword),
@@ -204,10 +204,8 @@ export function EventBrowser({
             {ongoing.slice(0, RAIL_LIMIT).map((event) => (
               <a
                 className="poster"
-                key={event.dedupe_key}
-                href={safeExternalUrl(event.signup_url)}
-                target="_blank"
-                rel="noopener noreferrer"
+                key={event.slug}
+                href={`/e/${event.slug}`}
               >
                 <span className="cover" data-label={event.category}>
                   <EventImage url={event.image_url} width={400} />
@@ -323,12 +321,12 @@ export function EventBrowser({
               <div className="day-rows">
                 {[...shownOwn, ...featured].map(({ event, kind }) => (
                   <AgendaRow
-                    key={`${kind}-${event.dedupe_key}`}
+                    key={`${kind}-${event.slug}`}
                     event={event}
                     kind={kind}
                     date={day.date}
-                    favorite={isFavorite(event.dedupe_key)}
-                    onToggleFavorite={() => toggleFavorite(event.dedupe_key)}
+                    favorite={isFavorite(event.slug)}
+                    onToggleFavorite={() => toggleFavorite(event.slug)}
                   />
                 ))}
                 {own.length > DAY_ROW_LIMIT ? (
@@ -373,12 +371,12 @@ export function EventBrowser({
             <div className="drawer-body">
               {drawerDay.folded.map((event) => (
                 <AgendaRow
-                  key={event.dedupe_key}
+                  key={event.slug}
                   event={event}
                   kind="run"
                   date={drawerDay.date}
-                  favorite={isFavorite(event.dedupe_key)}
-                  onToggleFavorite={() => toggleFavorite(event.dedupe_key)}
+                  favorite={isFavorite(event.slug)}
+                  onToggleFavorite={() => toggleFavorite(event.slug)}
                 />
               ))}
             </div>
@@ -467,12 +465,13 @@ function AgendaRow({ event, kind, date, favorite, onToggleFavorite }) {
       : formatRange(event);
 
   return (
-    <a
-      className={`row${kind === "start" ? "" : " is-span"}`}
-      href={safeExternalUrl(event.signup_url)}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+    <div className={`row${kind === "start" ? "" : " is-span"}`}>
+      {/*
+        整行点进站内详情页。用铺满整行的一层链接而不是把它包在 <a> 里：
+        行内还有星标按钮和「去报名」外链，链接套链接在 HTML 里不合法，
+        套按钮也不行。所以内容层 pointer-events 关掉，让这一层接住点击。
+      */}
+      <a className="row-hit" href={`/e/${event.slug}`} aria-label={`查看「${event.title}」详情`} />
       <span className="row-time">
         {kind === "last" ? "最后一天" : kind === "run" ? "展期中" : formatShanghaiClock(event.start_time)}
         {kind === "start" && isMultiDay(event) ? <small>首日</small> : null}
@@ -484,6 +483,10 @@ function AgendaRow({ event, kind, date, favorite, onToggleFavorite }) {
           {event.venue}
           {source ? ` · ${source}` : ""}
         </small>
+        {/* 只想跳去报名页的人不必先进详情页 */}
+        <a className="row-go" href={safeExternalUrl(event.signup_url)} target="_blank" rel="noopener noreferrer">
+          去报名 ↗
+        </a>
       </span>
       <span className="row-cat">{event.category}</span>
       <span className="row-thumb">
@@ -494,15 +497,11 @@ function AgendaRow({ event, kind, date, favorite, onToggleFavorite }) {
         className="star"
         aria-label={favorite ? "取消收藏" : "收藏活动"}
         aria-pressed={favorite}
-        onClick={(clickEvent) => {
-          clickEvent.preventDefault();
-          clickEvent.stopPropagation();
-          onToggleFavorite();
-        }}
+        onClick={onToggleFavorite}
       >
         {favorite ? "★" : "☆"}
       </button>
-    </a>
+    </div>
   );
 }
 

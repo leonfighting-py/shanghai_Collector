@@ -1,6 +1,6 @@
 import { getDatabaseConfig, runQuery, runTransaction } from "./db-pool.js";
 import { dedupeEvents } from "./dedupe.js";
-import { isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
+import { filterPublishableEvents, isInDateRange, mergeDuplicateEvents, toShanghaiDayWindow } from "./events.js";
 import { SAMPLE_EVENTS } from "./sample-events.js";
 
 export function buildSchemaSql() {
@@ -435,7 +435,10 @@ export function filterEventsForWindow(events, { startDate, endDate }) {
 
 function applyFilters(events, { startDate, endDate, category, search }) {
   const lowerSearch = search?.trim().toLowerCase();
-  return filterEventsForWindow(events, { startDate, endDate })
+  // 没有数据库时的兜底：样本数据也要过一遍派生字段（slug / 区域 / 二级分类），
+  // 否则本地开站会生成 /e/undefined 这样的链接。有库的路径由 listEvents 走 dedupeEvents。
+  return filterPublishableEvents(events)
+    .filter((event) => isInDateRange(event, startDate, endDate))
     .filter((event) => !category || event.category === category)
     .filter((event) => {
       if (!lowerSearch) return true;

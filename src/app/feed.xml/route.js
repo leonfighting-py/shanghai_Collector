@@ -38,10 +38,13 @@ export async function GET(request) {
       const dateLine = `日期：${toShanghaiDate(event.start_time)}${event.end_time ? ` 至 ${toShanghaiDate(event.end_time)}` : ""}`;
       const description = [dateLine, venueLine, sourceLine, event.summary || ""].filter(Boolean).join("\n");
       const guid = event.dedupe_key || `${event.source_url}|${event.title}`;
+      // 指向站内详情页而不是直接甩外链：RSS 读者点开先看到完整信息与来源，
+      // 报名外链在详情页上。slug 是稳定标识（src/lib/event-slug.js）。
+      const link = event.slug ? `${base}/e/${event.slug}` : event.signup_url || event.source_url || base;
       return [
         "    <item>",
         `      <title>${escapeXml(event.title)}</title>`,
-        `      <link>${escapeXml(event.signup_url || event.source_url || base)}</link>`,
+        `      <link>${escapeXml(link)}</link>`,
         `      <guid isPermaLink="false">${escapeXml(guid)}</guid>`,
         `      <pubDate>${formatRssDate(event.start_time)}</pubDate>`,
         `      <description><![CDATA[${description}]]></description>`,

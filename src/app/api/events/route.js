@@ -18,6 +18,8 @@ const PUBLIC_FIELDS = [
   "sources",
   "summary",
   "image_url",
+  // 站内详情页 /e/[slug] 的地址键，客户端拼链接要它
+  "slug",
 ];
 
 function toPublicEvent(event) {

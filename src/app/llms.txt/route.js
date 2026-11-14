@@ -11,6 +11,7 @@ export function GET() {
 
 ## 站点导航
 - 首页（未来 14 天滚动窗口精选）：${base}/
+- 活动详情页：${base}/e/{slug}（每条活动的站内页，含时间、场馆、来源列表与报名外链）
 - JSON API（公开）：${base}/api/events
 - RSS 订阅：${base}/feed.xml
 - 站点地图：${base}/sitemap.xml
@@ -27,6 +28,7 @@ ${categoryLines}
 
 ## 数据字段（每条活动）
 - title：活动名称
+- slug：站内详情页标识，详情页地址为 ${base}/e/{slug}
 - start_time / end_time：ISO 8601 时间戳（上海时区 +08:00）
 - venue：场馆/地点
 - category：上面五个分类之一

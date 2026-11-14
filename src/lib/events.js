@@ -1,5 +1,6 @@
 import { classifySubcategory, detectDistrict } from "./event-classify.js";
 import { inferEventEndTime } from "./event-duration.js";
+import { assignSlugs } from "./event-slug.js";
 
 export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
 export const COLLECTION_WINDOW_DAYS = 14;
@@ -232,7 +233,7 @@ export function normalizeEventCategory(event) {
 }
 
 export function filterPublishableEvents(events) {
-  return events.filter(isPublishableEvent).map((event) => {
+  const filtered = events.filter(isPublishableEvent).map((event) => {
     const dedupeKey = event.dedupe_key || buildDedupeKey(event);
     // 类目纠正必须早于结束时间推断：inferEventEndTime 会按类别决定是否补长期档期，
     // 「展览」才会拿到 +90 天，而这条展原本挂着「演出音乐」。
@@ -252,6 +253,10 @@ export function filterPublishableEvents(events) {
       district: detectDistrict(normalized),
     };
   });
+
+  // slug 同理是派生字段（见 event-slug.js）：URL 里的详情页地址与收藏键都用它，
+  // 算在这里就不会出现「Web 有 slug、小程序没有」的分叉。
+  return assignSlugs(filtered);
 }
 
 export function mergeDuplicateEvents(events) {

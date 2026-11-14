@@ -3,7 +3,7 @@ import { EventImage } from "./components/EventImage.js";
 import { HomeHero } from "./components/HomeHero.js";
 import { eventEndDay, eventStartDay, formatDotDate, formatShanghaiClock, isMultiDay } from "../lib/agenda.js";
 import { readClassificationParams } from "../lib/event-classify.js";
-import { CATEGORIES, safeExternalUrl, toShanghaiDate } from "../lib/events.js";
+import { CATEGORIES, toShanghaiDate } from "../lib/events.js";
 import { buildHomeViewModel } from "../lib/home-view-model.js";
 import { listEvents } from "../lib/repository.js";
 
@@ -16,7 +16,7 @@ const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "�
 // 传给客户端的字段白名单：日程表只用得到这些，别把 raw_event_ids 等内部字段带下去
 const CLIENT_FIELDS = [
   "title", "start_time", "end_time", "venue", "category", "subcategory", "district",
-  "signup_url", "source_name", "summary", "image_url", "dedupe_key",
+  "signup_url", "source_name", "summary", "image_url", "dedupe_key", "slug",
 ];
 
 export default async function Home({ searchParams }) {
@@ -59,10 +59,8 @@ export default async function Home({ searchParams }) {
               {view.highlights.map((event, index) => (
                 <a
                   className="pick"
-                  key={event.dedupe_key}
-                  href={safeExternalUrl(event.signup_url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  key={event.slug}
+                  href={`/e/${event.slug}`}
                 >
                   <span className="cover" data-label={event.category}>
                     <EventImage url={event.image_url} width={800} />
