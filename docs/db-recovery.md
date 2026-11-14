@@ -118,9 +118,11 @@ postgresql://postgres.<project-ref>:<密码>@<pooler-主机名>.pooler.supabase.
 会得到 `tenant/user not found`，这个报错**不代表项目没了**，只代表那个主机上没有
 你的 tenant。以控制台 Connect 弹窗给出的主机名为准。
 
-（历史参考：旧 Oregon 项目实测只有 `aws-1-us-west-2` 能找到 tenant；当前东京项目
-只认 `aws-0-` 前缀、`aws-1-` 前缀报 tenant not found。两套结论不通用，**换库先实测**：
-用 `postgres.<ref>` 直连一次来判定。）
+（历史参考：旧 Oregon 项目实测只有 `aws-1-us-west-2` 能找到 tenant。当前东京项目
+（`ap-northeast-1`）该用哪个前缀**尚未复核**，以 Connect 弹窗为准；实测后把结论补在这里。
+判定方法：用 `postgres.<ref>` 和一个故意写错的密码去连两个前缀的主机，
+报「密码错误」的那个就是 tenant 所在的主机，报 `tenant/user not found` 的不是。
+这个办法不需要真密码。）
 
 ⚠️ **restore 之后 tenant 注册有延迟**：恢复完成约 2 分钟时扫描 16 个 region 全部
 `tenant not found`，约 10 分钟后再扫才找到。**恢复完请等 5–10 分钟再判定，否则会误判成恢复失败。**
