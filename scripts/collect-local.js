@@ -51,12 +51,23 @@ try {
 if (process.env.GITHUB_STEP_SUMMARY) {
   const guard = result.publish_guard || { allowed: true, reason: null };
   const failedSources = (result.failures || []).map((f) => `- ${f.source || f.message}: ${f.message}`).join("\n");
+  // 各阶段耗时（WP0-C）：55 分钟上限要不要收紧，看这一行就知道时间花在哪
+  const stageTimings = result.stage_timings || {};
+  const timingText = Object.keys(stageTimings).length > 0
+    ? Object.entries(stageTimings)
+        .map(([key, value]) => `${key.replace(/_ms$/, "")} ${(value / 1000).toFixed(1)}s`)
+        .join(" · ")
+    : "未记录";
+  // 运行状态三档（WP0-D）：success / degraded / blocked，历史行的 partial 是旧口径
+  const statusLabels = { success: "成功", degraded: "降级（失败源超 5%）", blocked: "拦截/回退旧数据", partial: "部分失败（旧口径）" };
   const summary = [
     "## 采集运行摘要",
     "",
     `- 运行 ID：${result.run_id}`,
+    `- 运行状态：${statusLabels[result.run_status] || result.run_status || "-"}`,
     `- 召回：${result.collectedCount} 条原始 → ${result.publishedCount} 条可发布（窗口 ${result.startDate} ~ ${result.endDate}）`,
     `- 入库：raw ${result.raw_inserted} / published ${result.published_inserted}`,
+    `- 阶段耗时：${timingText}`,
     `- LLM 润色：${result.enrichment?.enrichedCount ?? 0} 条（${result.enrichment?.provider || "disabled"}）`,
     `- 封面图：回填 ${result.image_backfill?.backfilled ?? 0}/${result.image_backfill?.attempted ?? 0} 条`,
     `- LLM 预算：${result.llm_budget?.used ?? 0}/${result.llm_budget?.cap ?? "-"} 次调用（${result.llm_budget?.enabled ? "已启用熔断" : "未启用"}）`,

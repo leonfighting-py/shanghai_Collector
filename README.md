@@ -90,7 +90,7 @@ GitHub Actions（每两月）→ npm run cleanup → Supabase
 
 ### 1. Supabase
 
-* 创建项目（你已有：`zvlnemhtzxtxaaxulodg`）
+* 创建项目（当前项目：`shanghai-collector`，区域 `ap-northeast-1`；项目 ref 与 pooler 主机名见 `docs/db-recovery.md`，2026-10-24 前后已从旧项目迁库）
 
 * 首次 `npm run collect` 会自动建表
 
@@ -121,21 +121,40 @@ npm run collect   # 写入 Supabase
 npm run dev       # 打开 http://localhost:3000 查看真实数据
 ```
 
-## 微信小程序（微信云托管，免域名免备案）
+## 微信小程序（微信云开发云函数，免域名免备案）
 
 ```text
-小程序 → wx.cloud.callContainer（微信私有协议，无需服务器域名/备案）
+小程序 → wx.cloud.callFunction（微信云开发，无需服务器域名/备案）
            ↓
-        微信云托管 cloudrun/（Node + Express 薄查询层）
+        云函数 cloudfunctions/events（Node 薄查询层）
            ↓ pg 直连
         Supabase Postgres（与 Web 端同一份数据）
 
 采集层不变：GitHub Actions → npm run collect → Supabase
 ```
 
-小程序端**不需要自有域名、不需要 ICP 备案**：`callContainer` 走微信专线，`/api/events` 的参数与响应和 Web 端完全一致（14 天窗口 + 展览回看 60 天 + 讲座回看 30 天 + 规则去重 + 公开 DTO）。
+2026-10-31 起小程序主读路径是**云开发云函数**（`miniprogram/utils/config.js`）。
+当前环境是「小程序成长计划」二期赠送的个人版环境（到期 2027-04-30）。
+云托管（`cloudrun/`）保留作回滚路径，见下文「回滚路径」小节。
 
-### 1. 部署云托管服务（cloudrun/）
+小程序端**不需要自有域名、不需要 ICP 备案**：`callFunction` 走微信专线，
+入参（`week` / `category` / `search`）与响应 DTO 和 Web 端 `/api/events` 完全一致。
+
+### 1. 配置云函数（cloudfunctions/events/）
+
+1. 微信开发者工具导入 `miniprogram/` 目录，填入自己的 AppID（个人主体即可）
+2. 在 `miniprogram/utils/config.js` 填写：
+   - `CLOUD_DEV_ENV`：云开发环境 ID（开发者工具「云开发」控制台左上角环境下拉里看）。⚠️ 这是**云开发环境**，与云托管环境是两套体系，ID 不能互换
+   - `FUNCTION_NAME`：云函数名，必须与 `cloudfunctions/` 下的目录名逐字一致
+3. 云函数环境变量：`DATABASE_URL` = Supabase **Transaction pooler（6543）** 连接串（在云开发控制台的云函数配置里加）
+4. 部署：开发者工具里右键 `cloudfunctions/events` → **上传并部署**。
+   ⚠️ 改了云函数的查询/字段后，先合并主仓库并等 `deploy.yml` 的 Apply schema 步骤把新列推到库，再上传云函数——否则查询会引用还不存在的列，小程序接口直接报错。
+
+云函数的核心逻辑在 `cloudfunctions/events/lib/*.mjs`（`src/lib` 四个文件的原样副本，`test/cloudfunction-lib-parity.test.js` 守着不漂移），改 `src/lib` 的这四个文件必须重新复制。
+
+### 2. 回滚路径：微信云托管（cloudrun/）
+
+云函数不可用时，把 `miniprogram/utils/api.js` 里的 `callFunction` 换回 `callContainer`，并把 `config.js` 里 `CLOUD_ENV` / `SERVICE` 两行填进 `wx.cloud.callContainer` 的 config 即可：
 
 1. [微信云托管控制台](https://cloud.weixin.qq.com/cloudrun) 创建服务，名称 `events-api`
 2. 上传方式二选一：
@@ -154,16 +173,6 @@ cd cloudrun && npm install
 PORT=8787 node --env-file=../.env server.js
 curl http://localhost:8787/api/events
 ```
-
-### 2. 配置小程序（miniprogram/）
-
-1. 微信开发者工具导入 `miniprogram/` 目录，填入自己的 AppID（个人主体即可）
-2. 在 `miniprogram/utils/config.js` 填写：
-   - `CLOUD_ENV`：云托管环境 ID（控制台**右上角「环境」下拉**即可看到，当前已填 `events-api-d6groy01wc45330f3`；**必须属于本项目 AppID**，用别的环境会报 `INVALID_HOST`）
-   - `SERVICE`：服务名（默认 `events-api`，必须与控制台服务名逐字一致）
-
-> 环境 ID 不要在别处找：微信云托管控制台没有「环境信息」板块，小程序后台（mp.weixin.qq.com）里也看不到云托管——两者是独立控制台。
-3. 编译预览即可（`callContainer` 不受合法域名校验限制）
 
 ### 3. 报名链接跳转说明
 

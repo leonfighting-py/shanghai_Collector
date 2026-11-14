@@ -12,6 +12,14 @@ import { listRecentCollectionRuns } from "../src/lib/repository.js";
 
 const CONCURRENCY = 5;
 const SOURCE_TIMEOUT_MS = 60_000;
+// collection_runs.status 的三档（2026-11-11 起）+ 历史遗留口径的中文标签
+const STATUS_LABELS = {
+  success: "成功",
+  degraded: "降级",
+  blocked: "拦截",
+  partial: "部分失败（旧口径）",
+  running: "进行中",
+};
 
 // 体检要和采集用同一个出口，否则「A 类出口被拦」的源在报表里永远是红的（见 docs/offshore-sources.md）
 const proxyStatus = await initOutboundProxy();
@@ -116,18 +124,26 @@ if (historyRuns.length > 0) {
       kindCounts.set(kind, (kindCounts.get(kind) || 0) + 1);
     }
   }
-  const successRuns = historyRuns.filter((r) => r.status === "success").length;
+  // 运行状态分档统计（2026-11-11 起三档：success / degraded / blocked）。
+  // 历史行还留着旧口径的 partial（不回填），一并展示，别当失败丢弃。
+  const statusCounts = {};
+  for (const run of historyRuns) {
+    const status = run.status || "unknown";
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+  }
   const ranked = [...failCounts.entries()].sort((a, b) => b[1] - a[1]);
   const kindRanked = [...kindCounts.entries()].sort((a, b) => b[1] - a[1]);
   historySummary = {
     runs: historyRuns.length,
-    successRuns,
-    partialRuns: historyRuns.length - successRuns,
+    statusCounts,
     failingSources: ranked.map(([name, count]) => ({ source: name, failedRuns: count, totalRuns: historyRuns.length })),
     failureKinds: kindRanked.map(([kind, count]) => ({ kind, count })),
   };
+  const statusText = Object.entries(statusCounts)
+    .map(([status, count]) => `${STATUS_LABELS[status] || status} ${count}`)
+    .join(" / ");
   const historyLines = ["", `## 最近 ${historyRuns.length} 次采集趋势（基于 collection_runs）`, ""];
-  historyLines.push(`- 成功 ${successRuns} / 部分失败 ${historyRuns.length - successRuns}`);
+  historyLines.push(`- 状态分布：${statusText}`);
   if (kindRanked.length > 0) {
     historyLines.push("", "失败类型分布：", "");
     for (const [kind, count] of kindRanked) {
@@ -171,7 +187,10 @@ if (alertConfig.enabled) {
     }
   }
   if (historySummary) {
-    healthLines.push("", `最近 ${historySummary.runs} 次采集：成功 ${historySummary.successRuns} / 部分失败 ${historySummary.partialRuns}`);
+    const statusText = Object.entries(historySummary.statusCounts)
+      .map(([status, count]) => `${STATUS_LABELS[status] || status} ${count}`)
+      .join(" / ");
+    healthLines.push("", `最近 ${historySummary.runs} 次采集：${statusText}`);
     if (historySummary.failingSources.length > 0) {
       healthLines.push("历史失败次数最多的源：");
       for (const item of historySummary.failingSources.slice(0, 10)) {

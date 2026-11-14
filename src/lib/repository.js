@@ -119,15 +119,38 @@ export function normalizeSourceConfig(source) {
 }
 
 
-export async function ensureSchema() {
-  if (!process.env.DATABASE_URL) return;
-  await query(buildSchemaSql());
-  await query(`
+// 补列语句。新增的 DDL 一律写成 if not exists，保证重复执行无副作用（scripts/migrate.mjs 每次部署都会跑）。
+const ADD_COLUMNS_SQL = `
     alter table events add column if not exists summary text not null default '';
     alter table events add column if not exists image_url text;
     alter table raw_events add column if not exists summary text;
     alter table raw_events add column if not exists image_url text;
-  `);
+  `;
+
+/**
+ * 建表 + 补列。
+ *
+ * lockTimeoutMs：只给部署前迁移用。`alter table ... add column if not exists` 即使列已存在
+ * 也要先拿表的排他锁；如果此刻有长读（每天 05:00 UTC 的 pg_dump、采集开头的 listEvents），
+ * alter 会排队，而排队中的排他锁会把后面所有普通读一起堵住——首页卡到那条长读结束为止
+ * （2026-11-14 本地复现：一条 0.03 秒的读被堵到 5.5 秒）。
+ * 传了这个参数就在一个事务里执行，并 `set local lock_timeout`：拿不到锁就报 55P03 放弃（scripts/migrate.mjs 默认 3 秒），
+ * 由调用方决定重试还是让部署失败，绝不长时间占着锁队列。`set local` 只在本事务内生效，
+ * runTransaction 用独立连接池、用完即关，不会把超时设置漏给别的查询。
+ * 采集和清理任务不传，行为与以前一致。
+ */
+export async function ensureSchema({ lockTimeoutMs } = {}) {
+  if (!process.env.DATABASE_URL) return;
+  const statements = [buildSchemaSql(), ADD_COLUMNS_SQL];
+  if (!lockTimeoutMs) {
+    for (const sql of statements) await query(sql);
+    return;
+  }
+  const timeout = Math.max(1, Math.floor(Number(lockTimeoutMs)));
+  await runTransaction([
+    { sql: `set local lock_timeout = ${timeout}` },
+    ...statements.map((sql) => ({ sql })),
+  ]);
 }
 
 export async function upsertSourceConfigs(sources) {

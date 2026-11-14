@@ -1,4 +1,5 @@
 import { collectEventsFromSources, LAND_SOURCES, SOURCE_SEEDS } from "./collector.js";
+import { classifyRunStatus, countFailedSources } from "./collect-result.js";
 import { filterEventCategories, getCategoryFilterConfig } from "./category-filter.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
 import { backfillEventImages } from "./image-backfill.js";
@@ -67,14 +68,34 @@ export function applyCategoryDropProtection(newEvents, previousEvents) {
   return { events: [...fresh, ...kept], protectedCategories };
 }
 
+// 各阶段计时（WP0-C）：collect.yml 的 55 分钟上限要不要收紧，得先知道时间花在哪。
+// Date.now() 差值就够（毫秒精度对分钟级决策足够），不引依赖。
+// 计时键形如 "<name>_ms"；同名阶段多次调用会累加，总账不漏。
+function createStageTimings() {
+  const timings = {};
+  async function timed(name, fn) {
+    const startedAt = Date.now();
+    try {
+      return await fn();
+    } finally {
+      timings[`${name}_ms`] = (timings[`${name}_ms`] || 0) + (Date.now() - startedAt);
+    }
+  }
+  return { timings, timed };
+}
+
 export async function runCollectJob() {
   resetLlmBudget();
-  const previousEvents = await listEvents();
-  await upsertSourceConfigs(SOURCE_SEEDS);
+  const { timings: stageTimings, timed } = createStageTimings();
+
+  // 阶段：读旧数据（分类下跌保护和发布守门的比较基数都来自它）
+  const previousEvents = await timed("list", () => listEvents());
+  await timed("upsert_sources", () => upsertSourceConfigs(SOURCE_SEEDS));
 
   // 境外源（Eventbrite / 活动行 / AllEvents）在境内 runner 上是 403/405，
   // 由 offshore.yml 在境外出口采好后以 artifact 交过来；没配这个文件时整段不生效。
-  const offshore = await loadOffshoreEvents(process.env.OFFSHORE_EVENTS_FILE);
+  // 读取 artifact 是本地文件操作，与网络抓取一起归入 fetch 阶段计时。
+  const offshore = await timed("fetch", () => loadOffshoreEvents(process.env.OFFSHORE_EVENTS_FILE));
   if (offshore.status === "ok") {
     console.log(`[offshore] 合并境外源 ${offshore.events.length} 条（生成于 ${offshore.generatedAt}）`);
   } else if (offshore.status !== "disabled") {
@@ -82,67 +103,98 @@ export async function runCollectJob() {
   }
 
   const run = await startCollectionRun({ sourceCount: LAND_SOURCES.length });
-  const result = await collectEventsFromSources({ previousEvents, sources: LAND_SOURCES, extraEvents: offshore.events });
-  const enrichment =
-    result.events === previousEvents
+  // 阶段：抓取解析
+  const result = await timed("fetch", () =>
+    collectEventsFromSources({ previousEvents, sources: LAND_SOURCES, extraEvents: offshore.events }),
+  );
+
+  // 回退到旧数据（本轮采集结果为空，用上一轮已发布数据顶住）——后续润色/补图/过滤全部跳过
+  const fellBack = result.events === previousEvents;
+  // 阶段：LLM 润色
+  const enrichment = await timed("enrich", () =>
+    fellBack
       ? { events: previousEvents, enrichedCount: 0, skippedCount: 0, failures: [] }
-      : await enrichEventsForPublish(result.events);
-  // 图片回填：对列表页没带图的事件抓详情页 og:image（失败静默，渐变兜底兜住）
-  const imageBackfill =
-    result.events === previousEvents
+      : enrichEventsForPublish(result.events),
+  );
+  // 阶段：图片回填：对列表页没带图的事件抓详情页 og:image（失败静默，渐变兜底兜住）
+  const imageBackfill = await timed("image_backfill", () =>
+    fellBack
       ? { attempted: 0, backfilled: 0, failed: 0 }
-      : await backfillEventImages(enrichment.events);
-  const categoryFilter =
-    result.events === previousEvents
+      : backfillEventImages(enrichment.events),
+  );
+  // 阶段：分类过滤
+  const categoryFilter = await timed("category_filter", () =>
+    fellBack
       ? { events: enrichment.events, reclassifiedCount: 0, rejectedCount: 0, failures: [], enabled: false }
-      : await filterEventCategories(enrichment.events);
+      : filterEventCategories(enrichment.events),
+  );
   // 安全网：LLM 富集可能将英文体育标题翻译成中文（如 "Swim Championships" → "游泳锦标赛"），
   // 采集阶段的正则只覆盖原始标题；此处对富集后的最终标题再过滤一次。
   const publishableEvents =
-    result.events === previousEvents
+    fellBack
       ? categoryFilter.events
       : categoryFilter.events.filter(
           (event) => event.category !== "演出音乐" || isRelevantPerformance(event),
         );
   // 分类级保护：某分类本次采集暴跌时，用上次发布的同分类旧数据顶替，避免栏目整段消失
   const dropProtection =
-    result.events === previousEvents
+    fellBack
       ? { events: previousEvents, protectedCategories: [] }
       : applyCategoryDropProtection(publishableEvents, previousEvents);
   const protectedEvents = dropProtection.events;
-  const rawResult = await insertRawEvents(result.rawEvents || result.events, { runId: run.id });
+  // 阶段：写原始表
+  const rawResult = await timed("raw_insert", () =>
+    insertRawEvents(result.rawEvents || result.events, { runId: run.id }),
+  );
 
   // 发布守门：新数据量相对已发布数据暴跌时拒绝覆盖，保留旧数据
   const guardConfig = getPublishGuardConfig();
-  const guard = result.events !== previousEvents
+  const guard = !fellBack
     ? evaluatePublishGuard(previousEvents, protectedEvents, guardConfig)
     : { allowed: true, reason: null, previousCount: previousEvents.length, newCount: previousEvents.length };
 
-  const publishResult = result.events !== previousEvents && guard.allowed
-      ? await publishEvents(protectedEvents, {
+  // 阶段：发布
+  const publishResult = await timed("publish", () =>
+    !fellBack && guard.allowed
+      ? publishEvents(protectedEvents, {
           rawEventIds: rawResult.rawEventIds,
           dedupeProvider: dedupeProvider(),
         })
-      : { inserted: previousEvents.length };
+      : { inserted: previousEvents.length },
+  );
+
+  // 运行状态三档判定（WP0-D）：详见 collect-result.js 的 classifyRunStatus。
+  // 失败信源数只统计 fetch 阶段的信源级失败（批次级失败没有 source，天然不进占比）。
+  const failedSourceCount = countFailedSources(result.failures);
+  const runStatus = classifyRunStatus({
+    guardAllowed: guard.allowed,
+    fellBackToOldData: fellBack,
+    failedSourceCount,
+    sourceCount: LAND_SOURCES.length,
+  });
 
   const guardFailures = guard.allowed ? [] : [publishGuardFailure(guard)];
 
-  await finishCollectionRun(run.id, {
-    status: result.ok && guard.allowed ? "success" : "partial",
-    rawCount: result.collectedCount,
-    publishedCount: publishResult.inserted,
-    failures: [
-      ...(result.failures || []),
-      ...(enrichment.failures || []),
-      ...(categoryFilter.failures || []),
-      ...guardFailures,
-    ],
-    dedupeProvider: dedupeProvider(),
-  });
+  await timed("finish_run", () =>
+    finishCollectionRun(run.id, {
+      status: runStatus,
+      rawCount: result.collectedCount,
+      publishedCount: publishResult.inserted,
+      failures: [
+        ...(result.failures || []),
+        ...(enrichment.failures || []),
+        ...(categoryFilter.failures || []),
+        ...guardFailures,
+      ],
+      dedupeProvider: dedupeProvider(),
+    }),
+  );
 
   return {
     ...result,
     events: guard.allowed ? protectedEvents : previousEvents,
+    run_status: runStatus,
+    stage_timings: stageTimings,
     publish_guard: {
       allowed: guard.allowed,
       reason: guard.reason,
