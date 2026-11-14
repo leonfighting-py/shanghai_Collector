@@ -185,7 +185,7 @@ export const LECTURE_SEEDS = [
     parser: PARSERS.cnCmsLectures,
     venueLabel: "上海海事大学",
     defaultVenue: "上海海事大学",
-    notes: "海事·讲座信息栏目 · 含 AI/深度学习等前沿讲座（2026-10 验证）",
+    notes: "海事·讲座信息栏目 · 含 AI/深度学习等前沿讲座（2026-10 验证） · 也含「海大人文导读」等公开讲座（原 order 319 是同一页面的 http 版重复条目，2026-11 合并）",
   },
   {
     order: 64,
@@ -1546,7 +1546,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 266,
-    name: "东华·通知公告",
+    name: "东华·通知公告（wkc）",
     url: "https://wkc.dhu.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1555,7 +1555,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 267,
-    name: "东华·通知公告",
+    name: "东华·通知公告（cbm）",
     url: "http://cbm.dhu.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1654,7 +1654,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 278,
-    name: "东华·通知公告",
+    name: "东华·通知公告（ictst）",
     url: "http://ictst.dhu.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1780,7 +1780,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 292,
-    name: "东华·通知公告",
+    name: "东华·通知公告（inforcenter）",
     url: "http://inforcenter.dhu.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1798,7 +1798,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 294,
-    name: "上理工·通知公告",
+    name: "上理工·通知公告（glhospital）",
     url: "https://glhospital.usst.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1816,7 +1816,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 296,
-    name: "上理工·通知公告",
+    name: "上理工·通知公告（cftd）",
     url: "http://cftd.usst.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1843,7 +1843,7 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 299,
-    name: "东华·通知公告",
+    name: "东华·通知公告（ico）",
     url: "http://ico.dhu.edu.cn/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
@@ -1870,12 +1870,12 @@ export const LECTURE_SEEDS = [
   },
   {
     order: 302,
-    name: "上理工双创·通知公告",
+    name: "上理工双创·通知公告（t2377）",
     url: "http://cxcy.usst.edu.cn/_t2377/tzgg/list.htm",
     category: "高校讲座",
     locale: "zh",
     parser: PARSERS.cnCmsLectures,
-    notes: "第五批扩展·已验证栏目(近 2 条，近期无更新)",
+    notes: "第五批扩展·已验证栏目(近 2 条，近期无更新) · ⚠️ 疑似与 cxcy.usst.edu.cn/tzgg 是同一列表（同站点、条数相同），2026-11 境外容器连不上无法实测；境内网络确认内容相同后删掉本条",
   },
   {
     order: 303,
@@ -1918,17 +1918,6 @@ export const LECTURE_SEEDS = [
     venueLabel: "上外贤达经济人文学院",
     defaultVenue: "上外贤达经济人文学院",
     notes: "此前完全未覆盖的院校 · 实测 13 条（2026-10-18 新增）",
-  },
-  {
-    order: 319,
-    name: "上海海事大学·讲座信息",
-    url: "http://www.shmtu.edu.cn/xsjz/list.htm",
-    category: "高校讲座",
-    locale: "zh",
-    parser: PARSERS.cnCmsLectures,
-    venueLabel: "上海海事大学",
-    defaultVenue: "上海海事大学",
-    notes: "「海大人文导读」等公开讲座（现有海事源是学术讲座/学生活动两个别的栏目）· 实测 10 条，最近一条 2026-10-16",
   },
   {
     order: 320,

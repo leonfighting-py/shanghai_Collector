@@ -82,25 +82,30 @@ test("导出的信源对象不带 order 字段", () => {
 });
 
 // 不变量 1：信源名不重复。
-// ⚠️ 历史上已有 4 组例外：同校不同院系的不同站点共用显示名（如「东华·通知公告」
-// 覆盖 5 个院系站点）。名字重复会让 source_configs 的 upsert 和告警的连续失败统计
-// 按名去重时互相覆盖，所以不让新增；已有的 4 组是既成事实，列在下面防回归扩大。
-const KNOWN_DUPLICATE_NAMES = new Set([
-  "东华·通知公告",
-  "上理工·通知公告",
-  "上理工双创·通知公告",
-  "上海海事大学·讲座信息",
-]);
-
-test("信源名不重复（已知例外之外不得新增重名）", () => {
+// 名字重复会让 source_configs 的 upsert（source_name 唯一键）互相覆盖、停采清单一次停掉多条、
+// 告警的连续失败统计把不同站点的失败算到一起。2026-11 已清掉历史上的 4 组重名
+// （东华 / 上理工按子域名加后缀，海事 http/https 重复条目已删），从此不留例外。
+test("信源名不重复", () => {
   const counts = new Map();
   for (const source of SOURCE_SEEDS_RAW) {
     counts.set(source.name, (counts.get(source.name) || 0) + 1);
   }
-  const newDuplicates = [...counts.entries()]
-    .filter(([name, count]) => count > 1 && !KNOWN_DUPLICATE_NAMES.has(name))
+  const duplicates = [...counts.entries()]
+    .filter(([, count]) => count > 1)
     .map(([name, count]) => `${name} ×${count}`);
-  assert.deepEqual(newDuplicates, []);
+  assert.deepEqual(duplicates, []);
+});
+
+// 同一页面只采一次：只差 http/https 的两条会让同一批活动每轮被抓两遍（海事讲座信息曾经如此）
+test("信源 URL 不重复（忽略 http/https 差异）", () => {
+  const seen = new Map();
+  const duplicates = [];
+  for (const source of SOURCE_SEEDS_RAW) {
+    const key = String(source.url).replace(/^https?:\/\//i, "").replace(/\/$/, "");
+    if (seen.has(key)) duplicates.push(`${seen.get(key)} / ${source.name}`);
+    else seen.set(key, source.name);
+  }
+  assert.deepEqual(duplicates, []);
 });
 
 // 不变量 2：停采清单里的每个名字都能在原始表里找到——防止改名/删除条目后停采静默失效
