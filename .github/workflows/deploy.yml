@@ -6,6 +6,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      skip_migrate:
+        description: "跳过部署前迁移（仅在数据库不可用、又必须发纯前端修复时使用）"
+        type: boolean
+        default: false
 
 # 同一时刻只允许一个部署任务；新的 push 会取消正在跑的旧部署，避免堆积。
 concurrency:
@@ -33,7 +38,10 @@ jobs:
       # 否则读查询引用"还不存在的列"会让首页直接报错（新列原本要等下一轮采集才加上）。
       # ensureSchema 全部是 create if not exists / add column if not exists，重复执行无副作用。
       # backup.yml / cleanup.yml 已在托管 runner 上用同一 secret 连库，网络是通的。
+      # 手动触发时可勾选 skip_migrate：数据库宕机/暂停时，纯前端修复不该被迁移挡住。
+      # push 触发时 inputs 为空，迁移照常执行。
       - name: Apply schema
+        if: ${{ !inputs.skip_migrate }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: node scripts/migrate.mjs

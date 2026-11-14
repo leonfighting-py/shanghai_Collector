@@ -20,8 +20,29 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("[migrate] 开始应用 schema（幂等，可重复执行）...");
-await ensureSchema();
+// 锁等待上限与重试：DDL 拿不到表锁时不排队（排队会把首页的读一起堵住，见 repository.js 的 ensureSchema 注释），
+// 而是 3 秒放弃、隔一会儿再试；几次都拿不到就让部署失败，好过让线上卡住。
+// 等锁期间普通读仍会被堵住，最多堵这么久，所以上限宁短勿长（实测 2 秒上限时读只多等了 0.5 秒）。
+const LOCK_TIMEOUT_MS = Number(process.env.MIGRATE_LOCK_TIMEOUT_MS) || 3_000;
+const MAX_ATTEMPTS = 4;
+const RETRY_WAIT_MS = 15_000;
+
+console.log(`[migrate] 开始应用 schema（幂等，可重复执行；锁等待上限 ${LOCK_TIMEOUT_MS} ms）...`);
+for (let attempt = 1; ; attempt += 1) {
+  try {
+    await ensureSchema({ lockTimeoutMs: LOCK_TIMEOUT_MS });
+    break;
+  } catch (error) {
+    // 55P03 = lock_not_available：表正被长读/长事务占着（备份、采集），过一会儿通常就让出来了
+    if (error?.code !== "55P03" || attempt >= MAX_ATTEMPTS) {
+      console.error(`[migrate] 失败（第 ${attempt} 次）：${error?.message || error}`);
+      await runQuery.localPool?.end().catch(() => {});
+      process.exit(1);
+    }
+    console.warn(`[migrate] 第 ${attempt} 次没拿到表锁（有长查询占着），${RETRY_WAIT_MS / 1000} 秒后重试...`);
+    await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT_MS));
+  }
+}
 
 // 验证：不满足"四张核心表都在"就判失败。守的是备份体系同款的最坏模式——
 // "以为迁移成功了，其实什么都没建成"。
