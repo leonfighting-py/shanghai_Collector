@@ -22,8 +22,12 @@ const staticSeeds = [
   ...AI_MEETUP_SEEDS,
 ].sort((a, b) => a.order - b.order);
 
+// 静态条目原样导出，供 test/source-registry.test.js 检查 order 不重号
+export const STATIC_SEEDS_WITH_ORDER = staticSeeds;
+
+// order 只用来还原顺序，排完就去掉：下游（解析器、source_configs、告警）拿到的对象与拆分前一字不差
 export const SOURCE_SEEDS_RAW = [
-  ...staticSeeds,
+  ...staticSeeds.map(({ order, ...source }) => source),
   ...wechatDynamicSources(),
   ...xTimelineDynamicSources(),
 ];

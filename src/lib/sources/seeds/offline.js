@@ -1,7 +1,8 @@
 // 线下活动信源表 —— 从 collector.js 的 SOURCE_SEEDS_RAW 拆出（2026-11-11 WP1）。
 // 条目的 order 是它在原数组中的全局位置：合并去重时"先到的当底"（mergeDuplicateEvents），
 // 顺序影响采集结果，sources/index.js 会把各文件按 order 排序拼接，保证与拆分前一字不差。
-// 新增信源：order 用当前文件里最大的值 + 1（或任意未用过的更大值）。
+// 新增信源：order 取**全局**最大值 + 1（所有 seeds 文件合起来算，不是本文件的最大值）；
+// 撞号会让排序结果依赖文件拼接顺序，test/source-registry.test.js 会拦下重号。
 // 条目上方的注释记录了每个源为什么这样配——是仓库最有价值的文档之一，跟着条目走，别删。
 import { PARSERS } from "../../parsers/index.js";
 
