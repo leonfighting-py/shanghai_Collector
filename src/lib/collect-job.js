@@ -4,12 +4,15 @@ import { filterEventCategories, getCategoryFilterConfig } from "./category-filte
 import { createDetailFetcher } from "./detail-fetch.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
 import { backfillEventFacets } from "./facet-backfill.js";
+import { backfillFacetsWithLlm, getFacetLlmConfig } from "./facet-llm.js";
 import { backfillEventImages } from "./image-backfill.js";
 import { loadOffshoreEvents } from "./offshore-events.js";
 import { isRelevantPerformance } from "./parsers/shared.js";
 import { resetLlmBudget, getLlmBudgetUsage } from "./siliconflow.js";
 import {
   evaluatePublishGuard,
+  filterOffsiteEvents,
+  getOffsiteGuardConfig,
   getPublishGuardConfig,
   publishGuardFailure,
 } from "./publish-guard.js";
@@ -121,7 +124,9 @@ export async function runCollectJob() {
       : enrichEventsForPublish(result.events),
   );
   // 阶段：详情页共用抓取（图片回填与字段补齐走同一个 fetcher，同一地址一轮只请求一次）
-  const detailFetcher = createDetailFetcher();
+  const facetLlmConfig = getFacetLlmConfig();
+  // 只有开 LLM 兜底时才抽正文摘要：不给关掉的流程白传几百 KB 跨境
+  const detailFetcher = createDetailFetcher({ includeExcerpt: facetLlmConfig.enabled });
   const detailUrls = fellBack
     ? []
     : [
@@ -135,7 +140,7 @@ export async function runCollectJob() {
     ? { size: 0, failed: false }
     : await timed("detail_cache_read", async () => {
         try {
-          const cached = await readDetailCache(detailUrls);
+          const cached = await readDetailCache(detailUrls, { includeExcerpt: facetLlmConfig.enabled });
           detailFetcher.preload(cached);
           return { size: cached.size, failed: false };
         } catch (error) {
@@ -183,12 +188,26 @@ export async function runCollectJob() {
       return { written: 0, failed: true };
     }
   });
+  // 阶段：外地守门。本站只收录上海活动；默认 report 只记录，观察无误伤后改 drop。
+  const offsiteConfig = getOffsiteGuardConfig();
+  const offsite = fellBack
+    ? { events: publishableEvents, mode: offsiteConfig.mode, dropped: [] }
+    : filterOffsiteEvents(publishableEvents, offsiteConfig);
+  // 阶段：第 3 层 LLM 兜底（默认关）。放在外地守门之后，免得为要丢弃的活动白花 token。
+  // 只补区域 / 地址 / 人群；价格必须能在正文里找到原文才采信，不让模型算价。
+  const facetLlm = await timed("detail_llm", () =>
+    fellBack
+      ? { enabled: false, asked: 0, filled: 0, rejected: 0, failures: [] }
+      : backfillFacetsWithLlm(offsite.events, {
+          config: facetLlmConfig,
+          excerpts: detailFetcher.getExcerpts(),
+        }),
+  );
   // 分类级保护：某分类本次采集暴跌时，用上次发布的同分类旧数据顶替，避免栏目整段消失
   const dropProtection =
     fellBack
       ? { events: previousEvents, protectedCategories: [] }
-      : applyCategoryDropProtection(publishableEvents, previousEvents);
-  const protectedEvents = dropProtection.events;
+      : applyCategoryDropProtection(offsite.events, previousEvents);  const protectedEvents = dropProtection.events;
   // 阶段：写原始表
   const rawResult = await timed("raw_insert", () =>
     insertRawEvents(result.rawEvents || result.events, { runId: run.id }),
@@ -231,7 +250,16 @@ export async function runCollectJob() {
         ...(result.failures || []),
         ...(enrichment.failures || []),
         ...(categoryFilter.failures || []),
+        ...(facetLlm.failures || []),
         ...guardFailures,
+        ...(offsite.dropped.length > 0
+          ? [
+              {
+                source: "publish-guard",
+                message: `外地活动 ${offsite.dropped.length} 条（${offsite.mode} 模式，${offsite.mode === "drop" ? "已剔除" : "未拦截"}）`,
+              },
+            ]
+          : []),
       ],
       dedupeProvider: dedupeProvider(),
     }),
@@ -253,6 +281,17 @@ export async function runCollectJob() {
       protectedCategories: dropProtection.protectedCategories,
     },
     image_backfill: imageBackfill,
+    facet_llm: {
+      enabled: facetLlmConfig.enabled,
+      asked: facetLlm.asked,
+      filled: facetLlm.filled,
+      rejected: facetLlm.rejected,
+    },
+    offsite_guard: {
+      mode: offsite.mode,
+      dropped: offsite.dropped.length,
+      samples: offsite.dropped.slice(0, 5),
+    },
     facet_backfill: facetBackfill,
     detail_cache: {
       read: detailCache.size,

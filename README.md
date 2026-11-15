@@ -207,6 +207,10 @@ curl http://localhost:8787/api/events
 
 **内容守门**：`isOffTopicEvent()` 在 `isPublishableEvent()` 统一拦截成人向、夜店拉客、擦边导览类条目（如 `BDSM Tour` / `Pub Crawl`）。聚合平台（Eventbrite 等）常被同一发布者灌入此类 Listing，此守门对所有源生效。
 
+**外地活动守门**：本站只收录上海的活动。`detectOffsite()` 看场馆与地址里是否出现外地城市（苏州、杭州、南京…），含「上海」字样的一律放过——「北京西路」「南京西路」是上海路名，2026-11-15 实测 266 条里 5 条命中城市名全是这类误伤。`OFFSITE_GUARD_MODE=report`（默认）只记录清单、不拦截，确认无误伤后改 `drop`。
+
+**字段补齐（地址 / 票价 / 免费 / 人群）**：四层依次执行，前一层填上的后一层不覆盖——① 信源级 `defaultVenue`；② 详情页抓取（`detail-fetch.js`，图片与字段共用一次抓取，结果缓存在 `event_detail_cache` 7 天）；③ 场馆字典与规则（`venue-profiles.js` / `audience.js`）；④ LLM 兜底，`LLM_FACETS_ENABLED=true` 才开，默认关。抓不到就留空，不猜。价格只走 JSON-LD 与正文正则：2026-11-15 探测确认格瓦拉详情页是脚本渲染的空壳、票牛没有票价，所以不为票务站另接接口（见 `docs/plans/2026-10-12-event-facets-backfill.md` 第 10 节）。
+
 **源健康巡检**：`node scripts/source-health-check.js` 输出体检报告，含实时探活（逐源 fetch + parse）与最近 10 次 `collection_runs` 的历史失败趋势（发现持续/间歇故障源），写入 `scripts/source-health-report.{md,json}`。
 
 **信源告警**：配置 `FEISHU_WEBHOOK_URL` 后，每次采集结束会把"需要人介入"的信号推到飞书群——同一信源连续失败 `ALERT_CONSECUTIVE_FAILURES`（默认 2）次、分类召回塌方、发布守门拦截；偶发单次超时不报，避免告警疲劳。另由 `.github/workflows/health.yml` 每周一推送一次体检报告。未配置 webhook 时全部静默跳过。

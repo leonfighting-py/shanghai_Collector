@@ -84,6 +84,7 @@ export function buildSchemaSql() {
       price_max numeric,
       is_free boolean,
       facet_provenance jsonb not null default '{}'::jsonb,
+      excerpt text,
       fetched_at timestamptz not null default now()
     );
     create index if not exists event_detail_cache_fetched_at_idx on event_detail_cache(fetched_at);
@@ -149,6 +150,7 @@ export function normalizeSourceConfig(source) {
 export const EVENTS_ADD_COLUMNS_SQL = `
     alter table events add column if not exists summary text not null default '';
     alter table events add column if not exists image_url text;
+    alter table events add column if not exists district text;
     alter table events add column if not exists address text;
     alter table events add column if not exists price_min numeric;
     alter table events add column if not exists price_max numeric;
@@ -157,11 +159,13 @@ export const EVENTS_ADD_COLUMNS_SQL = `
     alter table events add column if not exists facet_provenance jsonb not null default '{}'::jsonb;
     alter table raw_events add column if not exists summary text;
     alter table raw_events add column if not exists image_url text;
+    -- 正文摘要：只有开 LLM 兜底时才写，给第 3 层判断场馆与区域用
+    alter table event_detail_cache add column if not exists excerpt text;
   `;
 
 // 字段补齐新增的列（docs/plans/2026-10-12-event-facets-backfill.md 第 3 节）。
 // 读、写、加列三处都从这里派生，少一处就会「写进去了但读不出来」。
-export const FACET_COLUMNS = ["address", "price_min", "price_max", "is_free", "audience", "facet_provenance"];
+export const FACET_COLUMNS = ["district", "address", "price_min", "price_max", "is_free", "audience", "facet_provenance"];
 
 /** 读路径的字段列表；listEvents 与单条查询共用，避免两边漂移 */
 export const EVENT_SELECT_COLUMNS = [
@@ -229,6 +233,12 @@ export function buildEventUpsertSql() {
 /** 与 buildEventUpsertSql 的列顺序严格对应：测试里会核对两者长度 */
 export function buildEventUpsertParams(event, rawEventIds, dedupeProvider) {
   return EVENT_UPSERT_COLUMNS.map((column) => {
+    if (column === "district") {
+      // 只落 LLM 明确给出的区域。规则派生的区域仍然每次实时算 ——
+      // 全量落库会让「改规则立即生效、存量无需回填」这条特性失效。
+      const fromLlm = event.facet_provenance?.district === "llm" && event.district;
+      return fromLlm ? event.district : null;
+    }
     if (column === "sources") return JSON.stringify(event.sources || []);
     if (column === "raw_event_ids") return JSON.stringify(rawEventIds);
     if (column === "dedupe_provider") return dedupeProvider;
@@ -449,10 +459,14 @@ export async function cleanupOldData(options) {
  * @param {string[]} urls
  * @returns {Promise<Map<string, object>>} source_url → 提取结果
  */
-export async function readDetailCache(urls, { ttlDays = DETAIL_CACHE_TTL_DAYS } = {}) {
+export async function readDetailCache(urls, { ttlDays = DETAIL_CACHE_TTL_DAYS, includeExcerpt = false } = {}) {
   const unique = [...new Set((urls || []).filter(Boolean))];
   const records = new Map();
   if (!getDatabaseConfig() || unique.length === 0) return records;
+
+  // 正文摘要默认不取：一页 1500 字，210 条就是几百 KB 的跨境传输，
+  // 只有 LLM 兜底开启时才需要它（第 3 层）。
+  const excerptColumn = includeExcerpt ? ", excerpt" : "";
 
   // 一条 SQL 塞 266 个 URL 没问题；分批只是防止将来源池暴涨时把语句撑爆
   const CHUNK = 500;
@@ -460,7 +474,7 @@ export async function readDetailCache(urls, { ttlDays = DETAIL_CACHE_TTL_DAYS } 
     const chunk = unique.slice(index, index + CHUNK);
     const result = await query(
       `
-        select source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance
+        select source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance${excerptColumn}
         from event_detail_cache
         where source_url = any($1::text[])
           and fetched_at > now() - ($2::int * interval '1 day')
@@ -487,18 +501,19 @@ export async function writeDetailCache(records) {
     column((record) => record.price_max ?? null),
     column((record) => (typeof record.is_free === "boolean" ? record.is_free : null)),
     column((record) => JSON.stringify(record.facet_provenance || {})),
+    column((record) => (typeof record.excerpt === "string" ? record.excerpt : "")),
   ];
 
   await query(
     `
       insert into event_detail_cache (
-        source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance, fetched_at
+        source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance, excerpt, fetched_at
       )
       select t.source_url, t.image_url, t.venue, t.address, t.price_min, t.price_max,
-             t.is_free, t.facet_provenance::jsonb, now()
+             t.is_free, t.facet_provenance::jsonb, t.excerpt, now()
       from unnest(
-        $1::text[], $2::text[], $3::text[], $4::text[], $5::numeric[], $6::numeric[], $7::boolean[], $8::text[]
-      ) as t(source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance)
+        $1::text[], $2::text[], $3::text[], $4::text[], $5::numeric[], $6::numeric[], $7::boolean[], $8::text[], $9::text[]
+      ) as t(source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance, excerpt)
       on conflict (source_url) do update set
         image_url = excluded.image_url,
         venue = excluded.venue,
@@ -507,6 +522,8 @@ export async function writeDetailCache(records) {
         price_max = excluded.price_max,
         is_free = excluded.is_free,
         facet_provenance = excluded.facet_provenance,
+        -- 这一轮没带摘要（LLM 关着）时保留库里的旧摘要，不要覆盖成空
+        excerpt = coalesce(nullif(excluded.excerpt, ''), event_detail_cache.excerpt),
         fetched_at = now()
     `,
     params,
@@ -525,6 +542,7 @@ function rowToDetailRecord(row) {
     is_free: row.is_free === null || row.is_free === undefined ? null : Boolean(row.is_free),
     facet_provenance:
       row.facet_provenance && typeof row.facet_provenance === "object" ? row.facet_provenance : {},
+    excerpt: typeof row.excerpt === "string" ? row.excerpt : "",
   };
 }
 

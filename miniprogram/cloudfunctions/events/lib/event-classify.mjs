@@ -234,6 +234,18 @@ export function detectDistrict(event) {
   return "";
 }
 
+/**
+ * 区域解析：数据库里存了有效值就用存的，否则现算。
+ *
+ * 只有 LLM 兜底给的区域会落库（见 repository.buildEventUpsertParams）；
+ * 字典与规则算出来的**不落库**，改规则立刻生效，不用回填存量。
+ */
+export function resolveDistrict(event) {
+  const stored = String(event?.district || "").trim();
+  if (stored && DISTRICTS.includes(stored)) return stored;
+  return detectDistrict(event);
+}
+
 // ---------------------------------------------------------------------------
 // 筛选面板用的选项与谓词
 // ---------------------------------------------------------------------------

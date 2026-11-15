@@ -1,5 +1,5 @@
 import { AUDIENCE_LABELS, deriveAudience } from "./audience.js";
-import { classifySubcategory, detectDistrict } from "./event-classify.js";
+import { classifySubcategory, resolveDistrict } from "./event-classify.js";
 import { inferEventEndTime } from "./event-duration.js";
 import { assignSlugs } from "./event-slug.js";
 import { resolveVenueName } from "./venue-profiles.js";
@@ -265,7 +265,7 @@ export function filterPublishableEvents(events) {
       //（repository.listEvents / cloudrun / Next 页面都经过它），所以在这里算，
       // Web、小程序 API、采集三处自动一致，且改规则立即生效、无需回填。详见 event-classify.js
       subcategory: classifySubcategory(withVenue),
-      district: detectDistrict(withVenue),
+      district: resolveDistrict(withVenue),
       audience,
       ...(Object.keys(provenance).length > 0 ? { facet_provenance: provenance } : {}),
     };

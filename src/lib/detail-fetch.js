@@ -8,15 +8,22 @@
 // 缓存存的是**提取结果**而不是 HTML：一页 40 KB 上下，266 条就是 10 MB，
 // 跨境传输比重新抽一遍贵得多（raw_event_ids 2 MB 拖垮过一次采集）。
 
-import { extractFacets } from "./facet-extract.js";
+import { extractFacets, toPlainText } from "./facet-extract.js";
 import { defaultFetchHtml } from "./fetch-html.js";
 import { extractDetailImage } from "./image-backfill.js";
 import { checkRobots } from "./robots.js";
 
-/** 详情页里我们能拿到的东西；名字与 events 表字段对齐 */
-export function extractDetailRecord(html) {
+// 正文摘要长度：第 3 层 LLM 兜底的输入，够判断场馆/区域/人群即可
+export const EXCERPT_MAX_CHARS = 1500;
+
+/**
+ * 详情页里我们能拿到的东西；名字与 events 表字段对齐。
+ * includeExcerpt 只在 LLM 兜底开启时为 true —— 正文摘要不参与常规提取，白传一趟跨境链路不划算。
+ */
+export function extractDetailRecord(html, { includeExcerpt = false } = {}) {
   const facets = extractFacets(html);
   return {
+    excerpt: includeExcerpt ? toPlainText(html).slice(0, EXCERPT_MAX_CHARS) : "",
     image_url: extractDetailImage(html) || null,
     venue: facets.venue || "",
     address: facets.address || "",
@@ -38,18 +45,25 @@ function hostOf(url) {
 /**
  * @param {{fetchHtml?: Function, robotsCheck?: Function}} options
  */
-export function createDetailFetcher({ fetchHtml = defaultFetchHtml, robotsCheck = checkRobots } = {}) {
+export function createDetailFetcher({
+  fetchHtml = defaultFetchHtml,
+  robotsCheck = checkRobots,
+  includeExcerpt = false,
+} = {}) {
   /** 跨轮缓存（由 repository.readDetailCache 预载） */
   const persisted = new Map();
   /** 本轮请求结果，按 URL 去重 */
   const memo = new Map();
   /** 本轮真正走网络的记录，等采集结束时批量写库 */
   const fetched = new Map();
+  /** signup_url → 正文摘要（只有 includeExcerpt 时才有），给第 3 层 LLM 用 */
+  const excerpts = new Map();
 
   function preload(records) {
     if (!records) return;
     for (const [url, record] of records) {
       if (!persisted.has(url)) persisted.set(url, record);
+      if (record?.excerpt) excerpts.set(url, record.excerpt);
     }
   }
 
@@ -63,7 +77,8 @@ export function createDetailFetcher({ fetchHtml = defaultFetchHtml, robotsCheck 
       throw error;
     }
 
-    const record = extractDetailRecord(await fetchHtml(url));
+    const record = extractDetailRecord(await fetchHtml(url), { includeExcerpt });
+    if (record.excerpt) excerpts.set(url, record.excerpt);
     fetched.set(url, record);
     return { record, source: "network" };
   }
@@ -85,6 +100,10 @@ export function createDetailFetcher({ fetchHtml = defaultFetchHtml, robotsCheck 
     /** 本轮新抓到的记录（Map<url, record>），交给 repository.writeDetailCache */
     drainPending() {
       return new Map(fetched);
+    },
+    /** signup_url → 正文摘要，第 3 层 LLM 兜底的输入 */
+    getExcerpts() {
+      return new Map(excerpts);
     },
     pendingSize() {
       return fetched.size;
