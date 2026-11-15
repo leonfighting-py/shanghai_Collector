@@ -586,6 +586,40 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 .detail-note { margin-top: 22px; font-size: 12px; line-height: 1.8; color: var(--ink-3); }
 .related { margin-top: 4px; }
 
+/* ---------- 收藏清单 / 朋友分享的清单 ----------
+   两条横幅同一个壳子：左竖线区分来源（朋友=强调色，自己的=墨色） */
+.shared-banner,
+.list-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--accent);
+  font-size: 13px;
+}
+.list-bar { border-left-color: var(--ink); }
+.shared-banner p,
+.list-bar p { margin: 0; color: var(--ink-2); }
+.shared-banner b { font-family: var(--serif); font-size: 17px; color: var(--ink); }
+.banner-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--ink);
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.chip-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+.chip-btn:disabled { opacity: 0.4; cursor: default; }
+.chip-btn.is-plain { border-color: var(--hair); font-weight: 400; color: var(--ink-2); }
+
 /* ============================================
    窄屏
    ============================================ */
@@ -635,4 +669,8 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   .detail-cover img { max-height: 260px; }
   .detail-facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .detail-actions > * { flex: 1; text-align: center; }
+
+  .shared-banner,
+  .list-bar { flex-direction: column; align-items: stretch; }
+  .banner-actions .chip-btn { flex: 1; text-align: center; }
 }

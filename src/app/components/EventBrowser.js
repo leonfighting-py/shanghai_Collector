@@ -14,6 +14,7 @@ import {
 } from "../../lib/agenda.js";
 import { CATEGORIES, safeExternalUrl } from "../../lib/events.js";
 import { districtOptions, matchesClassification, subcategoryOptions } from "../../lib/event-classify.js";
+import { buildListParam } from "../../lib/favorite-list.js";
 import { EventImage } from "./EventImage.js";
 import { useFavorites } from "./useFavorites.js";
 
@@ -36,29 +37,40 @@ export function EventBrowser({
   initialSubcategory = "",
   initialDistrict = "",
   initialSearch = "",
+  sharedList = [],
 }) {
   const [category, setCategory] = useState(initialCategory);
   const [subcategory, setSubcategory] = useState(initialSubcategory);
   const [district, setDistrict] = useState(initialDistrict);
   const [search, setSearch] = useState(initialSearch);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
+  const [sharedDismissed, setSharedDismissed] = useState(false);
+  const [copied, setCopied] = useState(false);
   // 「展开当日其余」的展开状态，以 "more:<date>" 为键
   const [expanded, setExpanded] = useState({});
   // 「展期中」完整清单在抽屉里看：几十条纯文字摊在页面里，展开后要往回滑很久才能收起
   const [drawerDate, setDrawerDate] = useState("");
   // 筛选面板（细分 + 区域）。复用抽屉那套视觉：桌面从右侧滑出、手机从底部升起
   const [filterOpen, setFilterOpen] = useState(false);
-  const { favorites, isFavorite, toggleFavorite } = useFavorites({ events });
+  const { favorites, isFavorite, toggleFavorite, addFavorites } = useFavorites({ events });
   // 日期条上高亮的那一天：跟着滚动位置走，而不是固定在今天
   const [activeDate, setActiveDate] = useState(today);
   const filtersRef = useRef(null);
   const daysRef = useRef(null);
+  const copiedTimer = useRef(null);
 
   // 选项表来自与服务端同一份常量：二级挂在类目下（没选类目时该组为空），区域恒为 16 区
   const subs = useMemo(() => subcategoryOptions(category), [category]);
   const areas = useMemo(() => districtOptions(), []);
   // 角标只数「二级 + 区域」：一级类目在上面的 Tab 里已经自证选中，不重复计数
   const filterCount = (subcategory ? 1 : 0) + (district ? 1 : 0);
+
+  // 收藏与分享清单都只认「当前窗口内」的活动：已结束的 slug 还在 localStorage 里，
+  // 拿它拼链接会让朋友打开一片空白，导出日历也会少几条。
+  const windowSlugs = useMemo(() => new Set(events.map((event) => event.slug)), [events]);
+  const liveFavorites = useMemo(() => favorites.filter((slug) => windowSlugs.has(slug)), [favorites, windowSlugs]);
+  const sharedMatches = useMemo(() => sharedList.filter((slug) => windowSlugs.has(slug)), [sharedList, windowSlugs]);
 
   // 换一级类目后，原来的二级选择必然失效，一并清掉（与小程序同一语义）
   const selectCategory = (name) => {
@@ -190,6 +202,42 @@ export function EventBrowser({
     setDrawerDate(date);
   };
 
+  // 「链接已复制」两秒后回弹
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
+
+  const copyShareLink = async () => {
+    const url = `${window.location.origin}/?list=${buildListParam(liveFavorites)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      clearTimeout(copiedTimer.current);
+      copiedTimer.current = setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // 非 https 或没给剪贴板权限时退化成手动复制，不静默失败
+      window.prompt("复制这个链接发给朋友：", url);
+    }
+  };
+
+  /** 关掉分享横幅，同时把地址栏里的 list 参数去掉，免得刷新又弹 */
+  const dismissShared = () => {
+    setSharedDismissed(true);
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("list")) return;
+    params.delete("list");
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`,
+    );
+  };
+
+  const adoptShared = () => {
+    addFavorites(sharedMatches);
+    setOnlyFavorites(true);
+    dismissShared();
+  };
+
   const toggle = (key) => setExpanded((current) => ({ ...current, [key]: !current[key] }));
 
   return (
@@ -290,6 +338,54 @@ export function EventBrowser({
           })}
         </nav>
       </div>
+
+      {sharedList.length > 0 && !sharedDismissed ? (
+        <div className="shared-banner" role="status">
+          <p>
+            朋友分享了 <b>{sharedList.length}</b> 场活动
+            {sharedMatches.length === 0
+              ? "，但都已经不在最近两周了"
+              : sharedMatches.length < sharedList.length
+                ? `，其中 ${sharedMatches.length} 场还在最近两周`
+                : ""}
+          </p>
+          <div className="banner-actions">
+            <button type="button" className="chip-btn" onClick={adoptShared} disabled={sharedMatches.length === 0}>
+              全部加入我的收藏
+            </button>
+            <a className="chip-btn" href={`/calendar.ics?slugs=${sharedList.join(",")}`}>
+              导出到日历
+            </a>
+            <button type="button" className="chip-btn is-plain" onClick={dismissShared}>
+              关闭
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {onlyFavorites ? (
+        <div className="list-bar">
+          <p>
+            我的收藏 · {favorites.length} 场
+            {liveFavorites.length < favorites.length
+              ? `，其中 ${favorites.length - liveFavorites.length} 场不在最近两周`
+              : ""}
+          </p>
+          <div className="banner-actions">
+            <button
+              type="button"
+              className="chip-btn"
+              onClick={copyShareLink}
+              disabled={liveFavorites.length === 0}
+            >
+              {copied ? "链接已复制" : "复制分享链接"}
+            </button>
+            <a className="chip-btn" href={`/calendar.ics?slugs=${liveFavorites.join(",")}`}>
+              导出到日历
+            </a>
+          </div>
+        </div>
+      ) : null}
 
       {visibleDays.length === 0 ? (
         <p className="empty">

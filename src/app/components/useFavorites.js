@@ -91,5 +91,12 @@ export function useFavorites({ events = [] } = {}) {
     writeFavorites(next);
   }, []);
 
-  return { favorites, isFavorite, toggleFavorite };
+  // 批量加入（朋友分享的清单用）。幂等：已经在收藏里的不重复写，顺序按现有在前。
+  const addFavorites = useCallback((keys) => {
+    const current = readFavorites();
+    const next = [...new Set([...current, ...keys])];
+    if (next.length !== current.length) writeFavorites(next);
+  }, []);
+
+  return { favorites, isFavorite, toggleFavorite, addFavorites };
 }

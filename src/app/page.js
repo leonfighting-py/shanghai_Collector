@@ -4,6 +4,7 @@ import { HomeHero } from "./components/HomeHero.js";
 import { eventEndDay, eventStartDay, formatDotDate, formatShanghaiClock, isMultiDay } from "../lib/agenda.js";
 import { readClassificationParams } from "../lib/event-classify.js";
 import { CATEGORIES, toShanghaiDate } from "../lib/events.js";
+import { parseListParam } from "../lib/favorite-list.js";
 import { buildHomeViewModel } from "../lib/home-view-model.js";
 import { listEvents } from "../lib/repository.js";
 
@@ -27,6 +28,8 @@ export default async function Home({ searchParams }) {
   const category = CATEGORIES.includes(params?.category) ? params.category : "";
   // 细分与区域走白名单：乱填的参数会让列表静默筛成空，不如直接忽略（逻辑在 event-classify.js 里有单测）
   const { subcategory, district } = readClassificationParams(params, category);
+  // 朋友分享的清单：只认合法 slug，乱写的片段丢掉（见 favorite-list.js）
+  const sharedList = parseListParam(typeof params?.list === "string" ? params.list : "");
 
   // 类目和搜索都在客户端筛（切换零延迟），所以这里永远取整个窗口
   const events = await listEvents({ week: anchor });
@@ -82,6 +85,7 @@ export default async function Home({ searchParams }) {
           initialSubcategory={subcategory}
           initialDistrict={district}
           initialSearch={search}
+          sharedList={sharedList}
         />
 
         <footer className="colophon">
