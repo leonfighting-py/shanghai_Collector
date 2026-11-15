@@ -132,11 +132,18 @@ export async function runCollectJob() {
         ),
       ];
   const detailCache = fellBack
-    ? { size: 0 }
+    ? { size: 0, failed: false }
     : await timed("detail_cache_read", async () => {
-        const cached = await readDetailCache(detailUrls);
-        detailFetcher.preload(cached);
-        return { size: cached.size };
+        try {
+          const cached = await readDetailCache(detailUrls);
+          detailFetcher.preload(cached);
+          return { size: cached.size, failed: false };
+        } catch (error) {
+          // 缓存只是加速手段：读不到就当作没有缓存，本轮全部重抓一遍，
+          // 不能让它在发布链路上把一个跑了十几分钟的采集整轮拖死。
+          console.warn(`[detail-cache] 读取失败，本轮不命中缓存：${error.message}`);
+          return { size: 0, failed: true };
+        }
       });
   // 阶段：图片回填：对列表页没带图的事件抓详情页 og:image（失败静默，渐变兜底兜住）
   const imageBackfill = await timed("image_backfill", () =>
@@ -165,10 +172,17 @@ export async function runCollectJob() {
       ? { attempted: 0, fetched: 0, cacheHits: 0, failed: 0, robotsDenied: 0, address: 0, price: 0, is_free: 0, venue: 0 }
       : backfillEventFacets(publishableEvents, { fetcher: detailFetcher }),
   );
-  // 本轮新抓到的详情页结果落库，下一轮直接命中缓存（有效期 7 天，见 DETAIL_CACHE_TTL_DAYS）
-  const detailCacheWrite = await timed("detail_cache_write", () =>
-    fellBack ? { written: 0 } : writeDetailCache(detailFetcher.drainPending()),
-  );
+  // 本轮新抓到的详情页结果落库，下一轮直接命中缓存（有效期 7 天，见 DETAIL_CACHE_TTL_DAYS）。
+  // 写失败只影响下一轮的抓取量，不影响本轮发布。
+  const detailCacheWrite = await timed("detail_cache_write", async () => {
+    if (fellBack) return { written: 0, failed: false };
+    try {
+      return { ...(await writeDetailCache(detailFetcher.drainPending())), failed: false };
+    } catch (error) {
+      console.warn(`[detail-cache] 写回失败，下一轮会重抓：${error.message}`);
+      return { written: 0, failed: true };
+    }
+  });
   // 分类级保护：某分类本次采集暴跌时，用上次发布的同分类旧数据顶替，避免栏目整段消失
   const dropProtection =
     fellBack
@@ -240,7 +254,11 @@ export async function runCollectJob() {
     },
     image_backfill: imageBackfill,
     facet_backfill: facetBackfill,
-    detail_cache: { read: detailCache.size, written: detailCacheWrite.written },
+    detail_cache: {
+      read: detailCache.size,
+      written: detailCacheWrite.written,
+      failed: Boolean(detailCache.failed || detailCacheWrite.failed),
+    },
     enrichment: {
       enabled: getEventEnrichmentConfig().enabled,
       provider: enrichmentProvider(),
