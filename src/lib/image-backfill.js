@@ -45,10 +45,17 @@ export function extractDetailImage(html) {
 
 /**
  * 对无图事件批量回填封面：抓 signup_url，提取 og:image。
+ *
+ * 传了 fetcher 就复用它（detail-fetch.js 的共用抓取 + 跨轮缓存），
+ * 否则退回自己抓——单测和临时脚本仍然可以只给 fetchHtml。
+ *
  * @param {Array<object>} events
- * @param {{fetchHtml?: Function, limit?: number, concurrency?: number}} options
+ * @param {{fetcher?: object, fetchHtml?: Function, limit?: number, concurrency?: number}} options
  */
-export async function backfillEventImages(events, { fetchHtml = defaultFetchHtml, limit = 30, concurrency = 4 } = {}) {
+export async function backfillEventImages(
+  events,
+  { fetcher = null, fetchHtml = defaultFetchHtml, limit = 30, concurrency = 4 } = {},
+) {
   const targets = events
     .filter((event) => !event.image_url && /^https?:\/\//i.test(event.signup_url || ""))
     .slice(0, limit);
@@ -61,8 +68,9 @@ export async function backfillEventImages(events, { fetchHtml = defaultFetchHtml
     await Promise.all(
       chunk.map(async (event) => {
         try {
-          const html = await fetchHtml(event.signup_url);
-          const image = extractDetailImage(html);
+          const image = fetcher
+            ? (await fetcher.get(event.signup_url)).record.image_url
+            : extractDetailImage(await fetchHtml(event.signup_url));
           if (image) {
             event.image_url = image;
             backfilled += 1;

@@ -72,6 +72,21 @@ export function buildSchemaSql() {
     create index if not exists events_start_time_idx on events(start_time);
     create index if not exists events_category_idx on events(category);
     create index if not exists collection_runs_started_at_idx on collection_runs(started_at);
+
+    -- 详情页抓取结果的跨轮缓存（src/lib/detail-fetch.js）。
+    -- 存提取结果不存 HTML：一页 40 KB，266 条就是 10 MB，跨境传输比重新抽一遍贵得多。
+    create table if not exists event_detail_cache (
+      source_url text primary key,
+      image_url text,
+      venue text,
+      address text,
+      price_min numeric,
+      price_max numeric,
+      is_free boolean,
+      facet_provenance jsonb not null default '{}'::jsonb,
+      fetched_at timestamptz not null default now()
+    );
+    create index if not exists event_detail_cache_fetched_at_idx on event_detail_cache(fetched_at);
   `;
 }
 
@@ -79,10 +94,13 @@ export function buildSchemaSql() {
 // 展示口径见 buildEventWindowWhereSql（只出「未结束」的活动）。
 export const EVENT_RETENTION_DAYS = 7;
 export const RUN_RETENTION_DAYS = 90;
+// 详情页缓存有效期：超过就不再用，等下一次重新抓
+export const DETAIL_CACHE_TTL_DAYS = 7;
 
 export function buildCleanupSql({
   eventRetentionDays = EVENT_RETENTION_DAYS,
   runRetentionDays = RUN_RETENTION_DAYS,
+  detailCacheRetentionDays = DETAIL_CACHE_TTL_DAYS,
 } = {}) {
   return {
     statements: [
@@ -101,6 +119,11 @@ export function buildCleanupSql({
       {
         sql: "delete from collection_runs where started_at < now() - ($1::int * interval '1 day')",
         params: [runRetentionDays],
+      },
+      {
+        // 缓存过期即无用（读取时按同样的 TTL 过滤），留着只会占空间
+        sql: "delete from event_detail_cache where fetched_at < now() - ($1::int * interval '1 day')",
+        params: [detailCacheRetentionDays],
       },
     ],
   };
@@ -419,6 +442,90 @@ export async function cleanupOldData(options) {
     await query(statement.sql, statement.params);
   }
   return { dryRun: false };
+}
+
+/**
+ * 读详情页缓存。过期的、没缓存的都不会出现在返回值里，由调用方重新抓。
+ * @param {string[]} urls
+ * @returns {Promise<Map<string, object>>} source_url → 提取结果
+ */
+export async function readDetailCache(urls, { ttlDays = DETAIL_CACHE_TTL_DAYS } = {}) {
+  const unique = [...new Set((urls || []).filter(Boolean))];
+  const records = new Map();
+  if (!getDatabaseConfig() || unique.length === 0) return records;
+
+  // 一条 SQL 塞 266 个 URL 没问题；分批只是防止将来源池暴涨时把语句撑爆
+  const CHUNK = 500;
+  for (let index = 0; index < unique.length; index += CHUNK) {
+    const chunk = unique.slice(index, index + CHUNK);
+    const result = await query(
+      `
+        select source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance
+        from event_detail_cache
+        where source_url = any($1::text[])
+          and fetched_at > now() - ($2::int * interval '1 day')
+      `,
+      [chunk, ttlDays],
+    );
+    for (const row of result.rows) records.set(row.source_url, rowToDetailRecord(row));
+  }
+  return records;
+}
+
+/** 批量写详情页缓存（一条语句 unnest 展开，不逐条往返跨境链路） */
+export async function writeDetailCache(records) {
+  const entries = records instanceof Map ? [...records] : Object.entries(records || {});
+  if (!getDatabaseConfig() || entries.length === 0) return { written: 0, dryRun: true };
+
+  const column = (pick) => entries.map(([, record]) => pick(record));
+  const params = [
+    entries.map(([url]) => url),
+    column((record) => record.image_url ?? null),
+    column((record) => record.venue || null),
+    column((record) => record.address || null),
+    column((record) => record.price_min ?? null),
+    column((record) => record.price_max ?? null),
+    column((record) => (typeof record.is_free === "boolean" ? record.is_free : null)),
+    column((record) => JSON.stringify(record.facet_provenance || {})),
+  ];
+
+  await query(
+    `
+      insert into event_detail_cache (
+        source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance, fetched_at
+      )
+      select t.source_url, t.image_url, t.venue, t.address, t.price_min, t.price_max,
+             t.is_free, t.facet_provenance::jsonb, now()
+      from unnest(
+        $1::text[], $2::text[], $3::text[], $4::text[], $5::numeric[], $6::numeric[], $7::boolean[], $8::text[]
+      ) as t(source_url, image_url, venue, address, price_min, price_max, is_free, facet_provenance)
+      on conflict (source_url) do update set
+        image_url = excluded.image_url,
+        venue = excluded.venue,
+        address = excluded.address,
+        price_min = excluded.price_min,
+        price_max = excluded.price_max,
+        is_free = excluded.is_free,
+        facet_provenance = excluded.facet_provenance,
+        fetched_at = now()
+    `,
+    params,
+  );
+
+  return { written: entries.length, dryRun: false };
+}
+
+function rowToDetailRecord(row) {
+  return {
+    image_url: row.image_url || null,
+    venue: row.venue || "",
+    address: row.address || "",
+    price_min: toNullableNumber(row.price_min),
+    price_max: toNullableNumber(row.price_max),
+    is_free: row.is_free === null || row.is_free === undefined ? null : Boolean(row.is_free),
+    facet_provenance:
+      row.facet_provenance && typeof row.facet_provenance === "object" ? row.facet_provenance : {},
+  };
 }
 
 // 源健康巡检：读取最近 N 次采集记录，供健康脚本聚合"持续失败/间歇失败"的源。

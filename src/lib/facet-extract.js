@@ -62,15 +62,24 @@ function joinAddress(address) {
   if (!address) return "";
   if (typeof address === "string") return address.trim();
   if (typeof address === "object") {
-    const parts = [
-      address.addressCountry,
-      address.addressRegion,
-      address.addressLocality,
-      address.streetAddress,
-    ]
+    const parts = [address.addressCountry, address.addressRegion, address.addressLocality, address.streetAddress]
       .map((part) => (typeof part === "string" ? part.trim() : ""))
       .filter(Boolean);
-    return parts.join("") || (typeof address.name === "string" ? address.name.trim() : "");
+
+    // 有的站把完整地址塞进 streetAddress，再拼上 region/locality 就成了
+    // 「上海市浦东新区上海市浦东新区滨江大道2777号」（2026-11 实测票牛）。
+    // 逐段合并：已被包含的跳过，包含已有内容的就是更全的那段，替换掉。
+    let joined = "";
+    for (const part of parts) {
+      if (joined.includes(part)) continue;
+      if (part.includes(joined)) {
+        joined = part;
+        continue;
+      }
+      joined += part;
+    }
+    if (joined) return joined;
+    return typeof address.name === "string" ? address.name.trim() : "";
   }
   return "";
 }
@@ -103,16 +112,26 @@ const ADDRESS_LABEL_RE = /(?:地[ \t]*址|场馆地址|演出地址|活动地址
 const ADDRESS_SHAPE_RE =
   /(?:上海市?)?\s*[\u4e00-\u9fa5]{2,8}(?:区|县)\s*[\u4e00-\u9fa5\d]{1,20}(?:路|街|道|弄|大道)[\u4e00-\u9fa5\d\-]{0,12}\s*\d{1,4}\s*号/;
 
+/**
+ * 页面把「区」和「完整地址」并排渲染时，正则会在边界拼出重复段：
+ * 票牛详情页原文是「浦东美术馆 上海市浦东新区上海市浦东新区滨江大道2777号」，
+ * 抓下来就成了两遍区名。同一段连续重复两次时只留一份。
+ */
+export function collapseRepeatedPrefix(text) {
+  const match = String(text || "").match(/^(.{4,30}?)\1/);
+  return match ? text.slice(match[1].length) : text;
+}
+
 /** 详情页里的街道地址；没有就 "" */
 export function extractAddress(html) {
   const text = toPlainText(html);
   const shape = ADDRESS_SHAPE_RE.exec(text);
-  if (shape) return shape[0].trim();
+  if (shape) return collapseRepeatedPrefix(shape[0].trim());
 
   const label = ADDRESS_LABEL_RE.exec(text);
   if (!label) return "";
   // 标签后面常跟着营业时间/电话，切掉
-  return label[1].split(/[。；;|｜，,]/)[0].trim();
+  return collapseRepeatedPrefix(label[1].split(/[。；;|｜，,]/)[0].trim());
 }
 
 // 票价：¥/￥ 前缀 与「N 元」两种写法。只认带货币符号或带「票价/价格」字样的上下文，

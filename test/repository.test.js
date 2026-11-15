@@ -52,11 +52,12 @@ test("cleanup SQL deletes old event data without removing source configs", () =>
 
   assert.deepEqual(
     cleanup.statements.map((statement) => statement.params),
-    [[60], [60], [90]],
+    [[60], [60], [90], [7]],
   );
   assert.match(cleanup.statements[0].sql, /delete from raw_events/);
   assert.match(cleanup.statements[1].sql, /delete from events/);
   assert.match(cleanup.statements[2].sql, /delete from collection_runs/);
+  assert.match(cleanup.statements[3].sql, /delete from event_detail_cache/);
   assert.ok(cleanup.statements.every((statement) => !statement.sql.includes(";")));
   assert.ok(cleanup.statements.every((statement) => !/delete from source_configs/.test(statement.sql)));
 });

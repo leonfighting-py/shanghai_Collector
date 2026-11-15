@@ -1,7 +1,9 @@
 import { collectEventsFromSources, LAND_SOURCES, SOURCE_SEEDS } from "./collector.js";
 import { classifyRunStatus, countFailedSources } from "./collect-result.js";
 import { filterEventCategories, getCategoryFilterConfig } from "./category-filter.js";
+import { createDetailFetcher } from "./detail-fetch.js";
 import { enrichEventsForPublish, getEventEnrichmentConfig } from "./event-enrichment.js";
+import { backfillEventFacets } from "./facet-backfill.js";
 import { backfillEventImages } from "./image-backfill.js";
 import { loadOffshoreEvents } from "./offshore-events.js";
 import { isRelevantPerformance } from "./parsers/shared.js";
@@ -16,8 +18,10 @@ import {
   insertRawEvents,
   listEvents,
   publishEvents,
+  readDetailCache,
   startCollectionRun,
   upsertSourceConfigs,
+  writeDetailCache,
 } from "./repository.js";
 
 export function dedupeProvider() {
@@ -116,11 +120,29 @@ export async function runCollectJob() {
       ? { events: previousEvents, enrichedCount: 0, skippedCount: 0, failures: [] }
       : enrichEventsForPublish(result.events),
   );
+  // 阶段：详情页共用抓取（图片回填与字段补齐走同一个 fetcher，同一地址一轮只请求一次）
+  const detailFetcher = createDetailFetcher();
+  const detailUrls = fellBack
+    ? []
+    : [
+        ...new Set(
+          enrichment.events
+            .map((event) => event.signup_url)
+            .filter((url) => /^https?:\/\//i.test(String(url || ""))),
+        ),
+      ];
+  const detailCache = fellBack
+    ? { size: 0 }
+    : await timed("detail_cache_read", async () => {
+        const cached = await readDetailCache(detailUrls);
+        detailFetcher.preload(cached);
+        return { size: cached.size };
+      });
   // 阶段：图片回填：对列表页没带图的事件抓详情页 og:image（失败静默，渐变兜底兜住）
   const imageBackfill = await timed("image_backfill", () =>
     fellBack
       ? { attempted: 0, backfilled: 0, failed: 0 }
-      : backfillEventImages(enrichment.events),
+      : backfillEventImages(enrichment.events, { fetcher: detailFetcher }),
   );
   // 阶段：分类过滤
   const categoryFilter = await timed("category_filter", () =>
@@ -136,6 +158,17 @@ export async function runCollectJob() {
       : categoryFilter.events.filter(
           (event) => event.category !== "演出音乐" || isRelevantPerformance(event),
         );
+  // 阶段：字段补齐（第 1 层）。放在分类过滤之后、分类下跌保护之前：
+  // 此时活动数已收敛，抓取量最小；被保护回退的旧数据也能带着字段进发布表。
+  const facetBackfill = await timed("detail_facets", () =>
+    fellBack
+      ? { attempted: 0, fetched: 0, cacheHits: 0, failed: 0, robotsDenied: 0, address: 0, price: 0, is_free: 0, venue: 0 }
+      : backfillEventFacets(publishableEvents, { fetcher: detailFetcher }),
+  );
+  // 本轮新抓到的详情页结果落库，下一轮直接命中缓存（有效期 7 天，见 DETAIL_CACHE_TTL_DAYS）
+  const detailCacheWrite = await timed("detail_cache_write", () =>
+    fellBack ? { written: 0 } : writeDetailCache(detailFetcher.drainPending()),
+  );
   // 分类级保护：某分类本次采集暴跌时，用上次发布的同分类旧数据顶替，避免栏目整段消失
   const dropProtection =
     fellBack
@@ -206,6 +239,8 @@ export async function runCollectJob() {
       protectedCategories: dropProtection.protectedCategories,
     },
     image_backfill: imageBackfill,
+    facet_backfill: facetBackfill,
+    detail_cache: { read: detailCache.size, written: detailCacheWrite.written },
     enrichment: {
       enabled: getEventEnrichmentConfig().enabled,
       provider: enrichmentProvider(),

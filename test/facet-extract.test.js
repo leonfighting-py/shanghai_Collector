@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  collapseRepeatedPrefix,
   extractAddress,
   extractFacets,
   extractFreeFlag,
@@ -132,4 +133,49 @@ test("toPlainText 去掉脚本与样式，保留句读", () => {
   assert.equal(text.includes("x=1"), false);
   assert.match(text, /第一句。/);
   assert.match(text, /第二句。/);
+});
+
+// 有的站把完整地址塞进 streetAddress，再拼 region/locality 会重复。
+// 2026-11 实测票牛：https://www.piaoniu.com/activity/787638 抓到「上海市浦东新区上海市浦东新区滨江大道2777号」
+test("JSON-LD 地址：region/locality 与 street 重复时不叠加", () => {
+  const html = page("", {
+    jsonLd: {
+      "@type": "Event",
+      name: "x",
+      location: {
+        "@type": "Place",
+        address: {
+          "@type": "PostalAddress",
+          addressRegion: "上海市浦东新区",
+          addressLocality: "上海市浦东新区",
+          streetAddress: "上海市浦东新区滨江大道2777号",
+        },
+      },
+    },
+  });
+  assert.equal(extractFacets(html).address, "上海市浦东新区滨江大道2777号");
+});
+
+test("JSON-LD 地址：正常分段仍按顺序拼起来", () => {
+  const html = page("", {
+    jsonLd: {
+      "@type": "Event",
+      name: "x",
+      location: {
+        "@type": "Place",
+        address: { addressCountry: "中国", addressRegion: "上海市", addressLocality: "黄浦区", streetAddress: "人民大道300号" },
+      },
+    },
+  });
+  assert.equal(extractFacets(html).address, "中国上海市黄浦区人民大道300号");
+});
+
+// 票牛详情页原文：「浦东美术馆 上海市浦东新区上海市浦东新区滨江大道2777号」
+// （场馆名 + 区名 + 完整地址并排渲染，正则跨过边界拼出了两遍区名）
+test("地址：页面里连续重复的区名只留一份", () => {
+  assert.equal(
+    extractAddress("<p>浦东美术馆 上海市浦东新区上海市浦东新区滨江大道2777号</p>"),
+    "上海市浦东新区滨江大道2777号",
+  );
+  assert.equal(collapseRepeatedPrefix("上海市黄浦区人民大道300号"), "上海市黄浦区人民大道300号");
 });
