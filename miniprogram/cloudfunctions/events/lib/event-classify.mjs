@@ -6,7 +6,9 @@
 //   且规则迭代后**立即生效、存量数据无需回填**（对比 end_time 那种必须落库的字段）。
 //   代价是没法用 SQL 按区域过滤/统计 —— 当前两端都是「一次取全量、客户端筛选」，不需要。
 //
-// 纯函数、零依赖，方便单测。
+// 纯函数，只依赖场馆字典。小程序侧的副本在 miniprogram/utils/classify.js，
+// 那边没有字典（只做选项表与筛选谓词），所以这里不引用小程序的任何东西。
+import { matchVenue } from "./venue-profiles.mjs";
 
 /** 上海 16 个行政区（短名）。顺序 = 筛选面板里的展示顺序，市中心在前 */
 export const DISTRICTS = [
@@ -203,12 +205,21 @@ const DISTRICT_LANDMARKS = [
 
 /**
  * 给活动判所在区。识别不出返回 ""。
- * 匹配文本是 venue + title + summary：真实数据里 venue 有时是活动名、
- * 有时只是「上海」（快照 135 条里 31 条如此），单看 venue 召回太差。
+ *
+ * 判定顺序（两套来源不能打架）：
+ *   1. 场馆字典（venue-profiles.js）—— 场馆名是判定区域最硬的线索，命中即返回
+ *   2. 文本里出现「XX区」
+ *   3. 地标正则（DISTRICT_LANDMARKS）兜底
+ *
+ * 匹配文本是 venue + title + summary + address：真实数据里 venue 有时是活动名、
+ * 有时只是「上海」，单看 venue 召回太差；详情页抓到的地址含区名，是最准的一条。
  * @returns {string} 区名（见 DISTRICTS）；未识别返回 ""
  */
 export function detectDistrict(event) {
-  const text = `${event?.venue || ""} ${event?.title || ""} ${event?.summary || ""}`;
+  const profile = matchVenue(event?.venue);
+  if (profile?.district) return profile.district;
+
+  const text = `${event?.venue || ""} ${event?.title || ""} ${event?.summary || ""} ${event?.address || ""}`;
 
   if (DISTRICT_NAME_PATTERN.test(text)) {
     for (const [district, pattern] of DISTRICT_NAME_MAP) {

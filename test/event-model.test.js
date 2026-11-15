@@ -371,3 +371,43 @@ test("补齐字段：来源标记合并，两边的键都留着", () => {
   assert.equal(merged[0].facet_provenance.address, "regex");
   assert.equal(merged[0].facet_provenance.price, "jsonld");
 });
+
+// 第 2 层规则：场馆模糊但有地址时替换，人群标签由规则推导并合并（docs/plans 第 4 节）
+function layerTwoEvent(overrides = {}) {
+  return {
+    title: "周末亲子绘本共读工作坊",
+    start_time: "2026-11-22T10:00:00+08:00",
+    venue: "上海",
+    category: "线下活动",
+    signup_url: "https://a.example.com/e/1",
+    source_name: "Source A",
+    source_url: "https://a.example.com/e/1",
+    ...overrides,
+  };
+}
+
+test("第 2 层：场馆只写「上海」且有地址时用地址替换，区域跟着变准", () => {
+  const [event] = filterPublishableEvents([
+    layerTwoEvent({ address: "上海市黄浦区人民大道300号 上海大剧院" }),
+  ]);
+  assert.equal(event.venue, "上海大剧院");
+  assert.equal(event.district, "黄浦");
+});
+
+test("第 2 层：人群标签由规则推导，并记 rule 来源", () => {
+  const [event] = filterPublishableEvents([layerTwoEvent()]);
+  assert.deepEqual(event.audience, ["亲子"]);
+  assert.equal(event.facet_provenance.audience, "rule");
+});
+
+test("第 2 层：已存的人群标签与规则推导取并集", () => {
+  const [event] = filterPublishableEvents([
+    layerTwoEvent({ category: "高校讲座", title: "学术写作与发表讲座", audience: ["行业人士"] }),
+  ]);
+  assert.deepEqual(event.audience, ["学生", "行业人士"]);
+});
+
+test("第 2 层：没有规则信号也没有存值时是空数组，不是 undefined", () => {
+  const [event] = filterPublishableEvents([layerTwoEvent({ title: "青铜器常设展", category: "展览" })]);
+  assert.deepEqual(event.audience, []);
+});

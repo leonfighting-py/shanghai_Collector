@@ -10,6 +10,9 @@ export const LIB_COPIES = [
   ["event-duration.js", "event-duration.mjs"],
   // event-slug.js 不能依赖 node:crypto（云函数与 Workers 都要能跑），自带 sha1
   ["event-slug.js", "event-slug.mjs"],
+  // event-classify.js 的区域判定依赖场馆字典；events.js 的人群标签依赖 audience.js
+  ["venue-profiles.js", "venue-profiles.mjs"],
+  ["audience.js", "audience.mjs"],
 ];
 
 export function toMjs(source) {

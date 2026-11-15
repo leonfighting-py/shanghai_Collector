@@ -1,6 +1,8 @@
+import { AUDIENCE_LABELS, deriveAudience } from "./audience.js";
 import { classifySubcategory, detectDistrict } from "./event-classify.js";
 import { inferEventEndTime } from "./event-duration.js";
 import { assignSlugs } from "./event-slug.js";
+import { resolveVenueName } from "./venue-profiles.js";
 
 export const CATEGORIES = ["演出音乐", "展览", "线下活动", "高校讲座", "AI聚会"];
 export const COLLECTION_WINDOW_DAYS = 14;
@@ -239,24 +241,47 @@ export function filterPublishableEvents(events) {
     // 「展览」才会拿到 +90 天，而这条展原本挂着「演出音乐」。
     const category = normalizeEventCategory(event);
     const normalized = category === event.category ? event : { ...event, category };
+
+    // 第 2 层规则：场馆只写「上海」但有地址时，用地址（或地址里能反查到的场馆名）替换。
+    // 只在场馆模糊时动手，具体场馆名里的厅名是有用信息，不归一化。
+    const venue = resolveVenueName(normalized);
+    const withVenue = venue && venue !== normalized.venue ? { ...normalized, venue } : normalized;
+
+    // 人群标签：规则推导的与已存取的取并集（存的是详情页/LLM 补的，规则补的是分类与信源特征）
+    const derivedAudience = deriveAudience(withVenue);
+    const storedAudience = Array.isArray(withVenue.audience) ? withVenue.audience : [];
+    const audience = mergeAudience(storedAudience, derivedAudience);
+    const provenance = { ...(withVenue.facet_provenance || {}) };
+    if (derivedAudience.some((label) => !storedAudience.includes(label))) provenance.audience = "rule";
+
     return {
-      ...normalized,
+      ...withVenue,
       dedupe_key: dedupeKey,
       // 长期活动（展览 / 驻场演出）源页面常只给开始日，这里补齐约 3 个月的结束时间。
       // 单场活动仍返回 null，由 coalesce(end_time, start_time) 兜底 —— 详见 event-duration.js
-      end_time: inferEventEndTime(normalized),
+      end_time: inferEventEndTime(withVenue),
       sources: normalizeSources(event),
       // 二级分类与区域是**派生**字段，不落库：本函数同时是发布收口和读路径收口
       //（repository.listEvents / cloudrun / Next 页面都经过它），所以在这里算，
       // Web、小程序 API、采集三处自动一致，且改规则立即生效、无需回填。详见 event-classify.js
-      subcategory: classifySubcategory(normalized),
-      district: detectDistrict(normalized),
+      subcategory: classifySubcategory(withVenue),
+      district: detectDistrict(withVenue),
+      audience,
+      ...(Object.keys(provenance).length > 0 ? { facet_provenance: provenance } : {}),
     };
   });
 
   // slug 同理是派生字段（见 event-slug.js）：URL 里的详情页地址与收藏键都用它，
   // 算在这里就不会出现「Web 有 slug、小程序没有」的分叉。
   return assignSlugs(filtered);
+}
+
+/** 已知标签按固定顺序在前，未知的（比如模型给了新词）原样附在后面，不丢数据 */
+function mergeAudience(stored, derived) {
+  const set = new Set([...stored, ...derived]);
+  const known = AUDIENCE_LABELS.filter((label) => set.has(label));
+  const unknown = [...set].filter((label) => !AUDIENCE_LABELS.includes(label));
+  return [...known, ...unknown];
 }
 
 export function mergeDuplicateEvents(events) {
