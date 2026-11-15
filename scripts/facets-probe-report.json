@@ -1,0 +1,2060 @@
+{
+  "generatedAt": "2026-11-15T10:18:33.432Z",
+  "site": "https://news.leoncoooolest.com",
+  "rows": [
+    {
+      "source": "格瓦拉",
+      "sampled": 5,
+      "fetched": 4,
+      "failed": 1,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 1066,
+      "failures": [
+        "failed: The operation was aborted due to timeout"
+      ]
+    },
+    {
+      "source": "票牛",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 4,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 4981,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海亲子",
+      "sampled": 3,
+      "fetched": 3,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 1,
+      "price": 2,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 5506,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城上海",
+      "sampled": 3,
+      "fetched": 3,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 3,
+      "free": 1,
+      "freeTrue": 1,
+      "thin": 0,
+      "avgTextBytes": 6798,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海音乐",
+      "sampled": 2,
+      "fetched": 2,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 2,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 5249,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海其他",
+      "sampled": 2,
+      "fetched": 2,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 1,
+      "price": 1,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 8197,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海展览",
+      "sampled": 2,
+      "fetched": 2,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 1,
+      "free": 1,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 5656,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海聚会",
+      "sampled": 2,
+      "fetched": 2,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 5804,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海讲座沙龙",
+      "sampled": 2,
+      "fetched": 2,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 2,
+      "price": 1,
+      "free": 1,
+      "freeTrue": 1,
+      "thin": 0,
+      "avgTextBytes": 3666,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海戏剧",
+      "sampled": 1,
+      "fetched": 1,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 1,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 11308,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海电影",
+      "sampled": 1,
+      "fetched": 1,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 1,
+      "price": 0,
+      "free": 1,
+      "freeTrue": 1,
+      "thin": 0,
+      "avgTextBytes": 3396,
+      "failures": []
+    },
+    {
+      "source": "豆瓣同城·上海公益",
+      "sampled": 1,
+      "fetched": 1,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 1,
+      "price": 0,
+      "free": 1,
+      "freeTrue": 1,
+      "thin": 0,
+      "avgTextBytes": 4960,
+      "failures": []
+    },
+    {
+      "source": "活动行上海",
+      "sampled": 2,
+      "fetched": 2,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 0,
+      "free": 2,
+      "freeTrue": 2,
+      "thin": 0,
+      "avgTextBytes": 8551,
+      "failures": []
+    },
+    {
+      "source": "上海文化云·活动报名",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 3,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 1758,
+      "failures": []
+    },
+    {
+      "source": "上海古典音乐会·上海乐历",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 4,
+      "price": 5,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 15782,
+      "failures": []
+    },
+    {
+      "source": "iMuseum 上海展览",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 5,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 2635,
+      "failures": []
+    },
+    {
+      "source": "AllEvents Shanghai",
+      "sampled": 5,
+      "fetched": 0,
+      "failed": 5,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 0,
+      "failures": [
+        "failed: HTTP 403",
+        "failed: HTTP 403",
+        "failed: HTTP 403"
+      ]
+    },
+    {
+      "source": "互动吧上海",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 5,
+      "address": 5,
+      "price": 5,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 7770,
+      "failures": []
+    },
+    {
+      "source": "钛媒体·活动",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 0,
+      "price": 0,
+      "free": 3,
+      "freeTrue": 3,
+      "thin": 0,
+      "avgTextBytes": 18092,
+      "failures": []
+    },
+    {
+      "source": "意大利文化处·活动日历",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 5,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 6900,
+      "failures": []
+    },
+    {
+      "source": "上海科技大学讲座报告",
+      "sampled": 5,
+      "fetched": 5,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 5,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 7122,
+      "failures": []
+    },
+    {
+      "source": "上海财经大学",
+      "sampled": 4,
+      "fetched": 4,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 4,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 5008,
+      "failures": []
+    },
+    {
+      "source": "龙美术馆",
+      "sampled": 3,
+      "fetched": 3,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 3,
+      "price": 0,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 6755,
+      "failures": []
+    },
+    {
+      "source": "上海文化广场",
+      "sampled": 3,
+      "fetched": 3,
+      "failed": 0,
+      "robotsDenied": 0,
+      "jsonLd": 0,
+      "address": 3,
+      "price": 3,
+      "free": 0,
+      "freeTrue": 0,
+      "thin": 0,
+      "avgTextBytes": 10255,
+      "failures": []
+    }
+  ],
+  "results": [
+    {
+      "source": "豆瓣同城·上海亲子",
+      "url": "https://www.douban.com/event/37799496/",
+      "title": "ERA时空之旅2",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 380,
+        "price_max": 380,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 43194,
+      "textBytes": 4860,
+      "thin": false,
+      "ms": 415
+    },
+    {
+      "source": "票牛",
+      "url": "https://www.piaoniu.com/activity/787638",
+      "title": "浦东美术馆2026年度通票",
+      "status": "ok",
+      "host": "www.piaoniu.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区上海市浦东新区滨江大道2777号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 112820,
+      "textBytes": 2091,
+      "thin": false,
+      "ms": 426
+    },
+    {
+      "source": "活动行上海",
+      "url": "https://www.huodongxing.com/event/8876058757800?utm_source=%e5%8f%91%e7%8e%b0%e6%b4%bb%e5%8a%a8%e9%a1%b5&utm_medium=&utm_campaign=eventspage",
+      "title": "演艺创作心理探索当代人类观察",
+      "status": "ok",
+      "host": "www.huodongxing.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 215725,
+      "textBytes": 8433,
+      "thin": false,
+      "ms": 490
+    },
+    {
+      "source": "票牛",
+      "url": "https://www.piaoniu.com/activity/777227",
+      "title": "法语原版音乐剧《太阳王》上海",
+      "status": "ok",
+      "host": "www.piaoniu.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 120180,
+      "textBytes": 9856,
+      "thin": false,
+      "ms": 248
+    },
+    {
+      "source": "豆瓣同城·上海亲子",
+      "url": "https://www.douban.com/event/37769760/",
+      "title": "经典亲子大马戏《欢乐马戏》",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "静安区共和新路2266号",
+        "price_min": 160,
+        "price_max": 160,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 46674,
+      "textBytes": 6255,
+      "thin": false,
+      "ms": 267
+    },
+    {
+      "source": "活动行上海",
+      "url": "https://www.huodongxing.com/event/2873278205712?utm_source=%e5%8f%91%e7%8e%b0%e6%b4%bb%e5%8a%a8%e9%a1%b5&utm_medium=&utm_campaign=eventspage",
+      "title": "上海千万资产局单身交友活动",
+      "status": "ok",
+      "host": "www.huodongxing.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 220333,
+      "textBytes": 8668,
+      "thin": false,
+      "ms": 208
+    },
+    {
+      "source": "豆瓣同城·上海亲子",
+      "url": "https://www.douban.com/event/37518863/",
+      "title": "静安大悦城银河魔幻泡泡秀",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 47790,
+      "textBytes": 5403,
+      "thin": false,
+      "ms": 329
+    },
+    {
+      "source": "票牛",
+      "url": "https://www.piaoniu.com/activity/781155",
+      "title": "百老汇原版音乐剧《长靴皇后》",
+      "status": "ok",
+      "host": "www.piaoniu.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区龙腾大道2290号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 112410,
+      "textBytes": 3962,
+      "thin": false,
+      "ms": 373
+    },
+    {
+      "source": "上海文化云·活动报名",
+      "url": "https://www.wenhuayun.cn/ticketActivity/ticketActivityDetail.do?activityId=3654f2d8277b4a5199f5cb0d3a65961c",
+      "title": "公益电影放映《王良军长》上海闵行",
+      "status": "ok",
+      "host": "www.wenhuayun.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市闵行区万源路2800号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 12966,
+      "textBytes": 1428,
+      "thin": false,
+      "ms": 3031
+    },
+    {
+      "source": "豆瓣同城上海",
+      "url": "https://www.douban.com/event/36977803/",
+      "title": "Norah油百万领衔脱口秀专场",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 120,
+        "price_max": 120,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 56261,
+      "textBytes": 5900,
+      "thin": false,
+      "ms": 349
+    },
+    {
+      "source": "票牛",
+      "url": "https://www.piaoniu.com/activity/783894",
+      "title": "安溥2026 to ebb 潮水箴言演唱会",
+      "status": "ok",
+      "host": "www.piaoniu.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区世博大道1200号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 111263,
+      "textBytes": 2221,
+      "thin": false,
+      "ms": 430
+    },
+    {
+      "source": "豆瓣同城上海",
+      "url": "https://www.douban.com/event/37630552/",
+      "title": "SNH48星梦剧院公演",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 118,
+        "price_max": 118,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 55493,
+      "textBytes": 6417,
+      "thin": false,
+      "ms": 332
+    },
+    {
+      "source": "票牛",
+      "url": "https://www.piaoniu.com/activity/787287",
+      "title": "Top Barry 2026「My Store」生日限定上海场",
+      "status": "ok",
+      "host": "www.piaoniu.com",
+      "facets": {
+        "venue": "",
+        "address": "浦东新区泳耀路300号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 141490,
+      "textBytes": 6773,
+      "thin": false,
+      "ms": 368
+    },
+    {
+      "source": "上海文化云·活动报名",
+      "url": "https://www.wenhuayun.cn/ticketActivity/ticketActivityDetail.do?activityId=7934c67f994848b087af5c110312d5ac",
+      "title": "画韵舞蹈队培训班",
+      "status": "ok",
+      "host": "www.wenhuayun.cn",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 13628,
+      "textBytes": 1805,
+      "thin": false,
+      "ms": 2427
+    },
+    {
+      "source": "豆瓣同城上海",
+      "url": "https://www.douban.com/event/37611085/",
+      "title": "浦东美术馆指定单日票",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 80,
+        "price_max": 80,
+        "is_free": true,
+        "provenance": {
+          "price": "regex",
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 58567,
+      "textBytes": 8076,
+      "thin": false,
+      "ms": 435
+    },
+    {
+      "source": "格瓦拉",
+      "url": "https://www.gewara.com/detail/371173",
+      "title": "金字塔幻像VR大空间沉浸体验",
+      "status": "failed",
+      "reason": "The operation was aborted due to timeout"
+    },
+    {
+      "source": "豆瓣同城·上海音乐",
+      "url": "https://www.douban.com/event/37885194/",
+      "title": "奇妙嘿夜烛光音乐会汉斯季默曲目",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 388,
+        "price_max": 388,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 46531,
+      "textBytes": 5270,
+      "thin": false,
+      "ms": 294
+    },
+    {
+      "source": "上海文化云·活动报名",
+      "url": "https://www.wenhuayun.cn/ticketActivity/ticketActivityDetail.do?activityId=a40cc1877b844c918b2c3fafe7c60189",
+      "title": "老西门法治电影展映我和我的祖国",
+      "status": "ok",
+      "host": "www.wenhuayun.cn",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 13503,
+      "textBytes": 1743,
+      "thin": false,
+      "ms": 2280
+    },
+    {
+      "source": "上海古典音乐会·上海乐历",
+      "url": "https://shanghaiconcerts.com/concerts/shanghai-opera-house-lelisir-damore-2026",
+      "title": "上海歌剧院歌剧《爱之甘醇》",
+      "status": "ok",
+      "host": "shanghaiconcerts.com",
+      "facets": {
+        "venue": "",
+        "address": "徐汇区汾阳路6号",
+        "price_min": 180,
+        "price_max": 1080,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 537679,
+      "textBytes": 4918,
+      "thin": false,
+      "ms": 4880
+    },
+    {
+      "source": "豆瓣同城·上海音乐",
+      "url": "https://www.douban.com/event/37264854/",
+      "title": "青春无限乐团动漫主题烛光音乐会",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 298,
+        "price_max": 298,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 46201,
+      "textBytes": 5228,
+      "thin": false,
+      "ms": 309
+    },
+    {
+      "source": "格瓦拉",
+      "url": "https://www.gewara.com/detail/518479",
+      "title": "康迪达赫弗集会排演展通票",
+      "status": "ok",
+      "host": "www.gewara.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 38099,
+      "textBytes": 1088,
+      "thin": false,
+      "ms": 1395
+    },
+    {
+      "source": "上海文化云·活动报名",
+      "url": "https://www.wenhuayun.cn/ticketActivity/ticketActivityDetail.do?activityId=9f6aa98261d540ca92e33c7f48ac4c19",
+      "title": "越剧大戏梁山伯与祝英台演出",
+      "status": "ok",
+      "host": "www.wenhuayun.cn",
+      "facets": {
+        "venue": "",
+        "address": "普陀区华阴路200号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 14775,
+      "textBytes": 2400,
+      "thin": false,
+      "ms": 2229
+    },
+    {
+      "source": "豆瓣同城·上海其他",
+      "url": "https://www.douban.com/event/37878786/",
+      "title": "年度驻演《太虚幻境》沉浸式戏剧",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 298,
+        "price_max": 298,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 47700,
+      "textBytes": 5589,
+      "thin": false,
+      "ms": 324
+    },
+    {
+      "source": "上海古典音乐会·上海乐历",
+      "url": "https://shanghaiconcerts.com/concerts/vakhtangov-pushkin-stories",
+      "title": "俄罗斯瓦赫坦戈夫剧院话剧《普希金小说集》",
+      "status": "ok",
+      "host": "shanghaiconcerts.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 280,
+        "price_max": 1080,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 534643,
+      "textBytes": 5056,
+      "thin": false,
+      "ms": 2595
+    },
+    {
+      "source": "格瓦拉",
+      "url": "https://www.gewara.com/detail/512947",
+      "title": "我的世界实境探险上海",
+      "status": "ok",
+      "host": "www.gewara.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 39023,
+      "textBytes": 1056,
+      "thin": false,
+      "ms": 1173
+    },
+    {
+      "source": "豆瓣同城·上海其他",
+      "url": "https://www.douban.com/event/37612725/",
+      "title": "成人戏剧表演初体验活动",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "徐汇区漕溪北路339号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 56245,
+      "textBytes": 10805,
+      "thin": false,
+      "ms": 350
+    },
+    {
+      "source": "格瓦拉",
+      "url": "https://www.gewara.com/detail/518592",
+      "title": "黄静瑶落差展通票",
+      "status": "ok",
+      "host": "www.gewara.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 38069,
+      "textBytes": 1073,
+      "thin": false,
+      "ms": 394
+    },
+    {
+      "source": "上海文化云·活动报名",
+      "url": "https://www.wenhuayun.cn/ticketActivity/ticketActivityDetail.do?activityId=5c8799ae307645c684fe33aac9009e3f",
+      "title": "公益电影放映《求药》",
+      "status": "ok",
+      "host": "www.wenhuayun.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市闵行区万源路2800号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 12954,
+      "textBytes": 1416,
+      "thin": false,
+      "ms": 2435
+    },
+    {
+      "source": "豆瓣同城·上海展览",
+      "url": "https://www.douban.com/event/37473296/",
+      "title": "惊悚鬼混沉浸式《开关SWITCH》",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 98,
+        "price_max": 98,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 49263,
+      "textBytes": 5347,
+      "thin": false,
+      "ms": 316
+    },
+    {
+      "source": "iMuseum 上海展览",
+      "url": "https://art.icity.ly/events/ca7f3az",
+      "title": "一钩新月天如水：丰子恺艺术文献展",
+      "status": "ok",
+      "host": "art.icity.ly",
+      "facets": {
+        "venue": "",
+        "address": "上海市虹口区欧阳路580号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 12737,
+      "textBytes": 2723,
+      "thin": false,
+      "ms": 644
+    },
+    {
+      "source": "上海古典音乐会·上海乐历",
+      "url": "https://shanghaiconcerts.com/concerts/map-class-2-romantic-period",
+      "title": "音乐地图课堂系列2：浪漫主义时期",
+      "status": "ok",
+      "host": "shanghaiconcerts.com",
+      "facets": {
+        "venue": "",
+        "address": "徐汇区复兴中路 1380 号",
+        "price_min": 100,
+        "price_max": 220,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 747189,
+      "textBytes": 21390,
+      "thin": false,
+      "ms": 2806
+    },
+    {
+      "source": "格瓦拉",
+      "url": "https://www.gewara.com/detail/515993",
+      "title": "2026上海国际艺术书展",
+      "status": "ok",
+      "host": "www.gewara.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 38013,
+      "textBytes": 1047,
+      "thin": false,
+      "ms": 390
+    },
+    {
+      "source": "iMuseum 上海展览",
+      "url": "https://art.icity.ly/events/gzvo7ge",
+      "title": "中国漫画百年回眸巡展",
+      "status": "ok",
+      "host": "art.icity.ly",
+      "facets": {
+        "venue": "",
+        "address": "上海市长宁区延安西路1609号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 12120,
+      "textBytes": 2770,
+      "thin": false,
+      "ms": 103
+    },
+    {
+      "source": "豆瓣同城·上海展览",
+      "url": "https://www.douban.com/event/36976894/",
+      "title": "Fotografiska展览通票周三爵士之夜",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": false,
+        "provenance": {
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 55880,
+      "textBytes": 5964,
+      "thin": false,
+      "ms": 340
+    },
+    {
+      "source": "AllEvents Shanghai",
+      "url": "https://allevents.in/shanghai/beidemeike-at-interpack-china-2026/200031018753244",
+      "title": "Beidemeike参展interpack China 2026",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "source": "iMuseum 上海展览",
+      "url": "https://art.icity.ly/events/wbhkt3v",
+      "title": "传奇荣宅跨时空对话展览",
+      "status": "ok",
+      "host": "art.icity.ly",
+      "facets": {
+        "venue": "",
+        "address": "上海市静安区陕西北路186号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 11729,
+      "textBytes": 2742,
+      "thin": false,
+      "ms": 194
+    },
+    {
+      "source": "豆瓣同城·上海聚会",
+      "url": "https://www.douban.com/event/38160385/",
+      "title": "辩论之夜：文化与创新上海活动",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 45202,
+      "textBytes": 5561,
+      "thin": false,
+      "ms": 227
+    },
+    {
+      "source": "上海古典音乐会·上海乐历",
+      "url": "https://shanghaiconcerts.com/concerts/mozart-270-complete-piano-concertos",
+      "title": "纪念莫扎特诞辰270周年钢琴协奏曲音乐会",
+      "status": "ok",
+      "host": "shanghaiconcerts.com",
+      "facets": {
+        "venue": "",
+        "address": "徐汇区汾阳路20号",
+        "price_min": 80,
+        "price_max": 380,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 693860,
+      "textBytes": 9585,
+      "thin": false,
+      "ms": 2728
+    },
+    {
+      "source": "AllEvents Shanghai",
+      "url": "https://allevents.in/shanghai/ciaar-2026/200030975237741",
+      "title": "CIAAR 2026展会",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "source": "iMuseum 上海展览",
+      "url": "https://art.icity.ly/events/t181vpv",
+      "title": "共和国脊梁：建党精神与科学家精神展",
+      "status": "ok",
+      "host": "art.icity.ly",
+      "facets": {
+        "venue": "",
+        "address": "上海市黄浦区黄陂南路374号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 12273,
+      "textBytes": 3068,
+      "thin": false,
+      "ms": 137
+    },
+    {
+      "source": "豆瓣同城·上海聚会",
+      "url": "https://www.douban.com/event/38168298/",
+      "title": "理解英雄之旅：好故事背后的神话",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 46368,
+      "textBytes": 6046,
+      "thin": false,
+      "ms": 249
+    },
+    {
+      "source": "iMuseum 上海展览",
+      "url": "https://art.icity.ly/events/94q7rlk",
+      "title": "刘家琨明月构想上海当代艺术博物馆展",
+      "status": "ok",
+      "host": "art.icity.ly",
+      "facets": {
+        "venue": "",
+        "address": "上海市黄浦区苗江路678号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 10437,
+      "textBytes": 1871,
+      "thin": false,
+      "ms": 99
+    },
+    {
+      "source": "互动吧上海",
+      "url": "https://huodong.com/event/detail/eiscbd",
+      "title": "法语原版音乐剧《太阳王》",
+      "status": "ok",
+      "host": "huodong.com",
+      "facets": {
+        "venue": "复兴中路 597号 上海文化广场主剧场",
+        "address": "复兴中路 597号 上海文化广场主剧场",
+        "price_min": 280,
+        "price_max": 280,
+        "is_free": null,
+        "provenance": {
+          "address": "jsonld",
+          "price": "jsonld"
+        },
+        "has_json_ld_event": true
+      },
+      "htmlBytes": 57150,
+      "textBytes": 11610,
+      "thin": false,
+      "ms": 348
+    },
+    {
+      "source": "AllEvents Shanghai",
+      "url": "https://allevents.in/shanghai/interpack-china-2026-tickets/80003736560002",
+      "title": "interpack China 2026展会",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "source": "豆瓣同城·上海讲座沙龙",
+      "url": "https://www.douban.com/event/38171775/",
+      "title": "英国法律大学上海开放日活动",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市静安区威海路696号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "address": "regex",
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 39143,
+      "textBytes": 3115,
+      "thin": false,
+      "ms": 161
+    },
+    {
+      "source": "上海古典音乐会·上海乐历",
+      "url": "https://shanghaiconcerts.com/concerts/tabachnik-and-shanghai-philharmonic",
+      "title": "塔巴奇尼克与上海爱乐乐团音乐会",
+      "status": "ok",
+      "host": "shanghaiconcerts.com",
+      "facets": {
+        "venue": "",
+        "address": "徐汇区复兴中路 1380 号",
+        "price_min": 50,
+        "price_max": 480,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 1024043,
+      "textBytes": 37962,
+      "thin": false,
+      "ms": 2970
+    },
+    {
+      "source": "互动吧上海",
+      "url": "https://huodong.com/event/detail/wxinnr",
+      "title": "环境式驻演音乐剧《阿波罗尼亚》",
+      "status": "ok",
+      "host": "huodong.com",
+      "facets": {
+        "venue": "上海市汉口路650号亚洲大厦4层 星空间1号·一台好戏小剧场",
+        "address": "上海市汉口路650号亚洲大厦4层 星空间1号·一台好戏小剧场",
+        "price_min": 200,
+        "price_max": 200,
+        "is_free": null,
+        "provenance": {
+          "address": "jsonld",
+          "price": "jsonld"
+        },
+        "has_json_ld_event": true
+      },
+      "htmlBytes": 53216,
+      "textBytes": 7744,
+      "thin": false,
+      "ms": 47
+    },
+    {
+      "source": "钛媒体·活动",
+      "url": "https://www.tmtpost.com/8205186.html",
+      "title": "九州云箭动力供应商启动IPO辅导",
+      "status": "ok",
+      "host": "www.tmtpost.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 145783,
+      "textBytes": 11432,
+      "thin": false,
+      "ms": 1023
+    },
+    {
+      "source": "豆瓣同城·上海讲座沙龙",
+      "url": "https://www.douban.com/event/38120945/",
+      "title": "过好一个你说了不算的人生读书会",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "虹口区花园路16号",
+        "price_min": 30,
+        "price_max": 30,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 43392,
+      "textBytes": 4216,
+      "thin": false,
+      "ms": 202
+    },
+    {
+      "source": "AllEvents Shanghai",
+      "url": "https://allevents.in/shanghai/join-mshot-at-analytica-china-2026/200031003230254",
+      "title": "MSHOT参展analytica China 2026",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "source": "互动吧上海",
+      "url": "https://huodong.com/event/detail/ciaaae",
+      "title": "开心聊斋·三生沉浸版",
+      "status": "ok",
+      "host": "huodong.com",
+      "facets": {
+        "venue": "上海市徐汇区龙腾大道2266号Gate M西岸梦中心7栋3楼 开心麻花大三角剧场",
+        "address": "上海市徐汇区龙腾大道2266号Gate M西岸梦中心7栋3楼 开心麻花大三角剧场",
+        "price_min": 180,
+        "price_max": 180,
+        "is_free": null,
+        "provenance": {
+          "address": "jsonld",
+          "price": "jsonld"
+        },
+        "has_json_ld_event": true
+      },
+      "htmlBytes": 51476,
+      "textBytes": 6523,
+      "thin": false,
+      "ms": 69
+    },
+    {
+      "source": "钛媒体·活动",
+      "url": "https://www.tmtpost.com/8205257.html",
+      "title": "AI如何重写影视业成本与权力",
+      "status": "ok",
+      "host": "www.tmtpost.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 194532,
+      "textBytes": 25217,
+      "thin": false,
+      "ms": 229
+    },
+    {
+      "source": "豆瓣同城·上海戏剧",
+      "url": "https://www.douban.com/event/37872454/",
+      "title": "法语原版音乐剧《太阳王》上海演出",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": 280,
+        "price_max": 280,
+        "is_free": null,
+        "provenance": {
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 60699,
+      "textBytes": 11308,
+      "thin": false,
+      "ms": 355
+    },
+    {
+      "source": "AllEvents Shanghai",
+      "url": "https://allevents.in/shanghai/tuosheng-interpack-china/200031003229553",
+      "title": "Tuosheng参展Interpack CHINA",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "source": "互动吧上海",
+      "url": "https://huodong.com/event/detail/khfaql",
+      "title": "G僧东跨界脱口秀@赫兹星球",
+      "status": "ok",
+      "host": "huodong.com",
+      "facets": {
+        "venue": "上海市黄浦区马当路245号 新天地时尚二期B1（120-122店铺） 赫兹星球·新天地剧场",
+        "address": "上海市黄浦区马当路245号 新天地时尚二期B1（120-122店铺） 赫兹星球·新天地剧场",
+        "price_min": 30,
+        "price_max": 30,
+        "is_free": null,
+        "provenance": {
+          "address": "jsonld",
+          "price": "jsonld"
+        },
+        "has_json_ld_event": true
+      },
+      "htmlBytes": 51674,
+      "textBytes": 6657,
+      "thin": false,
+      "ms": 42
+    },
+    {
+      "source": "钛媒体·活动",
+      "url": "https://www.tmtpost.com/8205193.html",
+      "title": "AI短剧对家庭影响话题沙龙",
+      "status": "ok",
+      "host": "www.tmtpost.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 171347,
+      "textBytes": 21017,
+      "thin": false,
+      "ms": 148
+    },
+    {
+      "source": "豆瓣同城·上海电影",
+      "url": "https://www.douban.com/event/38167301/",
+      "title": "塔可夫斯基牺牲观影会",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "虹口区花园路16号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "address": "regex",
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 41293,
+      "textBytes": 3396,
+      "thin": false,
+      "ms": 223
+    },
+    {
+      "source": "互动吧上海",
+      "url": "https://huodong.com/event/detail/szvcpa",
+      "title": "美国芭蕾舞剧院《天鹅湖》上海",
+      "status": "ok",
+      "host": "huodong.com",
+      "facets": {
+        "venue": "世博大道世博文化公园内 上海大歌剧院-申厅",
+        "address": "世博大道世博文化公园内 上海大歌剧院-申厅",
+        "price_min": 180,
+        "price_max": 180,
+        "is_free": null,
+        "provenance": {
+          "address": "jsonld",
+          "price": "jsonld"
+        },
+        "has_json_ld_event": true
+      },
+      "htmlBytes": 53021,
+      "textBytes": 6318,
+      "thin": false,
+      "ms": 55
+    },
+    {
+      "source": "上海科技大学讲座报告",
+      "url": "https://www.shanghaitech.edu.cn/2026/1111/c14750a1129764/page.htm",
+      "title": "一流教材建设的探索与实践讲座",
+      "status": "ok",
+      "host": "www.shanghaitech.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区华夏中路393号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 60997,
+      "textBytes": 7175,
+      "thin": false,
+      "ms": 523
+    },
+    {
+      "source": "钛媒体·活动",
+      "url": "https://www.tmtpost.com/8205404.html",
+      "title": "中国越野车两场不同战役分析",
+      "status": "ok",
+      "host": "www.tmtpost.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {},
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 157511,
+      "textBytes": 13992,
+      "thin": false,
+      "ms": 157
+    },
+    {
+      "source": "豆瓣同城·上海公益",
+      "url": "https://www.douban.com/event/38162732/",
+      "title": "布局2027机遇五行社交名片活动",
+      "status": "ok",
+      "host": "www.douban.com",
+      "facets": {
+        "venue": "",
+        "address": "上海 \n 静安区 \n 中华新路496号景裕创意园区1号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "address": "regex",
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 45271,
+      "textBytes": 4960,
+      "thin": false,
+      "ms": 292
+    },
+    {
+      "source": "意大利文化处·活动日历",
+      "url": "https://iicshanghai.esteri.it/zh/gli_eventi/calendario/mostra-gold-the-treasured-metal-linking-eastern-and-western-civilizations-al-museum-of-wu-di-suzhou/",
+      "title": "黄金中西交流中的贵金属展",
+      "status": "ok",
+      "host": "iicshanghai.esteri.it",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区长乐路989号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 69038,
+      "textBytes": 7018,
+      "thin": false,
+      "ms": 3791
+    },
+    {
+      "source": "上海财经大学",
+      "url": "https://archives.sufe.edu.cn/2a/b0/c3148a273072/page.htm",
+      "title": "育衡月历：立冬知微机枢载算",
+      "status": "ok",
+      "host": "archives.sufe.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市国定路777号育衡楼 200433",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 20484,
+      "textBytes": 4452,
+      "thin": false,
+      "ms": 543
+    },
+    {
+      "source": "上海财经大学",
+      "url": "https://www.sufe.edu.cn/25/69/c19548a271721/page.htm",
+      "title": "员工如何理解组织人力资源实践讲座",
+      "status": "ok",
+      "host": "www.sufe.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市国定路777号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 52577,
+      "textBytes": 5875,
+      "thin": false,
+      "ms": 594
+    },
+    {
+      "source": "上海科技大学讲座报告",
+      "url": "https://www.shanghaitech.edu.cn/2026/1111/c14750a1129762/page.htm",
+      "title": "代谢性炎症的思与考讲座",
+      "status": "ok",
+      "host": "www.shanghaitech.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区华夏中路393号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 60144,
+      "textBytes": 6328,
+      "thin": false,
+      "ms": 28
+    },
+    {
+      "source": "钛媒体·活动",
+      "url": "https://www.tmtpost.com/8205652.html",
+      "title": "全球供应链安全账单归属讨论",
+      "status": "ok",
+      "host": "www.tmtpost.com",
+      "facets": {
+        "venue": "",
+        "address": "",
+        "price_min": null,
+        "price_max": null,
+        "is_free": true,
+        "provenance": {
+          "is_free": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 165714,
+      "textBytes": 18801,
+      "thin": false,
+      "ms": 143
+    },
+    {
+      "source": "龙美术馆",
+      "url": "http://www.thelongmuseum.org/exhibition-369/detail-2016.html",
+      "title": "征途与山河红色经典美术展",
+      "status": "ok",
+      "host": "www.thelongmuseum.org",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区龙腾大道3398号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 31394,
+      "textBytes": 6265,
+      "thin": false,
+      "ms": 810
+    },
+    {
+      "source": "上海财经大学",
+      "url": "https://www.sufe.edu.cn/2a/cc/c19548a273100/page.htm",
+      "title": "数学赋能AI与数智新财经会议",
+      "status": "ok",
+      "host": "www.sufe.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市国定路777号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 51446,
+      "textBytes": 4847,
+      "thin": false,
+      "ms": 143
+    },
+    {
+      "source": "意大利文化处·活动日历",
+      "url": "https://iicshanghai.esteri.it/zh/gli_eventi/calendario/italia-in-musica/",
+      "title": "意大利音乐之声：意大利杰出演绎者",
+      "status": "ok",
+      "host": "iicshanghai.esteri.it",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区长乐路989号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 58427,
+      "textBytes": 6386,
+      "thin": false,
+      "ms": 962
+    },
+    {
+      "source": "上海科技大学讲座报告",
+      "url": "https://www.shanghaitech.edu.cn/2026/1112/c14750a1129780/page.htm",
+      "title": "心脏电生理市场案例技术讲座",
+      "status": "ok",
+      "host": "www.shanghaitech.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区华夏中路393号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 62636,
+      "textBytes": 9018,
+      "thin": false,
+      "ms": 29
+    },
+    {
+      "source": "龙美术馆",
+      "url": "http://www.thelongmuseum.org/exhibition-369/detail-2019.html",
+      "title": "十年之路中国当代艺术展",
+      "status": "ok",
+      "host": "www.thelongmuseum.org",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区龙腾大道3398号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 34919,
+      "textBytes": 8369,
+      "thin": false,
+      "ms": 87
+    },
+    {
+      "source": "上海财经大学",
+      "url": "https://www.sufe.edu.cn/2d/97/c19548a273815/page.htm",
+      "title": "第一届人机组织管理学科研讨会",
+      "status": "ok",
+      "host": "www.sufe.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市国定路777号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 51456,
+      "textBytes": 4857,
+      "thin": false,
+      "ms": 93
+    },
+    {
+      "source": "上海科技大学讲座报告",
+      "url": "https://www.shanghaitech.edu.cn/2026/1111/c14750a1129763/page.htm",
+      "title": "用WorkBuddy跑通科研任务全流程",
+      "status": "ok",
+      "host": "www.shanghaitech.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区华夏中路393号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 60203,
+      "textBytes": 6729,
+      "thin": false,
+      "ms": 26
+    },
+    {
+      "source": "意大利文化处·活动日历",
+      "url": "https://iicshanghai.esteri.it/zh/gli_eventi/calendario/lartista-leonardo-meoni-immaginare-una-citta-significa-per-meoni-cominciare-gia-ad-abitarla/",
+      "title": "Leonardo Meoni《另一座城》",
+      "status": "ok",
+      "host": "iicshanghai.esteri.it",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区长乐路989号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 62516,
+      "textBytes": 7267,
+      "thin": false,
+      "ms": 946
+    },
+    {
+      "source": "龙美术馆",
+      "url": "http://www.thelongmuseum.org/exhibition-369/detail-2018.html",
+      "title": "微暗的光夏禹个展",
+      "status": "ok",
+      "host": "www.thelongmuseum.org",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区龙腾大道3398号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 28819,
+      "textBytes": 5630,
+      "thin": false,
+      "ms": 88
+    },
+    {
+      "source": "上海文化广场",
+      "url": "https://www.shcstheatre.com/Program/ProgramDetails.aspx?headtype=YanChu&ARTICLE_ID=41918&id=41918",
+      "title": "法语原版音乐剧《太阳王》",
+      "status": "ok",
+      "host": "www.shcstheatre.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市永嘉路36号",
+        "price_min": 89,
+        "price_max": 89,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 138799,
+      "textBytes": 10255,
+      "thin": false,
+      "ms": 1561
+    },
+    {
+      "source": "上海科技大学讲座报告",
+      "url": "https://www.shanghaitech.edu.cn/2026/1112/c14750a1129781/page.htm",
+      "title": "金属酶零样本从头设计讲座",
+      "status": "ok",
+      "host": "www.shanghaitech.edu.cn",
+      "facets": {
+        "venue": "",
+        "address": "上海市浦东新区华夏中路393号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 60178,
+      "textBytes": 6362,
+      "thin": false,
+      "ms": 26
+    },
+    {
+      "source": "上海文化广场",
+      "url": "https://www.shcstheatre.com/Program/ProgramDetails.aspx?headtype=YanChu&ARTICLE_ID=42062&id=42062",
+      "title": "粤语音乐剧《边城》上海文化广场演出",
+      "status": "ok",
+      "host": "www.shcstheatre.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市永嘉路36号",
+        "price_min": 89,
+        "price_max": 89,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 134834,
+      "textBytes": 10255,
+      "thin": false,
+      "ms": 55
+    },
+    {
+      "source": "意大利文化处·活动日历",
+      "url": "https://iicshanghai.esteri.it/zh/gli_eventi/calendario/tools-for-after-il-futuro-e-cambiato/",
+      "title": "未来工具——未来已然改变",
+      "status": "ok",
+      "host": "iicshanghai.esteri.it",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区长乐路989号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 60365,
+      "textBytes": 6653,
+      "thin": false,
+      "ms": 975
+    },
+    {
+      "source": "上海文化广场",
+      "url": "https://www.shcstheatre.com/Program/ProgramDetails.aspx?headtype=YanChu&ARTICLE_ID=42129&id=42129",
+      "title": "中文原创音乐剧海上钢琴师",
+      "status": "ok",
+      "host": "www.shcstheatre.com",
+      "facets": {
+        "venue": "",
+        "address": "上海市永嘉路36号",
+        "price_min": 89,
+        "price_max": 89,
+        "is_free": null,
+        "provenance": {
+          "address": "regex",
+          "price": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 134189,
+      "textBytes": 10255,
+      "thin": false,
+      "ms": 33
+    },
+    {
+      "source": "意大利文化处·活动日历",
+      "url": "https://iicshanghai.esteri.it/zh/gli_eventi/calendario/small-ritual-landscapes-di-aldo-cibic-al-west-bund-art-design-2026/",
+      "title": "安东西比克小型仪式景观",
+      "status": "ok",
+      "host": "iicshanghai.esteri.it",
+      "facets": {
+        "venue": "",
+        "address": "上海市徐汇区长乐路989号",
+        "price_min": null,
+        "price_max": null,
+        "is_free": null,
+        "provenance": {
+          "address": "regex"
+        },
+        "has_json_ld_event": false
+      },
+      "htmlBytes": 61505,
+      "textBytes": 7175,
+      "thin": false,
+      "ms": 998
+    }
+  ]
+}

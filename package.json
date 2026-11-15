@@ -11,6 +11,7 @@
     "cleanup": "node --env-file=.env scripts/cleanup-local.js",
     "migrate": "node --env-file=.env scripts/migrate.mjs",
     "sync:cloudfn": "node scripts/sync-cloudfn-lib.mjs",
+    "facets:probe": "node --env-file=.env scripts/facets-probe.js",
     "health": "node scripts/source-health-check.js",
     "wechat:exporter": "docker compose -f docker-compose.wechat-exporter.yml up -d",
     "wechat:exporter:down": "docker compose -f docker-compose.wechat-exporter.yml down",
