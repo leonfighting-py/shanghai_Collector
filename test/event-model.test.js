@@ -266,3 +266,108 @@ test("filterPublishableEvents corrects category and then applies long-run end_ti
   // 类目纠正早于结束时间推断：原本挂"演出音乐"会保持 null，纠正为展览后补 +90 天
   assert.equal(event.end_time, "2026-12-12T10:00:00+08:00");
 });
+
+// 字段补齐的多源合并（docs/plans/2026-10-12-event-facets-backfill.md 第 5 节）：
+// 一方有值一方为空时取有值的；都非空时信源等级高的赢。
+function facetEvent(overrides = {}) {
+  return {
+    title: "同一场活动的合并测试演出",
+    start_time: "2026-11-20T19:30:00+08:00",
+    venue: "上海交响乐团音乐厅",
+    category: "演出音乐",
+    signup_url: "https://a.example.com/e/1",
+    source_name: "Source A",
+    source_url: "https://a.example.com/e/1",
+    source_tier: "T2",
+    ...overrides,
+  };
+}
+
+test("补齐字段：一方为空时取另一方", () => {
+  const merged = mergeDuplicateEvents(
+    filterPublishableEvents([
+      facetEvent({ address: "", price_min: null }),
+      facetEvent({
+        source_name: "Source B",
+        source_url: "https://b.example.com/e/1",
+        signup_url: "https://b.example.com/e/1",
+        address: "上海市徐汇区复兴中路1380号",
+        price_min: 180,
+        price_max: 680,
+      }),
+    ]),
+  );
+
+  assert.equal(merged[0].address, "上海市徐汇区复兴中路1380号");
+  assert.equal(merged[0].price_min, 180);
+  assert.equal(merged[0].price_max, 680);
+});
+
+test("补齐字段：都非空时信源等级高的赢", () => {
+  const merged = mergeDuplicateEvents(
+    filterPublishableEvents([
+      facetEvent({ price_min: 100, price_max: 100, address: "聚合器写的地址" }),
+      facetEvent({
+        source_name: "场馆官网",
+        source_url: "https://venue.example.com/e/1",
+        signup_url: "https://venue.example.com/e/1",
+        source_tier: "T1",
+        price_min: 180,
+        price_max: 680,
+        address: "官网地址",
+      }),
+    ]),
+  );
+
+  assert.equal(merged[0].price_min, 180);
+  assert.equal(merged[0].address, "官网地址");
+});
+
+test("补齐字段：is_free=false 是有效值，不能当空值丢掉", () => {
+  const merged = mergeDuplicateEvents(
+    filterPublishableEvents([
+      facetEvent(),
+      facetEvent({
+        source_name: "Source B",
+        source_url: "https://b.example.com/e/1",
+        signup_url: "https://b.example.com/e/1",
+        is_free: false,
+      }),
+    ]),
+  );
+
+  assert.equal(merged[0].is_free, false);
+});
+
+test("补齐字段：人群标签取并集", () => {
+  const merged = mergeDuplicateEvents(
+    filterPublishableEvents([
+      facetEvent({ audience: ["亲子"] }),
+      facetEvent({
+        source_name: "Source B",
+        source_url: "https://b.example.com/e/1",
+        signup_url: "https://b.example.com/e/1",
+        audience: ["学生", "亲子"],
+      }),
+    ]),
+  );
+
+  assert.deepEqual([...merged[0].audience].sort(), ["亲子", "学生"]);
+});
+
+test("补齐字段：来源标记合并，两边的键都留着", () => {
+  const merged = mergeDuplicateEvents(
+    filterPublishableEvents([
+      facetEvent({ facet_provenance: { address: "regex" } }),
+      facetEvent({
+        source_name: "Source B",
+        source_url: "https://b.example.com/e/1",
+        signup_url: "https://b.example.com/e/1",
+        facet_provenance: { price: "jsonld" },
+      }),
+    ]),
+  );
+
+  assert.equal(merged[0].facet_provenance.address, "regex");
+  assert.equal(merged[0].facet_provenance.price, "jsonld");
+});

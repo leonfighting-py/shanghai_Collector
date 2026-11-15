@@ -278,7 +278,8 @@ export function mergeDuplicateEvents(events) {
     current.sources = mergeSources(current.sources, normalizeSources(event));
 
     // 一手源（T1）字段优先于聚合器（T2）：场馆/高校官网的时间、摘要、封面比聚合器更权威
-    if (tierRank(event.source_tier) > tierRank(current.source_tier)) {
+    const preferSource = tierRank(event.source_tier) > tierRank(current.source_tier);
+    if (preferSource) {
       if (event.end_time) current.end_time = event.end_time;
       if (event.summary) current.summary = event.summary;
       if (event.image_url) current.image_url = event.image_url;
@@ -287,11 +288,39 @@ export function mergeDuplicateEvents(events) {
       if (!current.summary && event.summary) current.summary = event.summary;
       if (!current.image_url && event.image_url) current.image_url = event.image_url;
     }
+
+    mergeFacetFields(current, event, { preferSource });
   }
 
   return [...merged.values()].sort(
     (left, right) => new Date(left.start_time).getTime() - new Date(right.start_time).getTime(),
   );
+}
+
+// 字段补齐的合并规则：有值的赢，都非空时信源等级高的赢。
+// 注意 is_free=false 是「明确写了收费」，也是有效值，不能按假值跳过。
+const FACET_SCALAR_FIELDS = ["address", "price_min", "price_max", "is_free"];
+
+function hasFacetValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
+function mergeFacetFields(target, source, { preferSource }) {
+  for (const field of FACET_SCALAR_FIELDS) {
+    if (!hasFacetValue(source[field])) continue;
+    if (!hasFacetValue(target[field]) || preferSource) target[field] = source[field];
+  }
+
+  // 人群标签取并集：「亲子」和「学生」不冲突，一条活动可以都算
+  const audience = [...new Set([...(target.audience || []), ...(source.audience || [])])];
+  if (audience.length > 0) target.audience = audience;
+
+  // 来源标记：等级高的一方覆盖同名键，另一方的独有键保留 —— 每个字段是谁补的都要能追溯
+  const sourceProvenance = source.facet_provenance || {};
+  const targetProvenance = target.facet_provenance || {};
+  target.facet_provenance = preferSource
+    ? { ...targetProvenance, ...sourceProvenance }
+    : { ...sourceProvenance, ...targetProvenance };
 }
 
 function normalizeSources(event) {

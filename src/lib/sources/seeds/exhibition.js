@@ -174,6 +174,8 @@ export const EXHIBITION_SEEDS = [
     category: "展览",
     locale: "zh",
     parser: PARSERS.cnCmsLectures,
+    // 展馆自办栏目，场地必在本馆（2026-11 实测该源全部条目的场馆都是「上海」）
+    defaultVenue: "上海新国际博览中心",
     notes: "第六批·会展 · 窗口内活跃 2/6（2026-10 验证）",
   },
   {

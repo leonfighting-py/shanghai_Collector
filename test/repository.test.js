@@ -3,7 +3,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 import {
+  EVENT_SELECT_COLUMNS,
+  EVENT_UPSERT_COLUMNS,
+  EVENTS_ADD_COLUMNS_SQL,
+  FACET_COLUMNS,
   buildCleanupSql,
+  buildEventUpsertParams,
+  buildEventUpsertSql,
   buildEventWindowWhereSql,
   buildSchemaSql,
   filterEventsForWindow,
@@ -151,3 +157,60 @@ function event(title, start_time, category) {
     dedupe_key: title,
   };
 }
+
+// 字段补齐（docs/plans/2026-10-12-event-facets-backfill.md 第 3 节）：
+// 加列、读列、写列三处都从 FACET_COLUMNS 派生，少一处就是「写进去了但读不出来」。
+test("补齐字段在加列、读、写三处都到位", () => {
+  for (const column of FACET_COLUMNS) {
+    assert.ok(
+      EVENTS_ADD_COLUMNS_SQL.includes(`add column if not exists ${column} `),
+      `${column} 缺 add column 语句`,
+    );
+    assert.ok(EVENT_SELECT_COLUMNS.split(", ").includes(column), `${column} 不在读列里`);
+    assert.ok(EVENT_UPSERT_COLUMNS.includes(column), `${column} 不在写列里`);
+  }
+});
+
+test("写入 SQL 的占位符与参数个数严格对应", () => {
+  const sql = buildEventUpsertSql();
+  const slots = [...sql.matchAll(/\$(\d+)/g)].map((match) => Number(match[1]));
+  const params = buildEventUpsertParams({ title: "x" }, ["raw-1"], "rules");
+
+  assert.equal(Math.max(...slots), params.length, "SQL 里最大的 $n 与参数个数不一致");
+  assert.equal(new Set(slots).size, params.length, "占位符有重号或缺号");
+  assert.equal(params.length, EVENT_UPSERT_COLUMNS.length);
+});
+
+test("参数映射：jsonb 序列化，is_free=false 与 0 元都保留", () => {
+  const params = buildEventUpsertParams(
+    {
+      title: "t",
+      sources: [{ name: "a", url: "b" }],
+      audience: ["亲子"],
+      facet_provenance: { price: "jsonld" },
+      is_free: false,
+      price_min: 0,
+      price_max: null,
+    },
+    [],
+    "rules",
+  );
+  const byColumn = Object.fromEntries(EVENT_UPSERT_COLUMNS.map((column, index) => [column, params[index]]));
+
+  assert.equal(byColumn.sources, JSON.stringify([{ name: "a", url: "b" }]));
+  assert.equal(byColumn.audience, JSON.stringify(["亲子"]));
+  assert.equal(byColumn.facet_provenance, JSON.stringify({ price: "jsonld" }));
+  assert.equal(byColumn.is_free, false);
+  assert.equal(byColumn.price_min, 0, "0 元是有效票价，不能当成空值");
+  assert.equal(byColumn.price_max, null);
+});
+
+test("参数映射：缺字段时给安全默认值", () => {
+  const params = buildEventUpsertParams({ title: "t" }, undefined, "rules");
+  const byColumn = Object.fromEntries(EVENT_UPSERT_COLUMNS.map((column, index) => [column, params[index]]));
+
+  assert.equal(byColumn.audience, "[]");
+  assert.equal(byColumn.facet_provenance, "{}");
+  assert.equal(byColumn.is_free, null);
+  assert.equal(byColumn.price_min, null);
+});

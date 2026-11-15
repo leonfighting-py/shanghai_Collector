@@ -276,6 +276,8 @@ export const LECTURE_SEEDS = [
     category: "高校讲座",
     locale: "zh",
     parser: PARSERS.cnCmsLectures,
+    // 校内活动，场地必在本校；页面不给场馆时兜底成学校而不是「上海」（2026-11 实测该源全部条目的场馆都是「上海」）
+    defaultVenue: "上海中医药大学",
     notes: "第六批·高校 · 窗口内活跃 2/24（2026-10 验证）",
   },
   {

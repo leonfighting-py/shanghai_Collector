@@ -845,6 +845,7 @@
     "parserName": "cnCmsLectures",
     "tier": "T1",
     "retired": false,
+    "defaultVenue": "上海中医药大学",
     "notes": "第六批·高校 · 窗口内活跃 2/24（2026-10 验证）"
   },
   {
@@ -855,6 +856,7 @@
     "parserName": "cnCmsLectures",
     "tier": "T2",
     "retired": false,
+    "defaultVenue": "上海新国际博览中心",
     "notes": "第六批·会展 · 窗口内活跃 2/6（2026-10 验证）"
   },
   {

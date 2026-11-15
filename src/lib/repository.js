@@ -120,12 +120,106 @@ export function normalizeSourceConfig(source) {
 
 
 // 补列语句。新增的 DDL 一律写成 if not exists，保证重复执行无副作用（scripts/migrate.mjs 每次部署都会跑）。
-const ADD_COLUMNS_SQL = `
+//
+// 注意 district 不在这里：区域是派生字段（event-classify.js 的 detectDistrict），
+// 采集侧补的区域靠场馆字典喂给它，不落库。落库就会和派生值打架——读路径会覆盖写入值。
+export const EVENTS_ADD_COLUMNS_SQL = `
     alter table events add column if not exists summary text not null default '';
     alter table events add column if not exists image_url text;
+    alter table events add column if not exists address text;
+    alter table events add column if not exists price_min numeric;
+    alter table events add column if not exists price_max numeric;
+    alter table events add column if not exists is_free boolean;
+    alter table events add column if not exists audience jsonb not null default '[]'::jsonb;
+    alter table events add column if not exists facet_provenance jsonb not null default '{}'::jsonb;
     alter table raw_events add column if not exists summary text;
     alter table raw_events add column if not exists image_url text;
   `;
+
+// 字段补齐新增的列（docs/plans/2026-10-12-event-facets-backfill.md 第 3 节）。
+// 读、写、加列三处都从这里派生，少一处就会「写进去了但读不出来」。
+export const FACET_COLUMNS = ["address", "price_min", "price_max", "is_free", "audience", "facet_provenance"];
+
+/** 读路径的字段列表；listEvents 与单条查询共用，避免两边漂移 */
+export const EVENT_SELECT_COLUMNS = [
+  "title",
+  "start_time",
+  "end_time",
+  "venue",
+  "category",
+  "signup_url",
+  "source_name",
+  "source_url",
+  "dedupe_key",
+  "sources",
+  "dedupe_provider",
+  "summary",
+  "image_url",
+  ...FACET_COLUMNS,
+  "created_at",
+  "updated_at",
+].join(", ");
+
+// 写入列（顺序 = 占位符顺序）。updated_at 用 now()，不占参数。
+export const EVENT_UPSERT_COLUMNS = [
+  "title",
+  "start_time",
+  "end_time",
+  "venue",
+  "category",
+  "signup_url",
+  "source_name",
+  "source_url",
+  "dedupe_key",
+  "sources",
+  "raw_event_ids",
+  "dedupe_provider",
+  "summary",
+  "image_url",
+  ...FACET_COLUMNS,
+];
+
+const JSONB_UPSERT_COLUMNS = new Set(["sources", "raw_event_ids", "audience", "facet_provenance"]);
+
+/** 冲突更新时不动 dedupe_key（它是冲突目标），其余列照抄 excluded */
+const UPSERT_SKIP_UPDATE = new Set(["dedupe_key"]);
+
+export function buildEventUpsertSql() {
+  const columns = EVENT_UPSERT_COLUMNS.join(", ");
+  const placeholders = EVENT_UPSERT_COLUMNS.map((column, index) => {
+    const slot = `$${index + 1}`;
+    return JSONB_UPSERT_COLUMNS.has(column) ? `${slot}::jsonb` : slot;
+  }).join(", ");
+  const updates = EVENT_UPSERT_COLUMNS.filter((column) => !UPSERT_SKIP_UPDATE.has(column))
+    .map((column) => `${column} = excluded.${column}`)
+    .concat("updated_at = now()")
+    .join(",\n            ");
+
+  return `
+          insert into events (${columns}, updated_at)
+          values (${placeholders}, now())
+          on conflict (dedupe_key) do update set
+            ${updates}
+      `;
+}
+
+/** 与 buildEventUpsertSql 的列顺序严格对应：测试里会核对两者长度 */
+export function buildEventUpsertParams(event, rawEventIds, dedupeProvider) {
+  return EVENT_UPSERT_COLUMNS.map((column) => {
+    if (column === "sources") return JSON.stringify(event.sources || []);
+    if (column === "raw_event_ids") return JSON.stringify(rawEventIds);
+    if (column === "dedupe_provider") return dedupeProvider;
+    if (column === "summary") return event.summary || "";
+    if (column === "audience") return JSON.stringify(event.audience || []);
+    if (column === "facet_provenance") return JSON.stringify(event.facet_provenance || {});
+    if (column === "is_free") return typeof event.is_free === "boolean" ? event.is_free : null;
+    if (column === "price_min" || column === "price_max") {
+      const value = event[column];
+      return typeof value === "number" && Number.isFinite(value) ? value : null;
+    }
+    return event[column] ?? null;
+  });
+}
 
 /**
  * 建表 + 补列。
@@ -141,7 +235,7 @@ const ADD_COLUMNS_SQL = `
  */
 export async function ensureSchema({ lockTimeoutMs } = {}) {
   if (!process.env.DATABASE_URL) return;
-  const statements = [buildSchemaSql(), ADD_COLUMNS_SQL];
+  const statements = [buildSchemaSql(), EVENTS_ADD_COLUMNS_SQL];
   if (!lockTimeoutMs) {
     for (const sql of statements) await query(sql);
     return;
@@ -270,9 +364,7 @@ export async function listEvents({ week, category, search } = {}) {
   // 去掉后同一查询 1.6 秒、69 KB。要溯源请单独按需查 raw_events。
   const result = await query(
     `
-      select title, start_time, end_time, venue, category, signup_url, source_name,
-             source_url, dedupe_key, sources, dedupe_provider, summary, image_url,
-             created_at, updated_at
+      select ${EVENT_SELECT_COLUMNS}
       from events
       where ${filters.join(" and ")}
       order by start_time asc, title asc
@@ -310,44 +402,8 @@ export async function replaceWeekEvents(events, { week = new Date(), rawEventIds
       params: [`${startDate}T00:00:00+08:00`, `${endDate}T23:59:59+08:00`],
     },
     ...normalized.map((event) => ({
-      sql: `
-          insert into events (
-            title, start_time, end_time, venue, category, signup_url, source_name,
-            source_url, dedupe_key, sources, raw_event_ids, dedupe_provider, summary, image_url, updated_at
-          )
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, $13, $14, now())
-          on conflict (dedupe_key) do update set
-            title = excluded.title,
-            start_time = excluded.start_time,
-            end_time = excluded.end_time,
-            venue = excluded.venue,
-            category = excluded.category,
-            signup_url = excluded.signup_url,
-            source_name = excluded.source_name,
-            source_url = excluded.source_url,
-            sources = excluded.sources,
-            raw_event_ids = excluded.raw_event_ids,
-            dedupe_provider = excluded.dedupe_provider,
-            summary = excluded.summary,
-            image_url = excluded.image_url,
-            updated_at = now()
-      `,
-      params: [
-        event.title,
-        event.start_time,
-        event.end_time,
-        event.venue,
-        event.category,
-        event.signup_url,
-        event.source_name,
-        event.source_url,
-        event.dedupe_key,
-        JSON.stringify(event.sources || []),
-        JSON.stringify(rawEventIds),
-        dedupeProvider,
-        event.summary || "",
-        event.image_url || null,
-      ],
+      sql: buildEventUpsertSql(),
+      params: buildEventUpsertParams(event, rawEventIds, dedupeProvider),
     })),
   ];
 
@@ -406,7 +462,16 @@ function rowToEvent(row) {
     end_time: row.end_time ? toIso(row.end_time) : null,
     created_at: toIso(row.created_at),
     updated_at: toIso(row.updated_at),
+    // pg 把 numeric 读成字符串；null 要留成 null（Number(null) 会变 0，等于凭空说「免费」）
+    price_min: toNullableNumber(row.price_min),
+    price_max: toNullableNumber(row.price_max),
   };
+}
+
+function toNullableNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function toIso(value) {

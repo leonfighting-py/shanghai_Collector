@@ -20,6 +20,12 @@ const PUBLIC_FIELDS = [
   "image_url",
   // 站内详情页 /e/[slug] 的地址键，客户端拼链接要它
   "slug",
+  // 字段补齐（docs/plans/2026-10-12-event-facets-backfill.md）：抓不到就是 null，不猜
+  "address",
+  "price_min",
+  "price_max",
+  "is_free",
+  "audience",
 ];
 
 function toPublicEvent(event) {

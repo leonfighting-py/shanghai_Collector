@@ -32,11 +32,16 @@ export function buildEvent({ title, start_time, end_time, venue, signup_url, ima
   const url = signup_url || source.url;
   // 封面图仅接受 http(s)，防止解析出协议注入
   const image = typeof image_url === "string" && /^https?:\/\//i.test(image_url.trim()) ? image_url.trim() : null;
+  // 第 0 层字段补齐：单场馆信源在 seed 里写 defaultVenue，解析器拿不到场馆时用它兜底。
+  // 兜成「上海」等于没有场馆——区域识别、地图、同场馆推荐全都失效（2026-11 实测 266 条里 61 条如此）。
+  const rawVenue = String(venue || "").trim();
+  const venueName =
+    !rawVenue || rawVenue === "上海" || rawVenue === "上海市" ? source.defaultVenue || "上海" : rawVenue;
   return {
     title: cleanTitle,
     start_time: normalizedStart,
     end_time: end_time ? normalizeDateTime(end_time) : null,
-    venue: decodeHtml(venue || "上海"),
+    venue: decodeHtml(venueName),
     category: source.category,
     signup_url: url,
     source_name: source.name,

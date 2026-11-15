@@ -509,3 +509,35 @@ test("isRelevantPerformance filters sports titles and non-Shanghai venues", () =
   assert.equal(isRelevantPerformance({ title: "林肯爵士乐Shenel Johns四重奏演出", venue: "林肯爵士乐上海中心" }), true);
   assert.equal(isRelevantPerformance({ title: "CHIIKAWA DAYS Exhibition", venue: "Shanghai" }), true);
 });
+
+// 第 0 层字段补齐：单场馆信源在 seed 里写 defaultVenue，解析器拿不到场馆时用它兜底。
+// 兜成「上海」等于没有场馆：区域识别、地图、同场馆推荐全都失效。
+test("单场馆信源：场馆缺失时用 defaultVenue 兜底", () => {
+  const source = {
+    name: "上海新国际博览中心·展会",
+    url: "https://www.sniec.net/",
+    category: "展览",
+    tier: "T2",
+    defaultVenue: "上海新国际博览中心",
+  };
+
+  const filled = buildEvent({ title: "某国际智能装备展览会", start_time: "2026-11-20", venue: "", source });
+  assert.equal(filled.venue, "上海新国际博览中心");
+
+  // 解析器明确给了「上海」也要换成 defaultVenue —— 那等于没给
+  const vague = buildEvent({ title: "某国际智能装备展览会", start_time: "2026-11-20", venue: "上海", source });
+  assert.equal(vague.venue, "上海新国际博览中心");
+
+  // 解析器拿到了具体场馆就不覆盖
+  const specific = buildEvent({ title: "某国际智能装备展览会", start_time: "2026-11-20", venue: "上海展览中心", source });
+  assert.equal(specific.venue, "上海展览中心");
+
+  // 没配 defaultVenue 的源保持原样
+  const plain = buildEvent({
+    title: "某国际智能装备展览会",
+    start_time: "2026-11-20",
+    venue: "上海",
+    source: { ...source, defaultVenue: undefined },
+  });
+  assert.equal(plain.venue, "上海");
+});

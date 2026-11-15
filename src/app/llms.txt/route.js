@@ -38,6 +38,10 @@ ${categoryLines}
 - source_name / source_url：来源站点
 - summary：活动简介（如有）
 - image_url：封面图（如有）
+- address：详情页抓到的街道地址（如有）
+- price_min / price_max：票价区间，单位元；null 表示不知道，不表示免费
+- is_free：true 免费、false 明确收费、null 未知
+- audience：人群标签数组，取值 亲子 / 学生 / 行业人士 / 英语友好；空数组表示没有明确指向
 
 ## API 用法
 GET ${base}/api/events?week=YYYY-MM-DD&category=演出音乐&search=爵士
