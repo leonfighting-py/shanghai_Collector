@@ -534,6 +534,7 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   color: var(--ink-3);
 }
 .colophon a:hover { color: var(--accent); }
+.colophon-links { display: flex; gap: 20px; }
 
 /* ============================================
    活动详情页 /e/[slug]

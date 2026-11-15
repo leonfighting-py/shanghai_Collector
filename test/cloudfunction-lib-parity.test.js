@@ -4,32 +4,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { LIB_COPIES, toMjs } from "../scripts/cloudfn-lib-copies.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 
 // 云函数上传时只带 miniprogram/cloudfunctions/events/ 目录，所以 src/lib 的纯函数必须复制一份进去。
-// 副本唯一允许的差异是 import 的扩展名（.js → .mjs：Node 里 .mjs 才按 ESM 解析）。
+// 清单与同步逻辑都在 scripts/cloudfn-lib-copies.mjs，由 `npm run sync:cloudfn` 复用。
 // 这条护栏防的是"改了 src/lib 忘了同步副本"——那会让小程序和 Web 端算出不同的集合。
-// events.js 的依赖闭包共 5 个文件（event-classify.js / event-duration.js / event-slug.js
-// 也是纯函数；event-slug.js 不能依赖 node:crypto，云函数里没有内置模块的余地）。
-const LIB_COPIES = [
-  ["events.js", "events.mjs"],
-  ["dedupe.js", "dedupe.mjs"],
-  ["event-classify.js", "event-classify.mjs"],
-  ["event-duration.js", "event-duration.mjs"],
-  ["event-slug.js", "event-slug.mjs"],
-];
-
-function toMjs(source) {
-  return source.replace(/from "\.\/([A-Za-z0-9_-]+)\.js"/g, 'from "./$1.mjs"');
-}
-
 test("云函数的 lib/ 是 src/lib 的原样副本（仅 import 扩展名不同）", () => {
   for (const [source, copy] of LIB_COPIES) {
     assert.equal(
       read(`miniprogram/cloudfunctions/events/lib/${copy}`),
       toMjs(read(`src/lib/${source}`)),
-      `${copy} 与 src/lib/${source} 不一致：重新 cp 一份，再把 import 改成 .mjs`,
+      `${copy} 与 src/lib/${source} 不一致：请运行 npm run sync:cloudfn`,
     );
   }
 });

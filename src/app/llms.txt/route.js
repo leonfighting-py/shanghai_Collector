@@ -12,6 +12,8 @@ export function GET() {
 ## 站点导航
 - 首页（未来 14 天滚动窗口精选）：${base}/
 - 活动详情页：${base}/e/{slug}（每条活动的站内页，含时间、场馆、来源列表与报名外链）
+- 单条活动日历：${base}/e/{slug}/event.ics（iCalendar，时区 Asia/Shanghai）
+- 日历订阅：${base}/calendar.ics（可加 ?category=展览 或 ?district=徐汇，也可 ?slugs=a,b,c 导出指定活动，最多 100 条）
 - JSON API（公开）：${base}/api/events
 - RSS 订阅：${base}/feed.xml
 - 站点地图：${base}/sitemap.xml

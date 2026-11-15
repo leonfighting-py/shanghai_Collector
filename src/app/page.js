@@ -86,7 +86,10 @@ export default async function Home({ searchParams }) {
 
         <footer className="colophon">
           <span>数据每两日自动更新 · 来源均标注于每条活动</span>
-          <a href="#top">回到顶部 ↑</a>
+          <span className="colophon-links">
+            <a href="/calendar.ics">订阅日历</a>
+            <a href="#top">回到顶部 ↑</a>
+          </span>
         </footer>
       </main>
     </div>

@@ -130,8 +130,9 @@ export default async function EventDetail({ params }) {
             <a className="btn-primary" href={signup} target="_blank" rel="noopener noreferrer">
               去报名 ↗
             </a>
-            <a className="btn-ghost" href="/#agenda">
-              看同一周的其它活动
+            {/* 单条 .ics：导入后就是一条日程，时间按上海时区写死，不会偏 8 小时 */}
+            <a className="btn-ghost" href={`/e/${event.slug}/event.ics`}>
+              加入日历
             </a>
           </div>
 
@@ -154,7 +155,10 @@ export default async function EventDetail({ params }) {
 
       <footer className="colophon">
         <span>数据每两日自动更新 · 来源均标注于每条活动</span>
-        <a href="/">回到首页 ↑</a>
+        <span className="colophon-links">
+          <a href="/calendar.ics">订阅日历</a>
+          <a href="/">回到首页 ↑</a>
+        </span>
       </footer>
 
       {/* JSON-LD：让搜索结果能出活动富卡片。只放页面上也有的字段，不补编造的开始/结束。 */}

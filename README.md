@@ -150,7 +150,7 @@ npm run dev       # 打开 http://localhost:3000 查看真实数据
 4. 部署：开发者工具里右键 `cloudfunctions/events` → **上传并部署**。
    ⚠️ 改了云函数的查询/字段后，先合并主仓库并等 `deploy.yml` 的 Apply schema 步骤把新列推到库，再上传云函数——否则查询会引用还不存在的列，小程序接口直接报错。
 
-云函数的核心逻辑在 `cloudfunctions/events/lib/*.mjs`（`src/lib` 四个文件的原样副本，`test/cloudfunction-lib-parity.test.js` 守着不漂移），改 `src/lib` 的这四个文件必须重新复制。
+云函数的核心逻辑在 `cloudfunctions/events/lib/*.mjs`（`src/lib` 五个文件的原样副本，`test/cloudfunction-lib-parity.test.js` 守着不漂移）。改了这几个文件之后跑一次 `npm run sync:cloudfn`，不要手工 cp 再改 import 后缀。
 
 ### 2. 回滚路径：微信云托管（cloudrun/）
 
