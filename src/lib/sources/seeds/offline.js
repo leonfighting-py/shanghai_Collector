@@ -365,4 +365,120 @@ export const OFFLINE_SEEDS = [
     defaultVenue: "上海",
     notes: "区政府《文化活动预告》周报展开 · 一篇拆多场，实测 31 条全部可发布（2026-10-18 新增，含专用解析器）",
   },
+
+  // ---------------------------------------------------------------------------
+  // 活动行细分 tag 页（2026-11-20 新增）
+  //
+  // 背景：第 11 天要给线下活动加供给，但区图书馆 / 社区文化中心 / 市集主办方基本只在
+  // 微信公众号发活动，官网要么没有活动列表、要么是纯新闻（实测 16 个候选，只有 1 个可用）。
+  // 活动行按 tag 分页的列表是真供给，且能用现有的 huodong 解析器，不用写专用解析器。
+  //
+  // 每个 tag 都是独立的列表页，事件与「活动行上海」综合流有重叠，去重靠 mergeDuplicateEvents。
+  // ⚠️ 同一 host 会串行限速（collector.js 的 createHostThrottle，默认 1s/次），
+  //    11 个源同站约多花 2~3 分钟。采集上限 55 分钟，当前一轮 35 分钟，有余量。
+  //
+  // 实测窗口内条数（2026-11-20 → 12-03）：
+  //   桌游 5｜美食 4｜教育 4｜亲子 2｜交友 1｜徒步 1｜羽毛球 1
+  //   演出 8｜音乐 6｜脱口秀 2
+  // 读书会 / 创业投资两个 tag 早在 2026-10 就加过了（见上面 order 220/222），不重复。
+  // ---------------------------------------------------------------------------
+  {
+    order: 323,
+    name: "活动行·上海桌游",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E6%A1%8C%E6%B8%B8",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=桌游 · 窗口内 5 条（2026-11-20 验证）",
+  },
+  {
+    order: 324,
+    name: "活动行·上海美食体验",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E7%BE%8E%E9%A3%9F",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=美食 · 窗口内 4 条（2026-11-20 验证）",
+  },
+  {
+    order: 325,
+    name: "活动行·上海教育",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E6%95%99%E8%82%B2",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=教育 · 窗口内 4 条（2026-11-20 验证）",
+  },
+  {
+    order: 326,
+    name: "活动行·上海亲子",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E4%BA%B2%E5%AD%90",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=亲子 · 窗口内 2 条（2026-11-20 验证）",
+  },
+  {
+    order: 327,
+    name: "活动行·上海交友",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E4%BA%A4%E5%8F%8B",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=交友 · 窗口内 1 条（2026-11-20 验证）",
+  },
+  {
+    order: 328,
+    name: "活动行·上海徒步",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E5%BE%92%E6%AD%A5",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=徒步 · 窗口内 1 条（2026-11-20 验证）",
+  },
+  {
+    order: 329,
+    name: "活动行·上海羽毛球",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E7%BE%BD%E6%AF%9B%E7%90%83",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=羽毛球 · 窗口内 1 条（2026-11-20 验证）",
+  },
+  {
+    order: 330,
+    name: "活动行·上海演出",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E6%BC%94%E5%87%BA",
+    category: "演出音乐",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=演出 · 窗口内 8 条（2026-11-20 验证）",
+  },
+  {
+    order: 331,
+    name: "活动行·上海音乐现场",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E9%9F%B3%E4%B9%90",
+    category: "演出音乐",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=音乐 · 窗口内 6 条（2026-11-20 验证）",
+  },
+  {
+    order: 332,
+    name: "活动行·上海脱口秀",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E8%84%B1%E5%8F%A3%E7%A7%80",
+    category: "演出音乐",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=脱口秀 · 窗口内 2 条（2026-11-20 验证）",
+  },
+  {
+    order: 333,
+    name: "活动行·上海志愿者",
+    url: "https://www.huodongxing.com/eventlist?city=%E4%B8%8A%E6%B5%B7&tag=%E5%BF%97%E6%84%BF%E8%80%85",
+    category: "线下活动",
+    locale: "zh",
+    parser: PARSERS.huodong,
+    notes: "活动行 tag=志愿者 · 实测 1 条（长期招募，窗口内 0 条，2026-11-20 验证）",
+  },
 ];
