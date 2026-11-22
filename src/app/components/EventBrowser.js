@@ -15,6 +15,7 @@ import {
 import { CATEGORIES, safeExternalUrl } from "../../lib/events.js";
 import { districtOptions, matchesClassification, subcategoryOptions } from "../../lib/event-classify.js";
 import { buildListParam } from "../../lib/favorite-list.js";
+import { matchesScene } from "../../lib/scenes.js";
 import { EventImage } from "./EventImage.js";
 import { useFavorites } from "./useFavorites.js";
 
@@ -38,12 +39,17 @@ export function EventBrowser({
   initialDistrict = "",
   initialSearch = "",
   sharedList = [],
+  scenes = [],
+  initialScene = "",
+  sceneNow = "",
 }) {
   const [category, setCategory] = useState(initialCategory);
   const [subcategory, setSubcategory] = useState(initialSubcategory);
   const [district, setDistrict] = useState(initialDistrict);
   const [search, setSearch] = useState(initialSearch);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  // 场景卡（今晚 / 周末 / 免费 / 雨天室内 / 带娃）：与类目、区域是 AND 关系
+  const [scene, setScene] = useState(initialScene);
   // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
   const [sharedDismissed, setSharedDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -95,9 +101,11 @@ export function EventBrowser({
     else params.delete("area");
     if (search.trim()) params.set("search", search.trim());
     else params.delete("search");
+    if (scene) params.set("scene", scene);
+    else params.delete("scene");
     const query = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
-  }, [category, subcategory, district, search]);
+  }, [category, subcategory, district, search, scene]);
 
   const categoryCounts = useMemo(() => {
     const counts = {};
@@ -107,7 +115,10 @@ export function EventBrowser({
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
+    // 场景的判断基准时间由服务端给：客户端各自 new Date() 会和 SSR 结果对不上
+    const now = sceneNow ? new Date(sceneNow) : new Date();
     return events.filter((event) => {
+      if (scene && !matchesScene(event, scene, now)) return false;
       // 一级类目 / 二级分类 / 区域：三者 AND，规则与小程序共用同一份谓词
       if (!matchesClassification(event, { category, subcategory, district })) return false;
       if (onlyFavorites && !favorites.includes(event.slug)) return false;
@@ -116,7 +127,7 @@ export function EventBrowser({
         String(text || "").toLowerCase().includes(keyword),
       );
     });
-  }, [events, category, subcategory, district, search, onlyFavorites, favorites]);
+  }, [events, category, subcategory, district, search, onlyFavorites, favorites, scene, sceneNow]);
 
   const ongoing = useMemo(() => splitByToday(filtered, today).ongoing, [filtered, today]);
   const agenda = useMemo(() => buildAgenda(filtered, { today, days }), [filtered, today, days]);
@@ -267,6 +278,22 @@ export function EventBrowser({
       ) : null}
 
       <div className="filters" id="agenda" ref={filtersRef}>
+        {scenes.length > 0 ? (
+          <div className="scenes" role="group" aria-label="场景">
+            {scenes.map((item) => (
+              <button
+                type="button"
+                key={item.key}
+                className="scene"
+                aria-pressed={scene === item.key}
+                onClick={() => setScene((current) => (current === item.key ? "" : item.key))}
+              >
+                {item.label}
+                <sup>{item.count}</sup>
+              </button>
+            ))}
+          </div>
+        ) : null}
         <div className="filters-line">
           <div className="tabs" role="group" aria-label="分类筛选">
             <button type="button" className="tab" aria-pressed={!category} onClick={() => selectCategory("")}>

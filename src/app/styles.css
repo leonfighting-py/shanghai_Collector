@@ -259,6 +259,32 @@ a {
   gap: 24px;
   padding: 16px 0 14px;
 }
+/* 场景卡：类目 Tab 之上的一排「问题」。比一级类目轻，比纯文字重 —— 用细边框胶囊区分 */
+.scenes {
+  display: flex;
+  gap: 8px;
+  padding: 14px 0 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.scenes::-webkit-scrollbar { display: none; }
+.scene {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.scene sup { margin-left: 4px; font-size: 11px; color: var(--ink-3); }
+.scene:hover { color: var(--ink); border-color: var(--ink-3); }
+.scene[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.scene[aria-pressed="true"] sup { color: var(--paper); opacity: 0.7; }
 .tabs { display: flex; gap: 34px; overflow-x: auto; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {

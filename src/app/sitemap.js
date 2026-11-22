@@ -1,5 +1,6 @@
 import { CATEGORIES } from "../lib/events.js";
 import { listEvents } from "../lib/repository.js";
+import { SCENES } from "../lib/scenes.js";
 import { getSiteUrl } from "../lib/site-url.js";
 
 export default async function sitemap() {
@@ -19,6 +20,16 @@ export default async function sitemap() {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.7,
+    });
+  }
+
+  // 场景页：?scene=tonight 这类入口可以分享、可以收录
+  for (const scene of SCENES) {
+    entries.push({
+      url: `${base}/?scene=${scene.key}`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.6,
     });
   }
 

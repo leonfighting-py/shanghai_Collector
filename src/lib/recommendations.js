@@ -1,4 +1,5 @@
 import { CATEGORIES, toShanghaiDate } from "./events.js";
+import { shanghaiDay, shanghaiHour } from "./shanghai-time.js";
 import { hasCjkText } from "./locale.js";
 import { isUsableImage } from "./image-url.js";
 
@@ -17,20 +18,8 @@ const KEYWORD_WEIGHTS = [
   ["设计", 6],
 ];
 
-const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
-
 // 有封面图的活动加权：视觉密度是首页第一印象，但权重不宜过大，避免没图的好内容沉底
 const COVER_IMAGE_BOOST = 20;
-
-/** 上海时区的小时数（0-23），避免运行时本地时区（如 UTC）导致"今晚/周末"判断错误 */
-function shanghaiHour(value) {
-  return ((new Date(value).getTime() + SHANGHAI_OFFSET_MS) % 86_400_000) / 3_600_000;
-}
-
-/** 上海时区的星期（0=周日），取上海当日正午避免边界日期偏移 */
-function shanghaiDay(value) {
-  return new Date(`${toShanghaiDate(value)}T12:00:00+08:00`).getUTCDay();
-}
 
 export function scoreEvent(event, now = new Date()) {
   let score = 0;

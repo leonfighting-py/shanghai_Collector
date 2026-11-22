@@ -6,6 +6,8 @@ import { readClassificationParams } from "../lib/event-classify.js";
 import { CATEGORIES, toShanghaiDate } from "../lib/events.js";
 import { parseListParam } from "../lib/favorite-list.js";
 import { buildHomeViewModel } from "../lib/home-view-model.js";
+import { SCENE_KEYS, availableScenes } from "../lib/scenes.js";
+import { matchVenue } from "../lib/venue-profiles.js";
 import { listEvents } from "../lib/repository.js";
 
 // Override via NEXT_PUBLIC_HERO_VIDEO_URL in .env / .dev.vars
@@ -18,6 +20,8 @@ const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "�
 const CLIENT_FIELDS = [
   "title", "start_time", "end_time", "venue", "category", "subcategory", "district",
   "signup_url", "source_name", "summary", "image_url", "dedupe_key", "slug",
+  // 场景卡要用：免费只认 is_free === true，带娃看 audience
+  "is_free", "audience",
 ];
 
 export default async function Home({ searchParams }) {
@@ -34,8 +38,26 @@ export default async function Home({ searchParams }) {
   // 类目和搜索都在客户端筛（切换零延迟），所以这里永远取整个窗口
   const events = await listEvents({ week: anchor });
   const view = buildHomeViewModel(events, { now: new Date(anchor) });
-  const clientEvents = events.map((event) =>
-    Object.fromEntries(CLIENT_FIELDS.map((field) => [field, event[field] ?? null])),
+  const scenesNow = new Date();
+
+  // 场馆字典只在服务端用：给每条活动标注「是否室内 / 是否认得这个场馆」，
+  // 浏览器只拿到两个布尔值，不用把 100 多条场馆字典打进包里。
+  const annotated = events.map((event) => {
+    const profile = matchVenue(event.venue);
+    return {
+      ...event,
+      indoor: profile ? profile.indoor === true : null,
+      inDictionary: Boolean(profile),
+    };
+  });
+  // 场景卡：少于 3 条的不展示（放个点进去只有一条的空入口，比没有更糟）
+  const scenes = availableScenes(annotated, scenesNow);
+  const initialScene = SCENE_KEYS.includes(params?.scene) ? params.scene : "";
+
+  const clientEvents = annotated.map((event) =>
+    Object.fromEntries(
+      [...CLIENT_FIELDS, "indoor", "inDictionary"].map((field) => [field, event[field] ?? null]),
+    ),
   );
 
   return (
@@ -79,6 +101,9 @@ export default async function Home({ searchParams }) {
 
         <EventBrowser
           events={clientEvents}
+          scenes={scenes}
+          initialScene={initialScene}
+          sceneNow={scenesNow.toISOString()}
           today={view.today}
           days={view.windowDays}
           initialCategory={category}
