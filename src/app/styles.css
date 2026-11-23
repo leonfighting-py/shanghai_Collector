@@ -18,6 +18,14 @@
   --hair: rgba(25, 24, 23, 0.14);
   --accent: #c4472a;
 
+  /* 区域热度的四档色阶：在纸色底上叠强调色，0 档几乎不可见（表示没有活动）。
+     不用 color-mix —— 老浏览器不支持时整块会变透明，等于图上出现空洞。 */
+  --heat-0: rgba(25, 24, 23, 0.05);
+  --heat-1: rgba(196, 71, 42, 0.16);
+  --heat-2: rgba(196, 71, 42, 0.32);
+  --heat-3: rgba(196, 71, 42, 0.54);
+  --heat-4: rgba(196, 71, 42, 0.78);
+
   /* 只用系统字体：站点 CSP 是 style-src 'self'，外链字体样式表本来就加载不进来，
      而且 Google Fonts 在国内不稳定。标题走系统宋体，正文走系统黑体。 */
   --serif: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "STSong", "SimSun", serif;
@@ -37,6 +45,13 @@
     --ink-3: #77746f;
     --hair: rgba(239, 237, 232, 0.16);
     --accent: #f08a5d;
+
+    /* 深色下用亮橙叠在深纸上，0 档改成提亮 —— 深底上的「什么都没」不能靠加深 */
+    --heat-0: rgba(239, 237, 232, 0.06);
+    --heat-1: rgba(240, 138, 93, 0.20);
+    --heat-2: rgba(240, 138, 93, 0.36);
+    --heat-3: rgba(240, 138, 93, 0.58);
+    --heat-4: rgba(240, 138, 93, 0.80);
   }
 }
 
@@ -699,4 +714,75 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   .shared-banner,
   .list-bar { flex-direction: column; align-items: stretch; }
   .banner-actions .chip-btn { flex: 1; text-align: center; }
+}
+
+/* ============================================
+   区域热度视图（第 14 天）
+   示意图只表达「哪一片活动多」，不追求真实边界。
+   色阶 0-4 全部走 CSS 变量，深浅色各有一套值。
+   ============================================ */
+.view-toggle {
+  flex: none;
+  padding: 4px 10px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.view-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+.view-toggle[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.district-view {
+  margin: 28px 0 8px;
+  padding: 22px 0 18px;
+  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+}
+.map-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.map-head h2 { font-family: var(--serif); font-size: 22px; letter-spacing: 0.02em; }
+.map-head p { font-size: 13px; color: var(--ink-3); }
+.map-head .chip-btn { margin-left: 10px; }
+
+.district-map { width: 100%; max-width: 620px; height: auto; display: block; }
+.map-tile { cursor: pointer; }
+.map-tile rect {
+  fill: var(--heat-0);
+  stroke: var(--hair);
+  stroke-width: 0.3;
+  transition: fill 0.15s ease;
+}
+.map-tile.is-level-1 rect { fill: var(--heat-1); }
+.map-tile.is-level-2 rect { fill: var(--heat-2); }
+.map-tile.is-level-3 rect { fill: var(--heat-3); }
+.map-tile.is-level-4 rect { fill: var(--heat-4); }
+/* 选中态用描边而不是再加底色：色阶已经占了填充，再加一层就看不出档位了 */
+.map-tile.is-active rect { stroke: var(--ink); stroke-width: 0.9; }
+.map-tile:focus-visible { outline: none; }
+.map-tile:focus-visible rect { stroke: var(--accent); stroke-width: 1.1; }
+
+.tile-name { font-family: var(--sans); font-size: 2.9px; fill: var(--ink); pointer-events: none; }
+/* 3、4 档填充已经够深，文字改用纸色保证对比度（深色模式下即深色字压在亮橙上） */
+.map-tile.is-level-3 .tile-name,
+.map-tile.is-level-4 .tile-name { fill: var(--paper); }
+.tile-count { font-family: var(--sans); font-size: 2.4px; fill: var(--ink-2); pointer-events: none; }
+.map-tile.is-level-3 .tile-count,
+.map-tile.is-level-4 .tile-count { fill: var(--paper); opacity: 0.75; }
+
+.map-foot { margin-top: 12px; font-size: 13px; color: var(--ink-3); }
+
+@media (max-width: 720px) {
+  .district-view { margin-top: 20px; padding: 16px 0 14px; }
+  .map-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .tile-name { font-size: 3.6px; }
+  .tile-count { font-size: 3px; }
 }

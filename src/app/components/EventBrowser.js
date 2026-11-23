@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   buildAgenda,
@@ -14,8 +14,10 @@ import {
 } from "../../lib/agenda.js";
 import { CATEGORIES, safeExternalUrl } from "../../lib/events.js";
 import { districtOptions, matchesClassification, subcategoryOptions } from "../../lib/event-classify.js";
+import { buildDistrictMap } from "../../lib/district-map.js";
 import { buildListParam } from "../../lib/favorite-list.js";
 import { matchesScene } from "../../lib/scenes.js";
+import { DistrictMap } from "./DistrictMap.js";
 import { EventImage } from "./EventImage.js";
 import { useFavorites } from "./useFavorites.js";
 
@@ -50,6 +52,8 @@ export function EventBrowser({
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   // 场景卡（今晚 / 周末 / 免费 / 雨天室内 / 带娃）：与类目、区域是 AND 关系
   const [scene, setScene] = useState(initialScene);
+  // 「按区看」：把 16 区示意图摊在日程表上方，点区块等于选中该区
+  const [showMap, setShowMap] = useState(false);
   // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
   const [sharedDismissed, setSharedDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -113,21 +117,36 @@ export function EventBrowser({
     return counts;
   }, [events]);
 
-  const filtered = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    // 场景的判断基准时间由服务端给：客户端各自 new Date() 会和 SSR 结果对不上
-    const now = sceneNow ? new Date(sceneNow) : new Date();
-    return events.filter((event) => {
-      if (scene && !matchesScene(event, scene, now)) return false;
+  // 场景的判断基准时间由服务端给：客户端各自 new Date() 会和 SSR 结果对不上
+  const sceneRef = useMemo(() => (sceneNow ? new Date(sceneNow) : new Date()), [sceneNow]);
+
+  const matchesFilters = useCallback(
+    (event, { ignoreDistrict = false } = {}) => {
+      if (scene && !matchesScene(event, scene, sceneRef)) return false;
       // 一级类目 / 二级分类 / 区域：三者 AND，规则与小程序共用同一份谓词
-      if (!matchesClassification(event, { category, subcategory, district })) return false;
+      if (!matchesClassification(event, { category, subcategory, district: ignoreDistrict ? "" : district })) {
+        return false;
+      }
       if (onlyFavorites && !favorites.includes(event.slug)) return false;
+      const keyword = search.trim().toLowerCase();
       if (!keyword) return true;
       return [event.title, event.venue, event.summary, event.source_name].some((text) =>
         String(text || "").toLowerCase().includes(keyword),
       );
-    });
-  }, [events, category, subcategory, district, search, onlyFavorites, favorites, scene, sceneNow]);
+    },
+    [scene, sceneRef, category, subcategory, district, onlyFavorites, favorites, search],
+  );
+
+  const filtered = useMemo(
+    () => events.filter((event) => matchesFilters(event)),
+    [events, matchesFilters],
+  );
+
+  // 区域计数忽略区域筛选本身：否则选中黄浦后，图上只剩黄浦有数字，其余全变 0
+  const districtMap = useMemo(
+    () => buildDistrictMap(events.filter((event) => matchesFilters(event, { ignoreDistrict: true }))),
+    [events, matchesFilters],
+  );
 
   const ongoing = useMemo(() => splitByToday(filtered, today).ongoing, [filtered, today]);
   const agenda = useMemo(() => buildAgenda(filtered, { today, days }), [filtered, today, days]);
@@ -314,6 +333,14 @@ export function EventBrowser({
           <div className="tools">
             <button
               type="button"
+              className="view-toggle"
+              aria-pressed={showMap}
+              onClick={() => setShowMap((value) => !value)}
+            >
+              {showMap ? "看日程" : "按区看"}
+            </button>
+            <button
+              type="button"
               className="filter-toggle"
               aria-haspopup="dialog"
               aria-expanded={filterOpen}
@@ -412,6 +439,10 @@ export function EventBrowser({
             </a>
           </div>
         </div>
+      ) : null}
+
+      {showMap ? (
+        <DistrictMap map={districtMap} district={district} onSelect={setDistrict} />
       ) : null}
 
       {visibleDays.length === 0 ? (
