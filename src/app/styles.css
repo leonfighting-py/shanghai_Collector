@@ -754,7 +754,9 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 .map-head .chip-btn { margin-left: 10px; }
 
 .district-map { width: 100%; max-width: 620px; height: auto; display: block; }
-.map-tile { cursor: pointer; }
+/* outline: none 是必须的：SVG 的 <g> 拿到焦点时 Chrome 会画一圈亮蓝默认框，
+   鼠标点一下就会留下，和站点配色完全不搭。键盘焦点改用下面的描边表达。 */
+.map-tile { cursor: pointer; outline: none; }
 .map-tile rect {
   fill: var(--heat-0);
   stroke: var(--hair);
