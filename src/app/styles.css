@@ -813,3 +813,57 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   .tile-name { font-size: 3.6px; }
   .tile-count { font-size: 3px; }
 }
+
+/* ============================================
+   场馆地图（第 15 天）
+   Leaflet 在选中「地图」时才动态加载，首屏不带这份依赖。
+   ============================================ */
+.aside-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.aside-tabs button {
+  padding: 4px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.aside-tabs button[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.venue-map {
+  height: 300px;
+  border: 1px solid var(--hair);
+  /* 瓦片是浅色底图，深色模式下不给容器加滤镜 —— 滤镜会把注记一起反转，读不出来 */
+  background: var(--paper-2);
+}
+.venue-map .leaflet-container { background: var(--paper-2); }
+.venue-map .leaflet-control-attribution {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #333;
+}
+.venue-map .leaflet-popup-content { margin: 8px 10px; font-size: 12px; line-height: 1.5; }
+.venue-map .leaflet-popup-content strong { font-size: 13px; }
+
+/* 点位用数量气泡而不是默认图钉：默认图标是 png，打包后会丢路径 */
+.venue-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+}
+.venue-pin b { font-family: var(--sans); font-size: 12px; font-weight: 600; line-height: 1; }
+
+@media (max-width: 1079px) {
+  .venue-map { height: 260px; }
+}

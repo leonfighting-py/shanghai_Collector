@@ -7,6 +7,7 @@ import { CATEGORIES, toShanghaiDate } from "../lib/events.js";
 import { parseListParam } from "../lib/favorite-list.js";
 import { buildHomeViewModel } from "../lib/home-view-model.js";
 import { SCENE_KEYS, availableScenes } from "../lib/scenes.js";
+import { venueCoordinate } from "../lib/venue-coordinates.js";
 import { matchVenue } from "../lib/venue-profiles.js";
 import { listEvents } from "../lib/repository.js";
 
@@ -22,6 +23,9 @@ const CLIENT_FIELDS = [
   "signup_url", "source_name", "summary", "image_url", "dedupe_key", "slug",
   // 场景卡要用：免费只认 is_free === true，带娃看 audience
   "is_free", "audience",
+  // 地图要用：场馆的字典名（聚合键）与坐标。坐标由服务端从 venue-coordinates.js 取，
+  // 不把 100 多条坐标打进浏览器包
+  "venueKey", "coord",
 ];
 
 export default async function Home({ searchParams }) {
@@ -48,6 +52,8 @@ export default async function Home({ searchParams }) {
       ...event,
       indoor: profile ? profile.indoor === true : null,
       inDictionary: Boolean(profile),
+      venueKey: profile ? profile.name : "",
+      coord: profile ? venueCoordinate(profile.name) : null,
     };
   });
   // 场景卡：少于 3 条的不展示（放个点进去只有一条的空入口，比没有更糟）

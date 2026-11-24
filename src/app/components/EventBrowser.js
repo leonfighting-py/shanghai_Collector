@@ -18,6 +18,7 @@ import { buildDistrictMap } from "../../lib/district-map.js";
 import { buildListParam } from "../../lib/favorite-list.js";
 import { matchesScene } from "../../lib/scenes.js";
 import { DistrictMap } from "./DistrictMap.js";
+import { VenueMap } from "./VenueMap.js";
 import { EventImage } from "./EventImage.js";
 import { useFavorites } from "./useFavorites.js";
 
@@ -54,6 +55,8 @@ export function EventBrowser({
   const [scene, setScene] = useState(initialScene);
   // 「按区看」：把 16 区示意图摊在日程表上方，点区块等于选中该区
   const [showMap, setShowMap] = useState(false);
+  // 右栏两种视图：区域热度图 / 场馆地图
+  const [mapMode, setMapMode] = useState(false);
   // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
   const [sharedDismissed, setSharedDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -143,6 +146,22 @@ export function EventBrowser({
   );
 
   // 区域计数忽略区域筛选本身：否则选中黄浦后，图上只剩黄浦有数字，其余全变 0
+  // 地图点位：同场馆合成一个点；只算当前筛选结果，地图会跟着筛选变
+  const venuePoints = useMemo(() => {
+    const byVenue = new Map();
+    for (const event of filtered) {
+      if (!event.venueKey || !event.coord) continue;
+      const [lng, lat] = event.coord;
+      if (!byVenue.has(event.venueKey)) {
+        byVenue.set(event.venueKey, { name: event.venueKey, lng, lat, count: 0, titles: [] });
+      }
+      const point = byVenue.get(event.venueKey);
+      point.count += 1;
+      if (point.titles.length < 5) point.titles.push(event.title);
+    }
+    return [...byVenue.values()].sort((left, right) => right.count - left.count);
+  }, [filtered]);
+
   const districtMap = useMemo(
     () => buildDistrictMap(events.filter((event) => matchesFilters(event, { ignoreDistrict: true }))),
     [events, matchesFilters],
@@ -337,7 +356,7 @@ export function EventBrowser({
               aria-pressed={showMap}
               onClick={() => setShowMap((value) => !value)}
             >
-              {showMap ? "看日程" : "按区看"}
+              {showMap ? "收起分布" : "分布图"}
             </button>
             <button
               type="button"
@@ -501,8 +520,28 @@ export function EventBrowser({
         </div>
 
         {showMap ? (
-          <aside className="browser-aside" aria-label="区域分布">
-            <DistrictMap map={districtMap} district={district} onSelect={setDistrict} />
+          <aside className="browser-aside" aria-label="空间分布">
+            <div className="aside-tabs" role="group" aria-label="分布视图">
+              <button type="button" aria-pressed={!mapMode} onClick={() => setMapMode(false)}>
+                按区
+              </button>
+              <button type="button" aria-pressed={mapMode} onClick={() => setMapMode(true)}>
+                地图
+              </button>
+            </div>
+            {mapMode ? (
+              <>
+                <VenueMap points={venuePoints} />
+                <p className="map-foot">
+                  {venuePoints.length} 个场馆有坐标，共 {venuePoints.reduce((sum, point) => sum + point.count, 0)} 场
+                  {filtered.length > venuePoints.reduce((sum, point) => sum + point.count, 0)
+                    ? `；另有 ${filtered.length - venuePoints.reduce((sum, point) => sum + point.count, 0)} 场场馆未定位`
+                    : ""}
+                </p>
+              </>
+            ) : (
+              <DistrictMap map={districtMap} district={district} onSelect={setDistrict} />
+            )}
           </aside>
         ) : null}
       </div>
