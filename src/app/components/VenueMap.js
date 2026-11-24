@@ -61,8 +61,8 @@ export function VenueMap({ points = [] }) {
           icon: L.divIcon({
             className: "venue-pin",
             html: `<b>${point.count}</b>`,
-            iconSize: [28, 28],
-            iconAnchor: [14, 14],
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
           }),
         });
         const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");

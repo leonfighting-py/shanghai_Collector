@@ -837,7 +837,7 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 }
 
 .venue-map {
-  height: 300px;
+  height: 360px;
   border: 1px solid var(--hair);
   /* 瓦片是浅色底图，深色模式下不给容器加滤镜 —— 滤镜会把注记一起反转，读不出来 */
   background: var(--paper-2);
@@ -862,8 +862,8 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
 }
-.venue-pin b { font-family: var(--sans); font-size: 12px; font-weight: 600; line-height: 1; }
+.venue-pin b { font-family: var(--sans); font-size: 11px; font-weight: 600; line-height: 1; }
 
 @media (max-width: 1079px) {
-  .venue-map { height: 260px; }
+  .venue-map { height: 300px; }
 }
