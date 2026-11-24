@@ -768,7 +768,7 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 .map-tile.is-level-3 rect { fill: var(--heat-3); }
 .map-tile.is-level-4 rect { fill: var(--heat-4); }
 /* 选中态用描边而不是再加底色：色阶已经占了填充，再加一层就看不出档位了 */
-.map-tile.is-active rect { stroke: var(--ink); stroke-width: 0.9; }
+.map-tile.is-active rect { stroke: var(--ink); stroke-width: 1.5; }
 .map-tile:focus-visible { outline: none; }
 .map-tile:focus-visible rect { stroke: var(--accent); stroke-width: 1.1; }
 
