@@ -736,12 +736,37 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   border-color: var(--ink);
 }
 
-.district-view {
-  margin: 28px 0 8px;
-  padding: 22px 0 18px;
-  border-top: 1px solid var(--hair);
-  border-bottom: 1px solid var(--hair);
+/* 列表与分布图两栏：桌面并排（图常驻右侧、吸在筛选条下方），窄屏图挪到列表上方 */
+.browser-body { margin-top: 8px; }
+.browser-main { min-width: 0; }
+
+@media (min-width: 1080px) {
+  .browser-body.has-aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 40px;
+    align-items: start;
+  }
+  .browser-aside {
+    position: sticky;
+    top: calc(var(--filters-height) + 20px);
+  }
 }
+@media (max-width: 1079px) {
+  .browser-body.has-aside { display: flex; flex-direction: column; }
+  .browser-aside { order: -1; margin-bottom: 26px; }
+}
+
+.district-view {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.browser-aside .map-head { flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 10px; }
+.browser-aside .map-head h2 { font-size: 17px; }
+.browser-aside .map-head p { font-size: 12px; }
+.browser-aside .district-map { max-width: 100%; }
+.browser-aside .map-foot { margin-top: 8px; font-size: 12px; }
 .map-head {
   display: flex;
   align-items: baseline;

@@ -74,7 +74,7 @@ export const VENUE_PROFILES = [
   { name: "宛平剧院", district: "徐汇", indoor: true },
   { name: "西岸美术馆", district: "徐汇", indoor: true },
   { name: "龙美术馆", aliases: ["龙美术馆 西岸馆", "龙美术馆西岸馆"], district: "徐汇", indoor: true },
-  { name: "余德耀美术馆", district: "徐汇", indoor: true },
+  { name: "余德耀美术馆", district: "青浦", indoor: true },
   { name: "油罐艺术中心", district: "徐汇", indoor: true },
   { name: "星美术馆", district: "徐汇", indoor: true },
   { name: "西岸艺术中心", district: "徐汇", indoor: true },
@@ -86,7 +86,7 @@ export const VENUE_PROFILES = [
   { name: "贺绿汀音乐厅", district: "徐汇", indoor: true },
   { name: "上海音乐学院", district: "徐汇", indoor: true },
   { name: "上海体育场", aliases: ["八万人体育场"], district: "徐汇", indoor: false },
-  { name: "中国近现代新闻出版博物馆", aliases: ["新闻出版博物馆"], district: "徐汇", indoor: true },
+  { name: "中国近现代新闻出版博物馆", aliases: ["新闻出版博物馆"], district: "杨浦", indoor: true },
 
   // —— 静安 ——
   { name: "上海展览中心", district: "静安", indoor: true },
@@ -99,8 +99,8 @@ export const VENUE_PROFILES = [
   { name: "上海商城剧院", district: "静安", indoor: true },
   { name: "静安体育中心", district: "静安", indoor: true },
   { name: "明当代美术馆", district: "静安", indoor: true },
-  { name: "上海儿童艺术剧场", district: "静安", indoor: true },
-  { name: "万代南梦宫上海文化中心", aliases: ["万代南梦宫"], district: "静安", indoor: true },
+  { name: "上海儿童艺术剧场", district: "黄浦", indoor: true },
+  { name: "万代南梦宫上海文化中心", aliases: ["万代南梦宫"], district: "普陀", indoor: true },
   { name: "静安大悦城", district: "静安", indoor: true },
   { name: "四行仓库", aliases: ["上海四行仓库抗战纪念馆"], district: "静安", indoor: true },
 

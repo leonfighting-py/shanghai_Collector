@@ -393,6 +393,8 @@ export function EventBrowser({
         </nav>
       </div>
 
+      <div className={`browser-body${showMap ? " has-aside" : ""}`}>
+        <div className="browser-main">
       {sharedList.length > 0 && !sharedDismissed ? (
         <div className="shared-banner" role="status">
           <p>
@@ -439,10 +441,6 @@ export function EventBrowser({
             </a>
           </div>
         </div>
-      ) : null}
-
-      {showMap ? (
-        <DistrictMap map={districtMap} district={district} onSelect={setDistrict} />
       ) : null}
 
       {visibleDays.length === 0 ? (
@@ -500,6 +498,14 @@ export function EventBrowser({
           );
         })
       )}
+        </div>
+
+        {showMap ? (
+          <aside className="browser-aside" aria-label="区域分布">
+            <DistrictMap map={districtMap} district={district} onSelect={setDistrict} />
+          </aside>
+        ) : null}
+      </div>
 
       {drawerDay ? (
         <div className="drawer-backdrop" onClick={() => setDrawerDate("")}>
