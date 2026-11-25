@@ -53,6 +53,8 @@ export function EventBrowser({
   const [scene, setScene] = useState(initialScene);
   // 「按区看」：把 16 区示意图摊在日程表上方，点区块等于选中该区
   const [showMap, setShowMap] = useState(false);
+  // 全屏地图：侧栏 300px 装不下几十个点位，放大才看得清
+  const [mapExpanded, setMapExpanded] = useState(false);
   // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
   const [sharedDismissed, setSharedDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -512,17 +514,34 @@ export function EventBrowser({
 
         {showMap ? (
           <aside className="browser-aside" aria-label="场馆地图">
-            <VenueMap points={venuePoints} />
+            <div className="aside-head">
+              <span>场馆分布</span>
+              <button type="button" onClick={() => setMapExpanded(true)}>
+                放大
+              </button>
+            </div>
+            <VenueMap points={venuePoints.slice(0, 12)} />
             <p className="map-foot">
-              圆越大场次越多，点开看具体活动 · {venuePoints.length} 个场馆 /{" "}
-              {venuePoints.reduce((sum, point) => sum + point.count, 0)} 场
-              {filtered.length > venuePoints.reduce((sum, point) => sum + point.count, 0)
-                ? `，另有 ${filtered.length - venuePoints.reduce((sum, point) => sum + point.count, 0)} 场只有地址`
-                : ""}
+              圆越大场次越多，点开看活动 · 前 {Math.min(12, venuePoints.length)} 个场馆 /{" "}
+              {venuePoints.slice(0, 12).reduce((sum, point) => sum + point.count, 0)} 场
+              {venuePoints.length > 12 ? `，共 ${venuePoints.length} 个场馆` : ""}
             </p>
           </aside>
         ) : null}
       </div>
+
+      {mapExpanded ? (
+        <div className="map-overlay" role="dialog" aria-modal="true" aria-label="场馆分布全图">
+          <div className="map-overlay-head">
+            <b>场馆分布 · {venuePoints.length} 个场馆 / {venuePoints.reduce((sum, point) => sum + point.count, 0)} 场</b>
+            <button type="button" onClick={() => setMapExpanded(false)}>
+              关闭 ✕
+            </button>
+          </div>
+          <VenueMap points={venuePoints} />
+          <p className="map-foot">圆越大场次越多；点圆看该场馆的活动</p>
+        </div>
+      ) : null}
 
       {drawerDay ? (
         <div className="drawer-backdrop" onClick={() => setDrawerDate("")}>

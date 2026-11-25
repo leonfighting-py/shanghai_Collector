@@ -60,7 +60,7 @@ export function VenueMap({ points = [] }) {
       // 半径按 sqrt 映射（面积与场次成正比），最小 7px 保证 1 场也点得到。
       for (const point of points) {
         // 半径 ∝ sqrt(场次)：加常数项会压缩大小差异，13 场与 7 场会看着一样大
-        const radius = Math.max(6, Math.min(34, Math.sqrt(point.count) * 7));
+        const radius = Math.max(6, Math.min(30, Math.sqrt(point.count) * 6));
         const dot = L.circleMarker([point.lat, point.lng], {
           radius,
           className: "venue-dot",
