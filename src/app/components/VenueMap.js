@@ -55,19 +55,21 @@ export function VenueMap({ points = [] }) {
       const layer = L.layerGroup().addTo(map);
       layerRef.current = layer;
 
+      // 用圆的**面积**表达场次，而不是在点上写数字：
+      // 侧栏只有 300px 宽，几十个数字气泡会糊成一团；面积是能一眼比较的量。
+      // 半径按 sqrt 映射（面积与场次成正比），最小 7px 保证 1 场也点得到。
       for (const point of points) {
-        const marker = L.marker([point.lat, point.lng], {
-          title: point.name,
-          icon: L.divIcon({
-            className: "venue-pin",
-            html: `<b>${point.count}</b>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12],
-          }),
+        // 半径 ∝ sqrt(场次)：加常数项会压缩大小差异，13 场与 7 场会看着一样大
+        const radius = Math.max(6, Math.min(34, Math.sqrt(point.count) * 7));
+        const dot = L.circleMarker([point.lat, point.lng], {
+          radius,
+          className: "venue-dot",
+          weight: 1.2,
         });
         const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");
-        marker.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`);
-        layer.addLayer(marker);
+        dot.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`);
+        dot.bindTooltip(`${escapeHtml(point.name)} · ${point.count} 场`, { direction: "top", offset: [0, -2] });
+        layer.addLayer(dot);
       }
 
       if (points.length > 0) {
