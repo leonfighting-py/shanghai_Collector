@@ -18,6 +18,10 @@
   --hair: rgba(25, 24, 23, 0.14);
   --accent: #c4472a;
 
+  /* 地图点位：半透明填充 + 实描边，多个点叠在一起自然形成热区 */
+  --map-dot-fill: rgba(196, 71, 42, 0.30);
+  --map-dot-stroke: rgba(196, 71, 42, 0.85);
+
   /* 只用系统字体：站点 CSP 是 style-src 'self'，外链字体样式表本来就加载不进来，
      而且 Google Fonts 在国内不稳定。标题走系统宋体，正文走系统黑体。 */
   --serif: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "STSong", "SimSun", serif;
@@ -37,6 +41,8 @@
     --ink-3: #77746f;
     --hair: rgba(239, 237, 232, 0.16);
     --accent: #f08a5d;
+    --map-dot-fill: rgba(240, 138, 93, 0.32);
+    --map-dot-stroke: rgba(240, 138, 93, 0.88);
 
   }
 }
