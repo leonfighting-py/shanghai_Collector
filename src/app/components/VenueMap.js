@@ -70,10 +70,11 @@ export function VenueMap({ points = [], focus = null, zoom = 12 }) {
         });
         const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");
         dot.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`, {
-          // 侧栏地图只有 300×260，宽弹窗会盖住大半个图；也不让它自动平移
+          // 侧栏地图只有 300×260：弹窗限宽，并允许小幅平移把标题露出来
           maxWidth: 200,
           minWidth: 150,
-          autoPan: false,
+          autoPan: true,
+          autoPanPadding: [10, 10],
           className: "venue-popup",
         });
         dot.bindTooltip(`${escapeHtml(point.name)} · ${point.count} 场`, { direction: "top", offset: [0, -2] });
