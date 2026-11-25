@@ -69,7 +69,13 @@ export function VenueMap({ points = [], focus = null, zoom = 12 }) {
           weight: 1.2,
         });
         const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");
-        dot.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`);
+        dot.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`, {
+          // 侧栏地图只有 300×260，宽弹窗会盖住大半个图；也不让它自动平移
+          maxWidth: 200,
+          minWidth: 150,
+          autoPan: false,
+          className: "venue-popup",
+        });
         dot.bindTooltip(`${escapeHtml(point.name)} · ${point.count} 场`, { direction: "top", offset: [0, -2] });
         markersRef.current.set(point.name, dot);
         layer.addLayer(dot);
