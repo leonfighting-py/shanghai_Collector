@@ -705,6 +705,29 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
 /* 侧栏脚注（地图下方说明） */
 .map-foot { margin-top: 8px; font-size: 12px; line-height: 1.6; color: var(--ink-3); }
 
+/* 列表与地图两栏：桌面并排（地图常驻右侧、吸在筛选条下方），窄屏地图挪到列表上方。
+   ⚠️ 这组规则和地图样式是两回事，2026-11-25 删「按区」样式时误删过一次，
+   症状是右栏不出现、列表占满整宽。 */
+.browser-body { margin-top: 8px; }
+.browser-main { min-width: 0; }
+
+@media (min-width: 1080px) {
+  .browser-body.has-aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 40px;
+    align-items: start;
+  }
+  .browser-aside {
+    position: sticky;
+    top: calc(var(--filters-height) + 20px);
+  }
+}
+@media (max-width: 1079px) {
+  .browser-body.has-aside { display: flex; flex-direction: column; }
+  .browser-aside { order: -1; margin-bottom: 26px; }
+}
+
 /* ============================================
    场馆地图（第 15 天）
    Leaflet 在选中「地图」时才动态加载，首屏不带这份依赖。
