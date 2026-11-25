@@ -21,10 +21,11 @@ function escapeHtml(value = "") {
  * Leaflet 在 useEffect 里动态 import：它只在地图视图被选中时才下载，
  * 首屏（区域图 / 日程表）不带这份依赖。
  */
-export function VenueMap({ points = [] }) {
+export function VenueMap({ points = [], focus = null, zoom = 12 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const layerRef = useRef(null);
+  const markersRef = useRef(new Map());
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +49,7 @@ export function VenueMap({ points = [] }) {
       }
 
       const map = mapRef.current;
+      markersRef.current = new Map();
       if (layerRef.current) {
         layerRef.current.remove();
         layerRef.current = null;
@@ -69,14 +71,15 @@ export function VenueMap({ points = [] }) {
         const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");
         dot.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`);
         dot.bindTooltip(`${escapeHtml(point.name)} · ${point.count} 场`, { direction: "top", offset: [0, -2] });
+        markersRef.current.set(point.name, dot);
         layer.addLayer(dot);
       }
 
-      if (points.length > 0) {
-        map.fitBounds(
-          L.latLngBounds(points.map((point) => [point.lat, point.lng])),
-          { padding: [26, 26], maxZoom: 13 },
-        );
+      // 不用 fitBounds：临港的天文馆、航海博物馆会把视野拉到整个市域，
+      // 市中心几十个点挤成一团黑块。固定在人广 zoom 11，想看远郊自己拖。
+      if (!map._centered) {
+        map.setView(SHANGHAI_CENTER, zoom);
+        map._centered = true;
       }
     })();
 
@@ -84,6 +87,16 @@ export function VenueMap({ points = [] }) {
       cancelled = true;
     };
   }, [points]);
+
+  // 外部选中某个场馆时定位过去。tick 让「再次点同一个」也能触发。
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !focus?.name) return;
+    const marker = markersRef.current.get(focus.name);
+    if (!marker) return;
+    map.setView([focus.lat, focus.lng], Math.max(map.getZoom(), 14), { animate: true });
+    marker.openPopup();
+  }, [focus]);
 
   // 组件卸载时销毁地图实例，否则切换视图会留下监听与瓦片请求
   useEffect(

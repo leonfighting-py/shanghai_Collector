@@ -55,6 +55,8 @@ export function EventBrowser({
   const [showMap, setShowMap] = useState(false);
   // 全屏地图：侧栏 300px 装不下几十个点位，放大才看得清
   const [mapExpanded, setMapExpanded] = useState(false);
+  // 点排行里的场馆 → 地图定位到它
+  const [mapFocus, setMapFocus] = useState(null);
   // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
   const [sharedDismissed, setSharedDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -520,11 +522,21 @@ export function EventBrowser({
                 放大
               </button>
             </div>
-            <VenueMap points={venuePoints.slice(0, 12)} />
+            <VenueMap points={venuePoints} focus={mapFocus} />
+            <ol className="venue-rank">
+              {venuePoints.slice(0, 6).map((point) => (
+                <li key={point.name}>
+                  <button type="button" onClick={() => setMapFocus({ ...point, tick: Date.now() })}>
+                    <span className="rank-name">{point.name}</span>
+                    <span className="rank-bar" style={{ width: `${Math.round((point.count / venuePoints[0].count) * 100)}%` }} />
+                    <span className="rank-count">{point.count}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
             <p className="map-foot">
-              圆越大场次越多，点开看活动 · 前 {Math.min(12, venuePoints.length)} 个场馆 /{" "}
-              {venuePoints.slice(0, 12).reduce((sum, point) => sum + point.count, 0)} 场
-              {venuePoints.length > 12 ? `，共 ${venuePoints.length} 个场馆` : ""}
+              {venuePoints.length} 个场馆 / {venuePoints.reduce((sum, point) => sum + point.count, 0)} 场；
+              另有 {filtered.length - venuePoints.reduce((sum, point) => sum + point.count, 0)} 场只有地址
             </p>
           </aside>
         ) : null}
