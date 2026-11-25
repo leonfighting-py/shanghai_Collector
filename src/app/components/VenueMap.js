@@ -21,7 +21,7 @@ function escapeHtml(value = "") {
  * Leaflet 在 useEffect 里动态 import：它只在地图视图被选中时才下载，
  * 首屏（区域图 / 日程表）不带这份依赖。
  */
-export function VenueMap({ points = [], focus = null, zoom = 12 }) {
+export function VenueMap({ points = [], focus = null, zoom = 12, onSelect = null }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const layerRef = useRef(null);
@@ -68,15 +68,15 @@ export function VenueMap({ points = [], focus = null, zoom = 12 }) {
           className: "venue-dot",
           weight: 1.2,
         });
-        const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");
-        dot.bindPopup(`<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`, {
-          // 侧栏地图只有 300×260：弹窗限宽，并允许小幅平移把标题露出来
-          maxWidth: 200,
-          minWidth: 150,
-          autoPan: true,
-          autoPanPadding: [10, 10],
-          className: "venue-popup",
-        });
+        if (onSelect) {
+          dot.on("click", () => onSelect(point));
+        } else {
+          const lines = point.titles.slice(0, 3).map((title) => `· ${escapeHtml(title)}`).join("<br />");
+          dot.bindPopup(
+            `<strong>${escapeHtml(point.name)}</strong><br />${point.count} 场${lines ? `<br />${lines}` : ""}`,
+            { maxWidth: 220 },
+          );
+        }
         dot.bindTooltip(`${escapeHtml(point.name)} · ${point.count} 场`, { direction: "top", offset: [0, -2] });
         markersRef.current.set(point.name, dot);
         layer.addLayer(dot);
@@ -102,7 +102,7 @@ export function VenueMap({ points = [], focus = null, zoom = 12 }) {
     const marker = markersRef.current.get(focus.name);
     if (!marker) return;
     map.setView([focus.lat, focus.lng], Math.max(map.getZoom(), 14), { animate: true });
-    marker.openPopup();
+    marker.openPopup?.();
   }, [focus]);
 
   // 组件卸载时销毁地图实例，否则切换视图会留下监听与瓦片请求

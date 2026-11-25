@@ -878,3 +878,25 @@ a.day-chip:hover:not(.is-active) { background: var(--paper-2); }
   font-variant-numeric: tabular-nums;
   color: var(--ink-3);
 }
+
+/* 场馆详情：点击地图圆点或排行后，信息落在地图下方，不用 Leaflet 弹窗 ——
+   300px 宽的小图里弹窗一定被容器裁边，信息还会盖住点位。 */
+.venue-detail {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.venue-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.venue-detail-head b { font-size: 13px; font-weight: 600; }
+.venue-detail-head button { color: var(--ink-3); font-size: 13px; line-height: 1; }
+.venue-detail > p { margin: 2px 0 6px; color: var(--ink-2); }
+.venue-detail ul { margin: 0; padding-left: 14px; color: var(--ink-2); }
+.venue-detail li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

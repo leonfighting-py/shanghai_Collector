@@ -57,6 +57,7 @@ export function EventBrowser({
   const [mapExpanded, setMapExpanded] = useState(false);
   // 点排行里的场馆 → 地图定位到它
   const [mapFocus, setMapFocus] = useState(null);
+  const [selectedVenue, setSelectedVenue] = useState(null);
   // 朋友分享的清单（?list=slug.slug）只在本次访问显示，关掉就不再拦路
   const [sharedDismissed, setSharedDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -522,11 +523,40 @@ export function EventBrowser({
                 放大
               </button>
             </div>
-            <VenueMap points={venuePoints} focus={mapFocus} />
+            <VenueMap
+              points={venuePoints}
+              focus={mapFocus}
+              onSelect={(point) => {
+                setSelectedVenue(point);
+                setMapFocus({ ...point, tick: Date.now() });
+              }}
+            />
+            {selectedVenue ? (
+              <div className="venue-detail">
+                <div className="venue-detail-head">
+                  <b>{selectedVenue.name}</b>
+                  <button type="button" onClick={() => setSelectedVenue(null)} aria-label="关闭">
+                    ✕
+                  </button>
+                </div>
+                <p>{selectedVenue.count} 场</p>
+                <ul>
+                  {selectedVenue.titles.slice(0, 3).map((title) => (
+                    <li key={title}>{title}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             <ol className="venue-rank">
               {venuePoints.slice(0, 6).map((point) => (
                 <li key={point.name}>
-                  <button type="button" onClick={() => setMapFocus({ ...point, tick: Date.now() })}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedVenue(point);
+                      setMapFocus({ ...point, tick: Date.now() });
+                    }}
+                  >
                     <span className="rank-name">{point.name}</span>
                     <span className="rank-bar" style={{ width: `${Math.round((point.count / venuePoints[0].count) * 100)}%` }} />
                     <span className="rank-count">{point.count}</span>
