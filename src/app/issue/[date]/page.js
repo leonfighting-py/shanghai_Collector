@@ -38,7 +38,12 @@ export default async function IssuePage({ params }) {
         <section aria-label="当期推荐">
           <div className="sec-head">
             <h2>当期推荐</h2>
-            <span>{issue.label}</span>
+            <span>
+              {issue.label}
+              <a className="issue-back" href={`/issue/${date}/poster.png`} download>
+                保存海报
+              </a>
+            </span>
           </div>
           {issue.highlights.length > 0 ? (
             <div className="picks">

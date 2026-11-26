@@ -1,0 +1,60 @@
+name: Issue Poster
+
+# 每轮采集成功后，把当期海报（1080×1920 PNG）渲染出来，传到 GitHub Release。
+# 页面 /issue/[date]/poster.png 302 到 Release 资源。
+#
+# 为什么不在 Worker 里生成：next/og 要跑 satori + resvg-wasm，中文字体还得整份打进 worker
+# （CJK 字体 3~8 MB），会撞 Worker 体积上限。放这里用 Chromium 截图，字体用系统 Noto CJK。
+#
+# 依赖：
+#   · fonts-noto-cjk —— 缺了会渲染成豆腐块，且不会报错，只能靠人眼看海报确认
+#   · DATABASE_URL —— 读 issues 快照
+on:
+  workflow_run:
+    workflows: ["Collect Events"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: issue-poster
+  cancel-in-progress: true
+
+jobs:
+  poster:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # 创建 / 上传 Release 需要
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: 安装 Chromium 与中文字体
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+
+      - name: 渲染当期海报
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: node scripts/render-issue-poster.mjs
+
+      - name: 传到 Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          FILE=$(ls out/poster-*.png | head -1)
+          DATE=$(basename "$FILE" .png | sed 's/^poster-//')
+          TAG="issue-poster-$DATE"
+          # 同一天重跑时覆盖同一个 tag，避免堆出一串同名 Release
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "期刊海报 $DATE" --notes "由采集后自动渲染（1080×1920）"
+          gh release upload "$TAG" "$FILE" --clobber
+          echo "已上传：$TAG / $(basename "$FILE")"

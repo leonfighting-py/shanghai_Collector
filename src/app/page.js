@@ -72,6 +72,9 @@ export default async function Home({ searchParams }) {
         <div className="issue-strip">
           <p className="eyebrow">
             本期 · {view.issueLabel}
+            <a className="issue-back" href={`/issue/${view.today}/poster.png`} download>
+              保存海报
+            </a>
             <a className="issue-back" href="/issues">往期</a>
           </p>
           <dl className="stats">

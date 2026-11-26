@@ -23,3 +23,6 @@ offshore-events.json
 
 # supabase CLI 的本地登录状态（只在迁库时产生，不属于项目产物）
 supabase/.temp/
+
+# 海报渲染产物（CI 渲染后传 Release，不进仓库）
+out/
