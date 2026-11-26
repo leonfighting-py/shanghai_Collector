@@ -281,6 +281,7 @@ export async function ensureSchema({ lockTimeoutMs } = {}) {
   const statements = [buildSchemaSql(), EVENTS_ADD_COLUMNS_SQL];
   if (!lockTimeoutMs) {
     for (const sql of statements) await query(sql);
+    await grantReaderOnNewTables();
     return;
   }
   const timeout = Math.max(1, Math.floor(Number(lockTimeoutMs)));
@@ -288,6 +289,20 @@ export async function ensureSchema({ lockTimeoutMs } = {}) {
     { sql: `set local lock_timeout = ${timeout}` },
     ...statements.map((sql) => ({ sql })),
   ]);
+  await grantReaderOnNewTables();
+}
+
+// 新表要单独授权给只读角色，否则线上读不到数据、本地（postgres）却一切正常，很难查。
+// 不用 DO 块：这里的查询走参数化协议，美元符号会被当成占位符，双美元直接语法错误。
+const READER_ROLE = "news_collector_reader";
+const READER_TABLES = ["events", "issues"];
+
+async function grantReaderOnNewTables() {
+  const role = await query("select 1 from pg_roles where rolname = $1", [READER_ROLE]);
+  if (role.rowCount === 0) return;
+  for (const table of READER_TABLES) {
+    await query(`grant select on ${table} to ${READER_ROLE}`);
+  }
 }
 
 export async function upsertSourceConfigs(sources) {
