@@ -88,6 +88,16 @@ export function buildSchemaSql() {
       fetched_at timestamptz not null default now()
     );
     create index if not exists event_detail_cache_fetched_at_idx on event_detail_cache(fetched_at);
+
+    -- 期刊归档（src/lib/issues.js）：每次发布存一份快照。
+    -- highlights 存的是卡片字段的副本，不引用 events —— cleanup 删掉活动后往期仍能完整显示。
+    create table if not exists issues (
+      issue_date date primary key,
+      label text not null,
+      highlights jsonb not null default '[]'::jsonb,
+      stats jsonb not null default '{}'::jsonb,
+      created_at timestamptz not null default now()
+    );
   `;
 }
 

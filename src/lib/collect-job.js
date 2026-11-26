@@ -229,6 +229,13 @@ export async function runCollectJob() {
       : { inserted: previousEvents.length },
   );
 
+  // 期刊归档：只有真的发布了才写。回落旧数据或被守门拦截时不写 ——
+  // 那两种情况下当期内容并没有换成新的，不该覆盖已经存在的快照。
+  const issue = await timed("issue_snapshot", async () => {
+    if (fellBack || !guard.allowed) return { saved: false, skipped: true };
+    return saveIssue(buildIssueSnapshot(protectedEvents, { now: new Date() }));
+  });
+
   // 运行状态三档判定（WP0-D）：详见 collect-result.js 的 classifyRunStatus。
   // 失败信源数只统计 fetch 阶段的信源级失败（批次级失败没有 source，天然不进占比）。
   const failedSourceCount = countFailedSources(result.failures);
@@ -313,6 +320,7 @@ export async function runCollectJob() {
       failures: categoryFilter.failures,
     },
     run_id: run.id,
+    issue_snapshot: issue,
     raw_inserted: rawResult.inserted,
     published_inserted: publishResult.inserted,
     offshore: {

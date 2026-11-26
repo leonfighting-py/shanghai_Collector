@@ -1,4 +1,5 @@
 import { CATEGORIES } from "../lib/events.js";
+import { listIssues } from "../lib/issues.js";
 import { listEvents } from "../lib/repository.js";
 import { SCENES } from "../lib/scenes.js";
 import { getSiteUrl } from "../lib/site-url.js";
@@ -20,6 +21,23 @@ export default async function sitemap() {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.7,
+    });
+  }
+
+  // 期刊归档：往期列表 + 每一期。快照不随活动清理改变，值得收录
+  entries.push({ url: `${base}/issues`, lastModified: now, changeFrequency: "daily", priority: 0.7 });
+  let issues = [];
+  try {
+    issues = await listIssues({ limit: 60 });
+  } catch {
+    issues = [];
+  }
+  for (const issue of issues) {
+    entries.push({
+      url: `${base}/issue/${issue.date}`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.5,
     });
   }
 

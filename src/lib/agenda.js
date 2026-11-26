@@ -63,6 +63,21 @@ export function formatShanghaiClock(value) {
 }
 
 /** 跨天活动的区间文案："10.10 — 10.17 · 共 8 天"；单日活动返回空串 */
+const WEEKDAY_NAMES = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+/**
+ * 卡片上那行时间：多日给范围，单日给「日期 周几 时刻」。
+ * 首页的「本期推荐」和期刊归档共用一份，避免两处各写一遍后走样。
+ */
+export function formatCardTime(event) {
+  if (isMultiDay(event)) {
+    return `${formatDotDate(eventStartDay(event))} — ${formatDotDate(eventEndDay(event))}`;
+  }
+  const day = eventStartDay(event);
+  const weekday = WEEKDAY_NAMES[new Date(`${day}T00:00:00Z`).getUTCDay()];
+  return `${formatDotDate(day)} ${weekday} ${formatShanghaiClock(event.start_time)}`;
+}
+
 export function formatRange(event) {
   if (!isMultiDay(event)) return "";
   return `${formatDotDate(eventStartDay(event))} — ${formatDotDate(eventEndDay(event))} · 共 ${spanDays(event)} 天`;

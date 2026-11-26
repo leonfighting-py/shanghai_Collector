@@ -1,7 +1,7 @@
 import { EventBrowser } from "./components/EventBrowser.js";
 import { EventImage } from "./components/EventImage.js";
 import { HomeHero } from "./components/HomeHero.js";
-import { eventEndDay, eventStartDay, formatDotDate, formatShanghaiClock, isMultiDay } from "../lib/agenda.js";
+import { formatCardTime } from "../lib/agenda.js";
 import { readClassificationParams } from "../lib/event-classify.js";
 import { CATEGORIES, toShanghaiDate } from "../lib/events.js";
 import { parseListParam } from "../lib/favorite-list.js";
@@ -14,8 +14,6 @@ import { listEvents } from "../lib/repository.js";
 // Override via NEXT_PUBLIC_HERO_VIDEO_URL in .env / .dev.vars
 const HERO_VIDEO_URL =
   process.env.NEXT_PUBLIC_HERO_VIDEO_URL || "/media/shanghai-radar-loop.mp4?v=2";
-
-const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
 // 传给客户端的字段白名单：日程表只用得到这些，别把 raw_event_ids 等内部字段带下去
 const CLIENT_FIELDS = [
@@ -72,7 +70,10 @@ export default async function Home({ searchParams }) {
 
       <main className="sheet" id="city-discoveries">
         <div className="issue-strip">
-          <p className="eyebrow">本期 · {view.issueLabel}</p>
+          <p className="eyebrow">
+            本期 · {view.issueLabel}
+            <a className="issue-back" href="/issues">往期</a>
+          </p>
           <dl className="stats">
             <div><dt>{view.stats.upcoming}</dt><dd>场即将开始</dd></div>
             <div><dt>{view.stats.ongoing}</dt><dd>场正在进行</dd></div>
@@ -98,7 +99,7 @@ export default async function Home({ searchParams }) {
                   </span>
                   <span className="pick-no">N° 0{index + 1} · {event.category}</span>
                   <strong>{event.title}</strong>
-                  <small>{formatHighlightTime(event)} · {event.venue}</small>
+                  <small>{formatCardTime(event)} · {event.venue}</small>
                 </a>
               ))}
             </div>
@@ -131,11 +132,3 @@ export default async function Home({ searchParams }) {
   );
 }
 
-function formatHighlightTime(event) {
-  if (isMultiDay(event)) {
-    return `${formatDotDate(eventStartDay(event))} — ${formatDotDate(eventEndDay(event))}`;
-  }
-  const day = eventStartDay(event);
-  const weekday = WEEKDAYS[new Date(`${day}T00:00:00Z`).getUTCDay()];
-  return `${formatDotDate(day)} ${weekday} ${formatShanghaiClock(event.start_time)}`;
-}
