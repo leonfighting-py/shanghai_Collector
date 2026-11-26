@@ -5,7 +5,13 @@
 // 往期页面**不查 events 表**，活动删光了照样能看。
 
 import { buildHomeViewModel } from "./home-view-model.js";
-import { runQuery } from "./db-pool.js";
+import { getDatabaseConfig, runQuery } from "./db-pool.js";
+
+// Worker 里没有 process.env.DATABASE_URL（连接串来自 Hyperdrive 绑定），
+// 判「有没有库」要以 getDatabaseConfig() 为准，否则线上会静默返回空列表。
+function hasDatabase() {
+  return Boolean(getDatabaseConfig());
+}
 
 /** 快照里每条推荐要留的字段（渲染卡片够用即可，别整条塞进去） */
 export const ISSUE_HIGHLIGHT_FIELDS = [
@@ -41,7 +47,7 @@ export function buildIssueSnapshot(events, { now = new Date(), highlightLimit = 
 
 /** 同一天重复采集时覆盖，不产生第二期 */
 export async function saveIssue(snapshot) {
-  if (!process.env.DATABASE_URL) return { saved: false, dryRun: true };
+  if (!hasDatabase()) return { saved: false, dryRun: true };
   await runQuery(
     `
       insert into issues (issue_date, label, highlights, stats)
@@ -58,7 +64,7 @@ export async function saveIssue(snapshot) {
 
 /** 归档列表：新到旧。只取渲染列表要用的几列，不拉整份 highlights */
 export async function listIssues({ limit = 60 } = {}) {
-  if (!process.env.DATABASE_URL) return [];
+  if (!hasDatabase()) return [];
   const result = await runQuery(
     `
       select to_char(issue_date, 'YYYY-MM-DD') as issue_date, label, stats,
@@ -79,7 +85,7 @@ export async function listIssues({ limit = 60 } = {}) {
 
 /** 单期。查不到返回 null，由页面决定 404 */
 export async function getIssue(date) {
-  if (!process.env.DATABASE_URL) return null;
+  if (!hasDatabase()) return null;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
   const result = await runQuery(
     "select issue_date, label, highlights, stats, created_at from issues where issue_date = $1::date",
