@@ -12,9 +12,14 @@ const REMIND_HOUR = 10;
 const LONG_RUN_MIN_DAYS = 14;
 const LONG_RUN_LEAD_DAYS = 3;
 
-/** 提醒的唯一键：与收藏用的 id 同构（标题|上海日期|场馆），接口 DTO 里没有 slug */
+/**
+ * 提醒的唯一键：优先用 slug（与 Web 的 URL 同一个值，第 19 天要按它查最新活动）。
+ * 老记录没有 slug 时退回「标题|上海日期|场馆」，与收藏 id 同构。
+ */
 function keyOf(event) {
-  if (!event || !event.title) return "";
+  if (!event) return "";
+  if (event.slug) return String(event.slug);
+  if (!event.title) return "";
   return `${event.title}|${format.toShanghaiDate(event.start_time)}|${event.venue || ""}`;
 }
 
@@ -82,6 +87,24 @@ function messageFor(event, remindAt) {
   };
 }
 
+/**
+ * 排队计划：除了提醒时刻，还带上「锚在开始日还是闭展日」「提前几天」。
+ *
+ * 为什么要把这两项存进数据库：第 19 天的定时任务要按最新活动时间重算提醒时刻，
+ * 而它跑在另一个云函数里，拿不到这里的规则。存下参数，那边只做日期加减，
+ * 不用再复制一份「长档期展览」的判断。
+ */
+function planFor(event, nowMs = Date.now()) {
+  const remindAt = remindAtOf(event, nowMs);
+  if (!remindAt) return null;
+  const longRun = agenda.spanDays(event) >= LONG_RUN_MIN_DAYS;
+  return {
+    remindAt,
+    leadDays: longRun ? LONG_RUN_LEAD_DAYS : 1,
+    anchorKind: longRun ? "end" : "start",
+  };
+}
+
 module.exports = {
   LONG_RUN_MIN_DAYS,
   REMIND_HOUR,
@@ -89,5 +112,6 @@ module.exports = {
   describeRemind,
   keyOf,
   messageFor,
+  planFor,
   remindAtOf,
 };

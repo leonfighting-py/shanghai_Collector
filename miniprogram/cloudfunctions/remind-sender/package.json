@@ -1,0 +1,10 @@
+{
+  "name": "remind-sender",
+  "version": "1.0.0",
+  "private": true,
+  "description": "订阅提醒定时发送：取到点的 reminders，调 subscribeMessage.send",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

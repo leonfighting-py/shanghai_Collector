@@ -23,6 +23,35 @@ function loadLib() {
   return libPromise;
 }
 
+// 进程级响应缓存：活动两天才采集一次，没必要每次请求都跨境查一遍库。
+// 云函数在上海、Supabase 在东京，一次查询 + 传输约 1–2s，命中缓存后降到毫秒级。
+// 只缓存成功响应，按 week/category/search 组合分键；实例被回收时缓存随之消失，不影响正确性。
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_MAX_ENTRIES = 20;
+const responseCache = new Map();
+
+function cacheKeyOf(params) {
+  return `${params.week || ""}|${params.category || ""}|${params.search || ""}`;
+}
+
+function readCache(key) {
+  const hit = responseCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > CACHE_TTL_MS) {
+    responseCache.delete(key);
+    return null;
+  }
+  return hit.payload;
+}
+
+function writeCache(key, payload) {
+  responseCache.set(key, { at: Date.now(), payload });
+  // 组合数有限（week/category/search），超上限时淘汰最早写入的一条
+  if (responseCache.size > CACHE_MAX_ENTRIES) {
+    responseCache.delete(responseCache.keys().next().value);
+  }
+}
+
 // 公开响应 DTO：不泄漏 raw_event_ids 等内部字段（与 cloudrun/server.js、src/app/api/events/route.js 一致）
 const PUBLIC_FIELDS = [
   "title",
@@ -38,6 +67,9 @@ const PUBLIC_FIELDS = [
   "sources",
   "summary",
   "image_url",
+  // slug 是派生字段（filterPublishableEvents 里算的），但它要进 URL 与提醒记录，
+  // 所以必须出现在对外的 DTO 里
+  "slug",
 ];
 
 function toPublicEvent(event) {
@@ -152,10 +184,28 @@ function normalize(event) {
   const source = event || {};
   const toText = (value) => (typeof value === "string" && value ? value : undefined);
   return {
+    action: toText(source.action),
+    slug: toText(source.slug),
     week: toText(source.week),
     category: toText(source.category),
     search: toText(source.search),
   };
+}
+
+// 窗口内全量（带缓存）。slug 是派生字段、不在数据库里，所以「按 slug 取一条」
+// 只能在窗口里找 —— 提醒消息的落地页和分享卡片都走这条。
+async function loadWindowPayload(lib) {
+  const key = cacheKeyOf({});
+  const cached = readCache(key);
+  if (cached) return cached;
+  const events = await listEvents(lib, {});
+  const payload = {
+    events: events.map(toPublicEvent),
+    count: events.length,
+    generated_at: new Date().toISOString(),
+  };
+  writeCache(key, payload);
+  return payload;
 }
 
 exports.main = async (event) => {
@@ -166,13 +216,27 @@ exports.main = async (event) => {
     const invalid = validateParams(lib, params);
     if (invalid) return { error: invalid, statusCode: 400 };
 
+    // action: "get" —— 按 slug 取单条（提醒消息落地页、分享卡片用）
+    if (params.action === "get") {
+      if (!params.slug) return { error: "slug required", statusCode: 400 };
+      const payload = await loadWindowPayload(lib);
+      const found = payload.events.find((item) => item.slug === params.slug);
+      return found ? { event: found } : { error: "not found", statusCode: 404 };
+    }
+
+    const key = cacheKeyOf(params);
+    const cached = readCache(key);
+    if (cached) return cached;
+
     const events = await listEvents(lib, params);
     // 与云托管版响应结构一致，小程序端不用改解析逻辑
-    return {
+    const payload = {
       events: events.map(toPublicEvent),
       count: events.length,
       generated_at: new Date().toISOString(),
     };
+    writeCache(key, payload);
+    return payload;
   } catch (error) {
     console.error("listEvents failed:", error);
     return { error: "internal error", statusCode: 500 };

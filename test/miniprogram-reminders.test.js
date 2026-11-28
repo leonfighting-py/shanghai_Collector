@@ -46,8 +46,25 @@ test("提醒时刻已过 / 活动已结束 → 不排", () => {
   assert.equal(mp.remindAtOf({ ...longRun, end_time: "2026-11-20T18:00:00+08:00" }, NOW), null);
 });
 
-test("提醒键与收藏 id 同构：标题|上海日期|场馆", () => {
+test("提醒键优先用 slug（与 Web URL 同一个值）", () => {
+  assert.equal(mp.keyOf({ ...single, slug: "abc1234567" }), "abc1234567");
+  // 老 DTO 没有 slug 时退回「标题|上海日期|场馆」，不要算成空键
   assert.equal(mp.keyOf(single), "测试活动|2026-12-05|上海大剧院");
+});
+
+test("排队计划把「锚在开始日还是闭展日」一起带出来", () => {
+  const plain = mp.planFor(single, NOW);
+  assert.equal(plain.remindAt, "2026-12-04T10:00:00+08:00");
+  assert.equal(plain.anchorKind, "start");
+  assert.equal(plain.leadDays, 1);
+
+  const long = mp.planFor(longRun, NOW);
+  assert.equal(long.remindAt, "2026-12-28T10:00:00+08:00");
+  assert.equal(long.anchorKind, "end");
+  assert.equal(long.leadDays, 3);
+
+  // 提醒时刻已过 → 没有计划
+  assert.equal(mp.planFor({ ...single, start_time: "2026-11-29T19:30:00+08:00" }, NOW), null);
 });
 
 test("模板 thing 字段截到 20 字符，不会撑爆微信限制", () => {

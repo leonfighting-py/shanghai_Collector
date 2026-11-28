@@ -62,11 +62,16 @@ exports.main = async (event = {}) => {
   const payload = {
     openid: OPENID,
     key,
+    // slug 与 Web 的 URL 同一个值，第 19 天用它去查最新活动
+    slug: String(event.slug || "").slice(0, 40),
     title: String(event.title || "").slice(0, 200),
     start_time: event.start_time || null,
     end_time: event.end_time || null,
     venue: String(event.venue || "").slice(0, 100),
     remind_at: remindAt,
+    // 重算提醒时刻只需要这两个参数：锚在开始日还是闭展日、提前几天
+    lead_days: Number(event.lead_days) === 3 ? 3 : 1,
+    anchor_kind: event.anchor_kind === "end" ? "end" : "start",
     sent: false,
     updated_at: db.serverDate(),
   };

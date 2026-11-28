@@ -47,15 +47,21 @@ function callFunction(data) {
   });
 }
 
-function setReminder(event, remindAt) {
+function setReminder(event) {
+  const plan = reminders.planFor(event);
+  if (!plan) return Promise.resolve({ ok: false, error: "nothing-to-plan" });
   return callFunction({
     action: "set",
     key: reminders.keyOf(event),
+    slug: event.slug || "",
     title: event.title,
     start_time: event.start_time,
     end_time: event.end_time || null,
     venue: event.venue,
-    remind_at: remindAt,
+    remind_at: plan.remindAt,
+    // 存下来给第 19 天的定时任务重算用，避免它在另一个云函数里重写一遍规则
+    lead_days: plan.leadDays,
+    anchor_kind: plan.anchorKind,
   });
 }
 

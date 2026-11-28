@@ -1,4 +1,5 @@
 const agenda = require("../../utils/agenda.js");
+const config = require("../../utils/config.js");
 const favorites = require("../../utils/favorites.js");
 const format = require("../../utils/format.js");
 const registration = require("../../utils/registration.js");
@@ -18,12 +19,44 @@ Page({
     remindNote: "",
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 订阅消息 / 分享卡片进来时只有 slug（活动对象传不过来），按 slug 拉单条
+    if (options && options.slug) {
+      this.loadBySlug(options.slug);
+      return;
+    }
     // 列表页 / 收藏页通过 eventChannel 传入完整事件对象
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && channel.on) {
       channel.on("event", (event) => this.applyEvent(event));
     }
+  },
+
+  loadBySlug(slug) {
+    wx.showLoading({ title: "加载中", mask: true });
+    wx.cloud.callFunction({
+      name: config.FUNCTION_NAME,
+      data: { action: "get", slug },
+      success: (res) => {
+        const result = (res && res.result) || {};
+        if (result.event) {
+          this.applyEvent(result.event);
+        } else {
+          this.showGone();
+        }
+      },
+      fail: (err) => {
+        console.warn("[detail] 按 slug 拉取失败", err);
+        this.showGone();
+      },
+      complete: () => wx.hideLoading(),
+    });
+  },
+
+  // 活动已结束或被清理：不留白页，提示后回首页
+  showGone() {
+    wx.showToast({ title: "活动已结束或已下线", icon: "none", duration: 2000 });
+    setTimeout(() => wx.switchTab({ url: "/pages/home/home" }), 1600);
   },
 
   applyEvent(event) {
@@ -58,14 +91,14 @@ Page({
     // 收藏：先弹订阅授权（必须在点击的同步栈里），再落收藏与提醒
     subscribe.requestSubscribe().then((accepted) => {
       const favorited = favorites.toggleFavorite(event);
-      const remindAt = accepted ? reminders.remindAtOf(event) : null;
+      const plan = accepted ? reminders.planFor(event) : null;
       const note = !accepted
         ? ""
-        : remindAt
-          ? reminders.describeRemind(remindAt)
+        : plan
+          ? reminders.describeRemind(plan.remindAt)
           : "这场活动已经开始，不再提醒";
       this.setData({ favorited, remindNote: note });
-      if (accepted && remindAt) subscribe.setReminder(event, remindAt);
+      if (plan) subscribe.setReminder(event);
     });
   },
 

@@ -19,6 +19,9 @@ const PUBLIC_FIELDS = [
   "sources",
   "summary",
   "image_url",
+  // slug 是派生字段（filterPublishableEvents 里算的），但它要进 URL 与提醒记录，
+  // 所以必须出现在对外的 DTO 里
+  "slug",
 ];
 
 function toPublicEvent(event) {
