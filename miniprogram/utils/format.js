@@ -96,6 +96,16 @@ function eventRangeShort(event) {
   return `${startText}–${endText}`;
 }
 
+// 「2026 · 11.28 — 12.11」：与 web 端 home-view-model 的 issueLabel 同一口径
+// （窗口从今天起 14 天，首尾都用点号日期）。分享标题用它当期号。
+function windowLabel(now = new Date()) {
+  const start = toShanghaiDate(now);
+  const endDay = new Date(new Date(`${start}T00:00:00+08:00`).getTime() + 13 * 86_400_000);
+  const end = toShanghaiDate(endDay);
+  const dot = (day) => `${day.slice(5, 7)}.${day.slice(8, 10)}`;
+  return `${start.slice(0, 4)} · ${dot(start)} — ${dot(end)}`;
+}
+
 module.exports = {
   toShanghaiDate,
   eventDate,
@@ -104,4 +114,5 @@ module.exports = {
   eventPeriod,
   eventRangeShort,
   eventBadge,
+  windowLabel,
 };

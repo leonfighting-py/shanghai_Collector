@@ -1,5 +1,6 @@
 const agenda = require("../../utils/agenda.js");
 const config = require("../../utils/config.js");
+const imageUrl = require("../../utils/image-url.js");
 const favorites = require("../../utils/favorites.js");
 const format = require("../../utils/format.js");
 const registration = require("../../utils/registration.js");
@@ -124,8 +125,10 @@ Page({
     const event = this.data.event || {};
     return {
       title: event.title ? `【${event.category}】${event.title}` : "上海城市生活雷达",
-      path: "/pages/home/home",
-      imageUrl: event.image_url || "",
+      // 带 slug：对方点开直达这场活动，而不是首页
+      path: event.slug ? `/pages/detail/detail?slug=${event.slug}` : "/pages/home/home",
+      // 缩到宽 500：卡片按 5:4 裁，给太大的图只是白花流量
+      imageUrl: imageUrl.optimizedImageUrl(event.image_url, { width: 500 }),
     };
   },
 });

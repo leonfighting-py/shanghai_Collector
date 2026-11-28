@@ -432,7 +432,7 @@ Page({
     const category = this.data.activeCategory ? `【${this.data.activeCategory}】` : "";
     const keyword = this.data.searchKeyword.trim();
     return {
-      title: `${category}上海未来两周活动${keyword ? `｜${keyword}` : ""}`,
+      title: `${category}上海未来两周活动${keyword ? `｜${keyword}` : ""} · ${format.windowLabel()}`,
       path: "/pages/home/home",
     };
   },
@@ -440,7 +440,7 @@ Page({
   onShareTimeline() {
     const keyword = this.data.searchKeyword.trim();
     return {
-      title: keyword ? `上海未来两周活动｜${keyword}` : "上海未来两周活动",
+      title: `${keyword ? `上海未来两周活动｜${keyword}` : "上海未来两周活动"} · ${format.windowLabel()}`,
       query: keyword ? `search=${encodeURIComponent(keyword)}` : "",
     };
   },
