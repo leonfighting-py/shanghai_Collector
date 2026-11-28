@@ -2,8 +2,13 @@
 
 这份是给「手上没有微信开发经验」的人看的。每一步都写了**在哪里点**、**点完会看到什么**、**把什么发回来**。
 
-当前状态：代码里的提醒规则已写好（`src/lib/reminders.js`），但**模板 ID 还没有**，
-所以订阅弹窗现在弹不出来。缺的就是下面第 1 步。
+当前状态（2026-11-28）：模板已拿到，代码已写完。
+
+- 模板 ID：`8u57MzburW1sXnbqpEO0t8WMfTEm...`（已写进 `miniprogram/utils/config.js`）
+- 模板字段：`thing2` 活动名称 / `date3` 活动日期 / `thing4` 活动说明
+- 云函数：`miniprogram/cloudfunctions/subscribe`（**还没上传到云端**，见第 4 步）
+
+所以现在只差：导入项目 → 上传云函数 → 在模拟器里验证。
 
 小程序 AppID：`wx9fbcd7833ef0590c`
 云开发环境 ID：`cloud1-d2gf2labp2a33b92b`
@@ -43,21 +48,23 @@
 
 ---
 
-## 第 2 步：把代码改完（我来做）
+## 第 2 步：代码（已完成，2026-11-28）
 
-拿到模板 ID 和字段后，我会改这三处：
-
-| 文件 | 改什么 |
+| 文件 | 改了什么 |
 |---|---|
-| `miniprogram/cloudfunctions/subscribe/index.js`（新建） | 云函数：拿 openid、算提醒时刻、写 `reminders` 表、取消时删除 |
-| `miniprogram/pages/detail/detail.js` + `.wxml` | 点「收藏」时弹订阅授权，同意后调云函数；按钮下面加一行「会在 X 月 X 日提醒你一次」 |
-| `miniprogram/utils/config.js` | 加 `SUBSCRIBE_TMPL_ID` 常量 |
+| `miniprogram/cloudfunctions/subscribe/index.js` | 新建。拿 openid、校验提醒时刻、按 (openid, key) 写入或覆盖 `reminders`，`action: "remove"` 时删除 |
+| `miniprogram/utils/reminders.js` | 新建。提醒时刻规则 + 模板字段拼装（thing 截 20 字符、date 只填单日） |
+| `miniprogram/utils/subscribe.js` | 新建。弹订阅授权 + 调云函数 |
+| `miniprogram/utils/config.js` | 加 `SUBSCRIBE_TMPL_ID` / `SUBSCRIBE_FUNCTION` |
+| `miniprogram/pages/detail/detail.js` `.wxml` `.wxss` | 点「收藏」时先弹授权；授权同意才写提醒；取消收藏时删记录；按钮上方加一行说明 |
 
-这一步不需要你操作，改完我告诉你。
+**你不需要看代码**，只要按下面三步操作。
 
 ---
 
-## 第 3 步：装微信开发者工具、导入项目（约 15 分钟）
+## 第 3 步：导入项目（约 3 分钟，工具已装好）
+
+> 你说工具已装，跳过下载安装，直接从「导入项目」开始。
 
 **在哪下载**：<https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html>
 选 **「稳定版 Stable Build」→ macOS 版**（Intel 或 Apple Silicon 按你的机器选）。
@@ -81,8 +88,11 @@
 **在哪做**：开发者工具左侧文件树。
 
 1. 展开 `cloudfunctions/` 目录。
-2. 右键 `subscribe` 文件夹 → **「上传并部署：云端安装依赖」**。
+2. 右键 **`subscribe`** 文件夹 → **「上传并部署：云端安装依赖」**。
    （`events` 文件夹之前已经传过，这次不用动。）
+
+   ⚠️ 必须选「云端安装依赖」这一项。云函数依赖 `wx-server-sdk`，本地没装，
+   选「所有文件」会缺依赖，调用时报 `Cannot find module 'wx-server-sdk'`。
 3. 右下角会弹出上传进度，最后显示「上传成功」。
 
 > 选「云端安装依赖」而不是「所有文件」：云函数的 node_modules 不用你本地装，
@@ -120,8 +130,18 @@
 
 ---
 
-## 你现在只需要做第 1 步
+## 现在轮到你：第 3 → 4 → 5 步
 
-做完把这三样发我：**模板 ID、模板内容、模板标题**。
+按顺序做，任何一步卡住就把**截图**发我：
 
-拿到之后我改代码，再带你做第 3 步开始的部分。
+1. 导入项目（第 3 步）
+2. 右键上传 `subscribe` 云函数（第 4 步，选「云端安装依赖」）
+3. 模拟器里点一场**明天之后**的活动 → 收藏 → 允许订阅 → 去云开发数据库看 `reminders` 有没有记录
+
+第 5 步的两个观察点：
+
+- 收藏后，按钮上方应出现「会在 X 月 X 日上午 10:00 提醒你一次」
+- 取消收藏后，`reminders` 里那条记录应消失
+
+**注意**：如果点的那场活动是「明天开始且现在已过 10:00」，会显示「这场活动已经开始，不再提醒」——
+这不是 bug，一次性订阅来不及发了。换一场后天的活动测。

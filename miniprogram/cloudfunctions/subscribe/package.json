@@ -1,0 +1,10 @@
+{
+  "name": "subscribe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小程序订阅提醒：写入 / 删除 reminders 集合",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

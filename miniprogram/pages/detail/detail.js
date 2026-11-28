@@ -2,6 +2,8 @@ const agenda = require("../../utils/agenda.js");
 const favorites = require("../../utils/favorites.js");
 const format = require("../../utils/format.js");
 const registration = require("../../utils/registration.js");
+const reminders = require("../../utils/reminders.js");
+const subscribe = require("../../utils/subscribe.js");
 
 Page({
   data: {
@@ -12,6 +14,8 @@ Page({
     imageFailed: false,
     sourceList: [],
     targetPlatform: "",
+    // 收藏后那行提醒说明；空字符串表示不显示
+    remindNote: "",
   },
 
   onLoad() {
@@ -41,8 +45,28 @@ Page({
   },
 
   onToggleFavorite() {
-    if (!this.data.event) return;
-    this.setData({ favorited: favorites.toggleFavorite(this.data.event) });
+    const event = this.data.event;
+    if (!event) return;
+
+    // 取消收藏：本地先切，再异步删掉提醒记录（删失败也不影响收藏状态）
+    if (this.data.favorited) {
+      this.setData({ favorited: favorites.toggleFavorite(event), remindNote: "" });
+      subscribe.removeReminder(event);
+      return;
+    }
+
+    // 收藏：先弹订阅授权（必须在点击的同步栈里），再落收藏与提醒
+    subscribe.requestSubscribe().then((accepted) => {
+      const favorited = favorites.toggleFavorite(event);
+      const remindAt = accepted ? reminders.remindAtOf(event) : null;
+      const note = !accepted
+        ? ""
+        : remindAt
+          ? reminders.describeRemind(remindAt)
+          : "这场活动已经开始，不再提醒";
+      this.setData({ favorited, remindNote: note });
+      if (accepted && remindAt) subscribe.setReminder(event, remindAt);
+    });
   },
 
   onSignup() {

@@ -8,6 +8,11 @@ module.exports = {
   CLOUD_DEV_ENV: "cloud1-d2gf2labp2a33b92b",
   // 云函数名，必须与 cloudfunctions/ 下的目录名逐字一致
   FUNCTION_NAME: "events",
+  // 订阅提醒云函数（cloudfunctions/subscribe）
+  SUBSCRIBE_FUNCTION: "subscribe",
+  // 一次性订阅消息模板 ID（小程序后台 → 订阅消息 → 我的模板）
+  // 模板字段：thing2 活动名称 / date3 活动日期 / thing4 活动说明
+  SUBSCRIBE_TMPL_ID: "8u57MzburW1sXnbqpEO0t8WMfTmlEmXo6Wj9GjKBntM",
 
   // ---------- 以下为云托管（旧读路径，保留回滚用）----------
   // 回滚方式：把 utils/api.js 里的 callFunction 换回 callContainer，并把下面两行填进
